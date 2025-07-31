@@ -122,6 +122,7 @@ class User extends Authenticatable
         'is_active' => 'integer',
         'email_verified_at' => 'datetime',
     ];
+    protected $table = 'ns_nexopos_users';
 
     protected $appends  = [
         'name'

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Auth\API\AuthController;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -41,6 +42,10 @@ use App\Http\Controllers\Frontend\FollowCustomerController;
 use App\Http\Controllers\Frontend\ReturnExchangeController;
 use App\Http\Controllers\Frontend\DigitalGiftCardController;
 use Modules\OrderManage\Http\Controllers\OrderManageController;
+
+Route::get('sso', [AuthController::class, 'ssoLoginView']);
+Route::post('sso-login', [AuthController::class, 'ssoLogin']);
+Route::get('sso-logout', [AuthController::class, 'ssoLogout']);
 
 Route::post('/locale',[LanguageController::class,'locale'])->name('frontend.locale')->middleware('prohibited_demo_mode');
 Auth::routes(['verify' => true]);

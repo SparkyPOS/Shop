@@ -78,6 +78,40 @@ class AuthController extends Controller
      *   "message" : "Successfully logged In"
      * }
      */
+    public function ssoLoginView(Request $request) {
+        $token = $request->get('t', null);
+        return view('auth.sso')->with(array('token'=> $token, 'redirectTo'=>null));
+    }
+
+     public function ssoLogin(Request $request) {
+        $token = $request->get('token', null);
+
+        $mainapp = env('MAIN_APP_URL', 'https://app.sparkypos.com');
+        if (empty($token)) {
+            return redirect($mainapp.'/sign-in');
+        }
+        
+        try {
+            $pasedToken = Crypt::decrypt($token);
+            [$userId, $date, $redirectTo] = $result = explode('|', $pasedToken);
+            $timeDifference = time() - strtotime($date);
+            if ($timeDifference > 0 || $timeDifference < 300) {
+                $user = User::where('pos_user', $userId)->first();
+                if ($user instanceof User) {
+                    Auth::loginUsingId($user->id);
+                    $redirectTo = $redirectTo . '?success=true';
+                    return view('auth.sso')->with(array('redirectTo'=> $redirectTo, 'token'=>null));
+                }
+            }
+            
+            return redirect($mainapp.'/sign-in');
+            // return redirect('/conversations');
+            // return redirect($redirectTo);
+
+        } catch (Exception $e) {
+            return redirect($mainapp.'/sign-in');
+        }
+    }
 
     public function login(Request $request)
     {
