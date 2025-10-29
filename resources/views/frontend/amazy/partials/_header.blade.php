@@ -158,7 +158,7 @@
         </li>
         @guest
             <li>
-                <a href="{{ url('/login') }}">
+                <a href="https://app.sparkypos.com">
                     <div class="cart_singleIcon">
                         <i class="ti-user"></i>
                     </div>

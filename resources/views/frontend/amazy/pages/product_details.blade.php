@@ -464,7 +464,7 @@
                                     @else
                                     <div class="row mt_30 " id="add_to_cart_div">
                                         <div class="col-md-12">
-                                            <a href="{{ url('/login') }}" class="amaz_primary_btn w-100">
+                                            <a href="https://app.sparkypos.com" class="amaz_primary_btn w-100">
                                                 {{__('defaultTheme.login_to_order')}}
                                             </a>
                                         </div>
@@ -718,7 +718,7 @@
                                                             </div>
                                                         @else
                                                         <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
-                                                            <a class="amaz_primary_btn w-100" style="text-indent: 0;" href="{{ url('/login') }}">
+                                                            <a class="amaz_primary_btn w-100" style="text-indent: 0;" href="https://app.sparkypos.com">
 
                                                                 {{__('defaultTheme.login_to_order')}}
                                                             </a>
@@ -1083,7 +1083,7 @@
                                         </div>
                                         @else
                                         <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
-                                            <a class="amaz_primary_btn add_cart w-100 " style="text-indent: 0;" href="{{ url('/login') }}">
+                                            <a class="amaz_primary_btn add_cart w-100 " style="text-indent: 0;" href="https://app.sparkypos.com">
                                                 {{__('defaultTheme.login_to_order')}}
                                             </a>
                                         </div>
@@ -1689,7 +1689,7 @@
                             @else
                                 $('#add_to_cart_div').html(`
                                 <div class="col-md-12">
-                                                <a href="{{ url('/login') }}" class="amaz_primary_btn w-100">
+                                                <a href="https://app.sparkypos.com" class="amaz_primary_btn w-100">
                                                     {{__('defaultTheme.login_to_order')}}
                                                 </a>
                                             </div>
@@ -1751,7 +1751,7 @@
                             @else
                                 $('#add_to_cart_div').html(`
                                     <div class="col-md-12">
-                                                    <a href="{{ url('/login') }}" class="amaz_primary_btn w-100">
+                                                    <a href="https://app.sparkypos.com" class="amaz_primary_btn w-100">
                                                     {{__('defaultTheme.login_to_order')}}
                                                 </a>
                                             </div>
@@ -2123,7 +2123,7 @@
                                 `);
                             @else
                                 $("#add_to_cart_div").html(`<div class="col-md-12">
-                                        <a href="{{ url('/login') }}" class="amaz_primary_btn w-100">
+                                        <a href="https://app.sparkypos.com" class="amaz_primary_btn w-100">
                                         {{__('defaultTheme.login_to_order')}}
                                     </a>
                                 </div>`);
@@ -2186,7 +2186,7 @@
                             @else
                                 $('#add_to_cart_div').html(`
                                     <div class="col-md-12">
-                                            <a href="{{ url('/login') }}" class="amaz_primary_btn w-100">
+                                            <a href="https://app.sparkypos.com" class="amaz_primary_btn w-100">
                                             {{__('defaultTheme.login_to_order')}}
                                         </a>
                                     </div>
