@@ -435,7 +435,7 @@ class ProductRepository
 
             }
         }
-        return true;
+        return $product;
     }
 
     public function find($id)

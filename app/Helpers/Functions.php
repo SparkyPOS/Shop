@@ -192,15 +192,15 @@ if (!function_exists('asset_path')) {
         return 'public/'.$path;
     }
 }
-function setEnv($name, $value)
-{
-    $path = base_path('.env');
-    if (file_exists($path)) {
-        file_put_contents($path, str_replace(
-            $name . '=' . env($name), $name . '=' . $value, file_get_contents($path)
-        ));
-    }
-}
+//function setEnv($name, $value)
+//{
+//    $path = base_path('.env');
+//    if (file_exists($path)) {
+//        file_put_contents($path, str_replace(
+//            $name . '=' . env($name), $name . '=' . $value, file_get_contents($path)
+//        ));
+//    }
+//}
 if (!function_exists('isRtl')) {
     function isRtl()
     {

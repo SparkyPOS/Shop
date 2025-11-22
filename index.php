@@ -1,4 +1,5 @@
 <?php
+//phpinfo();
 ob_start();
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;

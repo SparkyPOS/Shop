@@ -27,5 +27,7 @@ Route::prefix('product')->group(function () {
     //for tags
     Route::resource('tag', 'API\TagController')->only('index', 'show');
 
+    // sync from external source (e.g., POS)
+    Route::post('/sync', 'SyncController@syncProducts');
 
 });

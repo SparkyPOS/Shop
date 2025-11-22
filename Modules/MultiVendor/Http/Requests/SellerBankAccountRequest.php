@@ -15,7 +15,7 @@ class SellerBankAccountRequest extends FormRequest
     {
         return [
             'bank_title' => 'required|max:255',
-            'bank_account_number' => 'required|max:255',
+            'bank_account_number' => 'nullable|max:255',
             'bank_name' => 'required|max:255',
             'branch_name' => 'required|max:255',
             'routing_number' => 'required|max:255',

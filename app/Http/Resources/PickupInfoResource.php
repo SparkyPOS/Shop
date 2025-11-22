@@ -7,6 +7,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class PickupInfoResource extends JsonResource
 {
+
+
     /**
      * Transform the resource into an array.
      *

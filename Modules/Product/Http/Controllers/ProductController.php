@@ -61,6 +61,8 @@ class ProductController extends Controller
         try {
             $this->productService->csvUploadProduct($request->except("_token"));
             DB::commit();
+            // Realtime sync (no queue) after commit
+            app(\App\Services\ProductSyncService::class)->syncProductById($product->id);
             Toastr::success(__('common.uploaded_successfully'), __('common.success'));
             LogActivity::successLog('bulk product upload successful.');
             return back();
@@ -280,7 +282,9 @@ class ProductController extends Controller
         DB::beginTransaction();
         try {
 
-            $this->productService->create($request->except("_token"));
+            $product = $this->productService->create($request->except("_token"));
+//            dd($product);
+            app(\App\Services\ProductSyncService::class)->syncProductById($product->id);
             if(auth()->user()->role_id != 1)
             {
                 $notificationSetting = DB::table('notification_settings')->where('slug','seller-product-create')->first();
@@ -391,6 +395,7 @@ class ProductController extends Controller
 
     public function update(CreateProductRequest $request, $id)
     {
+
         DB::beginTransaction();
         try {
             if(auth()->user()->role->type == 'seller'){
@@ -406,6 +411,8 @@ class ProductController extends Controller
             }
             $this->productService->update($request->except("_token"), $id);
             DB::commit();
+            // Realtime sync (no queue) after commit
+            app(\App\Services\ProductSyncService::class)->syncProductById($id);
             LogActivity::successLog('Product updated.');
             Toastr::success(__('common.updated_successfully'), __('common.success'));
             $user = auth()->user();

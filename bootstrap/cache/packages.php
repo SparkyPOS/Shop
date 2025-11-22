@@ -1,47 +1,47 @@
 <?php return array (
   'anandsiddharth/laravel-paytm-wallet' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Anand\\LaravelPaytmWallet\\PaytmWalletServiceProvider',
-    ),
     'aliases' => 
     array (
       'PaytmWallet' => 'Anand\\LaravelPaytmWallet\\Facades\\PaytmWallet',
     ),
+    'providers' => 
+    array (
+      0 => 'Anand\\LaravelPaytmWallet\\PaytmWalletServiceProvider',
+    ),
   ),
   'barryvdh/laravel-debugbar' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Barryvdh\\Debugbar\\ServiceProvider',
-    ),
     'aliases' => 
     array (
       'Debugbar' => 'Barryvdh\\Debugbar\\Facades\\Debugbar',
     ),
+    'providers' => 
+    array (
+      0 => 'Barryvdh\\Debugbar\\ServiceProvider',
+    ),
   ),
   'barryvdh/laravel-snappy' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Barryvdh\\Snappy\\ServiceProvider',
-    ),
     'aliases' => 
     array (
       'PDF' => 'Barryvdh\\Snappy\\Facades\\SnappyPdf',
       'SnappyImage' => 'Barryvdh\\Snappy\\Facades\\SnappyImage',
     ),
+    'providers' => 
+    array (
+      0 => 'Barryvdh\\Snappy\\ServiceProvider',
+    ),
   ),
   'brian2694/laravel-toastr' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Brian2694\\Toastr\\ToastrServiceProvider',
-    ),
     'aliases' => 
     array (
       'Toastr' => 'Brian2694\\Toastr\\Facades\\Toastr',
+    ),
+    'providers' => 
+    array (
+      0 => 'Brian2694\\Toastr\\ToastrServiceProvider',
     ),
   ),
   'codezero/laravel-unique-translation' => 
@@ -53,57 +53,57 @@
   ),
   'freshbitsweb/laravel-google-analytics-4-measurement-protocol' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Freshbitsweb\\LaravelGoogleAnalytics4MeasurementProtocol\\GA4ServiceProvider',
-    ),
     'aliases' => 
     array (
       'GA4' => 'Freshbitsweb\\LaravelGoogleAnalytics4MeasurementProtocol\\Facades\\GA4',
     ),
+    'providers' => 
+    array (
+      0 => 'Freshbitsweb\\LaravelGoogleAnalytics4MeasurementProtocol\\GA4ServiceProvider',
+    ),
   ),
   'hisorange/browser-detect' => 
   array (
-    'providers' => 
-    array (
-      0 => 'hisorange\\BrowserDetect\\ServiceProvider',
-    ),
     'aliases' => 
     array (
       'Browser' => 'hisorange\\BrowserDetect\\Facade',
     ),
+    'providers' => 
+    array (
+      0 => 'hisorange\\BrowserDetect\\ServiceProvider',
+    ),
   ),
   'intervention/image' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Intervention\\Image\\ImageServiceProvider',
-    ),
     'aliases' => 
     array (
       'Image' => 'Intervention\\Image\\Facades\\Image',
     ),
+    'providers' => 
+    array (
+      0 => 'Intervention\\Image\\ImageServiceProvider',
+    ),
   ),
   'jorenvanhocht/laravel-share' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Jorenvh\\Share\\Providers\\ShareServiceProvider',
-    ),
     'aliases' => 
     array (
       'Share' => 'Jorenvh\\Share\\ShareFacade',
     ),
+    'providers' => 
+    array (
+      0 => 'Jorenvh\\Share\\Providers\\ShareServiceProvider',
+    ),
   ),
   'kingflamez/laravelrave' => 
   array (
-    'providers' => 
-    array (
-      0 => 'KingFlamez\\Rave\\RaveServiceProvider',
-    ),
     'aliases' => 
     array (
       'Rave' => 'KingFlamez\\Rave\\Facades\\Rave',
+    ),
+    'providers' => 
+    array (
+      0 => 'KingFlamez\\Rave\\RaveServiceProvider',
     ),
   ),
   'knuckleswtf/scribe' => 
@@ -129,13 +129,13 @@
   ),
   'laravel/socialite' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Laravel\\Socialite\\SocialiteServiceProvider',
-    ),
     'aliases' => 
     array (
       'Socialite' => 'Laravel\\Socialite\\Facades\\Socialite',
+    ),
+    'providers' => 
+    array (
+      0 => 'Laravel\\Socialite\\SocialiteServiceProvider',
     ),
   ),
   'laravel/tinker' => 
@@ -166,24 +166,24 @@
   ),
   'livewire/livewire' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Livewire\\LivewireServiceProvider',
-    ),
     'aliases' => 
     array (
       'Livewire' => 'Livewire\\Livewire',
     ),
+    'providers' => 
+    array (
+      0 => 'Livewire\\LivewireServiceProvider',
+    ),
   ),
   'maatwebsite/excel' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Maatwebsite\\Excel\\ExcelServiceProvider',
-    ),
     'aliases' => 
     array (
       'Excel' => 'Maatwebsite\\Excel\\Facades\\Excel',
+    ),
+    'providers' => 
+    array (
+      0 => 'Maatwebsite\\Excel\\ExcelServiceProvider',
     ),
   ),
   'marcandreappel/laravel-backblaze-b2' => 
@@ -195,25 +195,25 @@
   ),
   'mews/purifier' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Mews\\Purifier\\PurifierServiceProvider',
-    ),
     'aliases' => 
     array (
       'Purifier' => 'Mews\\Purifier\\Facades\\Purifier',
     ),
+    'providers' => 
+    array (
+      0 => 'Mews\\Purifier\\PurifierServiceProvider',
+    ),
   ),
   'milon/barcode' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Milon\\Barcode\\BarcodeServiceProvider',
-    ),
     'aliases' => 
     array (
       'DNS1D' => 'Milon\\Barcode\\Facades\\DNS1DFacade',
       'DNS2D' => 'Milon\\Barcode\\Facades\\DNS2DFacade',
+    ),
+    'providers' => 
+    array (
+      0 => 'Milon\\Barcode\\BarcodeServiceProvider',
     ),
   ),
   'nesbot/carbon' => 
@@ -250,24 +250,24 @@
   ),
   'nwidart/laravel-modules' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Nwidart\\Modules\\LaravelModulesServiceProvider',
-    ),
     'aliases' => 
     array (
       'Module' => 'Nwidart\\Modules\\Facades\\Module',
     ),
+    'providers' => 
+    array (
+      0 => 'Nwidart\\Modules\\LaravelModulesServiceProvider',
+    ),
   ),
   'seshac/laravel-shiprocket-api' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Seshac\\Shiprocket\\ShiprocketServiceProvider',
-    ),
     'aliases' => 
     array (
       'Shiprocket' => 'Seshac\\Shiprocket\\Shiprocket',
+    ),
+    'providers' => 
+    array (
+      0 => 'Seshac\\Shiprocket\\ShiprocketServiceProvider',
     ),
   ),
   'silviolleite/laravelpwa' => 
@@ -279,35 +279,35 @@
   ),
   'spatie/laravel-analytics' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Spatie\\Analytics\\AnalyticsServiceProvider',
-    ),
     'aliases' => 
     array (
       'Analytics' => 'Spatie\\Analytics\\Facades\\Analytics',
     ),
+    'providers' => 
+    array (
+      0 => 'Spatie\\Analytics\\AnalyticsServiceProvider',
+    ),
   ),
   'spatie/laravel-google-cloud-storage' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Spatie\\GoogleCloudStorage\\GoogleCloudStorageServiceProvider',
-    ),
     'aliases' => 
     array (
       'GoogleCloudStorage' => 'Spatie\\GoogleCloudStorage\\GoogleCloudStorageFacade',
     ),
+    'providers' => 
+    array (
+      0 => 'Spatie\\GoogleCloudStorage\\GoogleCloudStorageServiceProvider',
+    ),
   ),
   'spatie/laravel-ignition' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
-    ),
     'aliases' => 
     array (
       'Flare' => 'Spatie\\LaravelIgnition\\Facades\\Flare',
+    ),
+    'providers' => 
+    array (
+      0 => 'Spatie\\LaravelIgnition\\IgnitionServiceProvider',
     ),
   ),
   'spatie/laravel-translatable' => 
@@ -347,24 +347,24 @@
   ),
   'stevebauman/location' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Stevebauman\\Location\\LocationServiceProvider',
-    ),
     'aliases' => 
     array (
       'Location' => 'Stevebauman\\Location\\Facades\\Location',
     ),
+    'providers' => 
+    array (
+      0 => 'Stevebauman\\Location\\LocationServiceProvider',
+    ),
   ),
   'unicodeveloper/laravel-paystack' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Unicodeveloper\\Paystack\\PaystackServiceProvider',
-    ),
     'aliases' => 
     array (
       'Paystack' => 'Unicodeveloper\\Paystack\\Facades\\Paystack',
+    ),
+    'providers' => 
+    array (
+      0 => 'Unicodeveloper\\Paystack\\PaystackServiceProvider',
     ),
   ),
   'van-ons/laraberg' => 
@@ -408,13 +408,13 @@
   ),
   'yajra/laravel-datatables-oracle' => 
   array (
-    'providers' => 
-    array (
-      0 => 'Yajra\\DataTables\\DataTablesServiceProvider',
-    ),
     'aliases' => 
     array (
       'DataTables' => 'Yajra\\DataTables\\Facades\\DataTables',
+    ),
+    'providers' => 
+    array (
+      0 => 'Yajra\\DataTables\\DataTablesServiceProvider',
     ),
   ),
 );

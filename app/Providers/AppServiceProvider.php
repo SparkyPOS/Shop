@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\URL;
 use Laravel\Scout\Console\ImportCommand;
+use Modules\Appearance\Entities\Theme;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,31 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->register(TranslationServiceProvider::class);
+
+        // Ensure a resolvable 'theme' binding exists for helpers like app('theme') / theme()
+        if (! $this->app->bound('theme')) {
+            $this->app->singleton('theme', function () {
+                // Safe fallback object if DB or table is not ready yet
+                $fallback = (object) [
+                    'folder_path' => 'amazy',
+                    'name' => 'Amazy',
+                ];
+
+                try {
+                    // Only attempt DB if available and table exists
+                    if (\Illuminate\Support\Facades\DB::connection()->getPdo() && Schema::hasTable('themes')) {
+                        $active = Theme::where('is_active', 1)->first();
+                        if ($active) {
+                            return $active;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // Swallow and use fallback during early boot / migrations
+                }
+
+                return $fallback;
+            });
+        }
 
     }
 
@@ -47,9 +73,9 @@ class AppServiceProvider extends ServiceProvider
             });
         }
 
-        if (config('app.force_https')) {
-            URL::forceScheme('https');
-        }
+//        if (config('app.force_https')) {
+//            URL::forceScheme('https');
+//        }
 
 
         Schema::defaultStringLength(191);

@@ -28,6 +28,26 @@ class ProductSku extends Model
         return $this->belongsTo(Product::class, "product_id");
     }
 
+    protected static function boot()
+    {
+        parent::boot();
+        static::created(function($model){
+            if (!app()->bound('sync::inbound') || !app('sync::inbound')) {
+                try { app(\App\Services\ProductSyncService::class)->syncProductById($model->product_id); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('POS sync (sku created) failed: '.$e->getMessage()); }
+            }
+        });
+        static::updated(function($model){
+            if (!app()->bound('sync::inbound') || !app('sync::inbound')) {
+                try { app(\App\Services\ProductSyncService::class)->syncProductById($model->product_id); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('POS sync (sku updated) failed: '.$e->getMessage()); }
+            }
+        });
+        static::deleted(function($model){
+            if (!app()->bound('sync::inbound') || !app('sync::inbound')) {
+                try { app(\App\Services\ProductSyncService::class)->syncProductById($model->product_id); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('POS sync (sku deleted) failed: '.$e->getMessage()); }
+            }
+        });
+    }
+
     public function product_variations()
     {
         return $this->hasMany(ProductVariations::class);

@@ -190,7 +190,32 @@ class ProductRepository
     }
 
     public function getPickupById($data){
-        return PickupLocation::with(['country','state','city'])->where('id', $data['pickup_id'])->where('created_by', $data['seller_id'])->first();
+        $sellerId = $data['seller_id'] ?? null;
+        $pickupId = $data['pickup_id'] ?? null;
+
+        $query = PickupLocation::with(['country','state','city']);
+//            ->where('created_by', $sellerId);
+
+        if (!empty($pickupId)) {
+            $query->where('id', $pickupId);
+            $pickup = $query->first();
+            if ($pickup) return $pickup;
+        }
+
+        // Fallback: seller default pickup, else first active for seller
+        $pickup = PickupLocation::with(['country','state','city'])
+            ->where('created_by', $sellerId)
+            ->where('status', 1)
+            ->where('is_default', 1)
+            ->first();
+
+        if ($pickup) return $pickup;
+
+        return PickupLocation::with(['country','state','city'])
+            ->where('created_by', $sellerId)
+            ->where('status', 1)
+            ->orderBy('id')
+            ->first();
     }
 
     public function getLowestShippingFromSeller($data){

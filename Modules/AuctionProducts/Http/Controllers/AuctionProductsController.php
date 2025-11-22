@@ -151,6 +151,7 @@ class AuctionProductsController extends Controller
             'entry_amount' => "required",
             'increment_price' => "nullable",
             'reserve_price' => "required",
+            'percentage' => 'nullable|numeric|min:0|max:100',
         ]);
 
         DB::beginTransaction();
@@ -213,6 +214,7 @@ class AuctionProductsController extends Controller
             'entry_amount' => "required",
             'increment_price' => "required",
             'reserve_price' => "required",
+            'percentage' => 'nullable|numeric|min:0|max:100',
             // 'status' => 'required'
         ]);
 
@@ -1000,4 +1002,3 @@ class AuctionProductsController extends Controller
         }
     }
 }
-

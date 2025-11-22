@@ -123,6 +123,16 @@ $LanguageList = getLanguageList();
 
                                         <div class="col-lg-12">
                                             <div class="primary_input mb-25">
+                                                <label class="primary_input_label" for="percentage">Percentage (%)</label>
+                                                <input class="primary_input_field" type="number" step="0.01" min='0' max='100' id="percentage" name="percentage" autocomplete="off" value="{{ old('percentage', $auction->percentage ?? 0) }}" placeholder="e.g. 5">
+                                                @error('percentage')
+                                                    <span class="text-danger" id="error_percentage">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+
+                                        <div class="col-lg-12">
+                                            <div class="primary_input mb-25">
                                                 <label class="primary_input_label" for="auction_description">{{__('auctionproduct.auction_description')}} <span class="text-danger">*</span></label>
                                                 <div class="primary_input mb-15">
                                                     <textarea class="summernote" name="auction_description">@if(isset($auction) && !empty($auction->auction_description)) {{$auction->auction_description}} @else {{old('auction_description')}} @endif</textarea>

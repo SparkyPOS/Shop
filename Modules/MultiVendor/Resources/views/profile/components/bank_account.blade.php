@@ -56,7 +56,7 @@
                         </div>
                         <div class="col-xl-6">
                             <div class="primary_input mb-25">
-                                <label class="primary_input_label" for="bank_account_number">{{__('common.account_number')}} <span class="text-danger">*</span></label>
+                                <label class="primary_input_label" for="bank_account_number">{{__('common.account_number')}}</label>
                                 <input name="bank_account_number" class="primary_input_field" placeholder="-" type="text"
                                        value="{{ old('bank_account_number')? old('bank_account_number'):$seller->sellerBankAccount->bank_account_number }}">
                                        @error('bank_account_number')
@@ -157,5 +157,4 @@
 </div>
 @include('backEnd.partials._deleteModalForAjax',
 ['item_name' => __('common.bank_cheque'),'modal_id' => 'cheqyeImgModal','form_id' => 'chequeImgForm','delete_item_id' => 'delete_cheque_id','dataDeleteBtn'=>'cheque_delete_btn'])
-
 

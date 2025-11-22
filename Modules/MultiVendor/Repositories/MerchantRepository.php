@@ -28,6 +28,7 @@ use Modules\MultiVendor\Export\CategoryExport;
 use Modules\MultiVendor\Export\BrandExport;
 use Modules\MultiVendor\Export\UnitExport;
 use Modules\MultiVendor\Export\MediaIdsExport;
+use App\Services\SellerSidebarService;
 
 class MerchantRepository
 {
@@ -89,6 +90,9 @@ class MerchantRepository
         Event::dispatch(new SellerPickupLocationCreated($user['id']));
         Event::dispatch(new SellerShippingRateEvent($user['id']));
         Event::dispatch(new SellerShippingConfigEvent($user['id']));
+
+        // Ensure seller navbar/menu entries are created
+        try { app(SellerSidebarService::class)->setupForSeller($user); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('seller.sidebar.setup.failed: '.$e->getMessage()); }
         SellerAccount::create([
             'user_id' => $user['id'],
             'seller_id' => 'BDEXCJ' . rand(99999, 10000000),
@@ -125,14 +129,24 @@ class MerchantRepository
             'return_state' => app('general_setting')->default_state
         ]);
 
+        // Outbound sync to SparkyPOS (skip if inbound webhook)
+        if (!app()->bound('sync::inbound') || !app('sync::inbound')) {
+            try { app(\App\Services\VendorSyncService::class)->syncVendorByUserId($user->id); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('POS vendor sync (created) failed: '.$e->getMessage()); }
+        }
         return $user;
     }
 
     public function update_commission($data)
     {
-        SellerAccount::find($data['seller_account_id'])->update([
+        $account = SellerAccount::find($data['seller_account_id']);
+        if (!$account) { return; }
+        $account->update([
             'commission_rate' => $data['rate'],
         ]);
+        // Outbound sync to SparkyPOS with numeric commission_rate
+        if (!app()->bound('sync::inbound') || !app('sync::inbound')) {
+            try { app(\App\Services\VendorSyncService::class)->syncVendorByUserId($account->user_id); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('POS vendor sync (commission update) failed: '.$e->getMessage()); }
+        }
     }
 
     public function changeTrustedStatus($id)

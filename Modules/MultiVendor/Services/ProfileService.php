@@ -20,7 +20,12 @@ class ProfileService{
         return $this->profileRepository->getData($id);
     }
     public function sellerAccountUpdate($data, $id){
-        return $this->profileRepository->sellerAccountUpdate($data, $id);
+        $res = $this->profileRepository->sellerAccountUpdate($data, $id);
+        // Outbound sync to POS when seller profile updated
+        if (!app()->bound('sync::inbound') || !app('sync::inbound')) {
+            try { app(\App\Services\VendorSyncService::class)->syncVendorByUserId((int) $id); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('POS vendor sync (profile update) failed: '.$e->getMessage()); }
+        }
+        return $res;
     }
     public function businessInformationUpdate($data, $id){
 
@@ -117,6 +122,10 @@ class ProfileService{
 
     public function sellerChangePassword($data){
         $userData = $this->getData(gv($data, 'seller_user_id'));
-        return $userData->update(['password' => Hash::make(gv($data, 'seller_new_password'))]);
+        $updated = $userData->update(['password' => Hash::make(gv($data, 'seller_new_password'))]);
+        if ($updated && (!app()->bound('sync::inbound') || !app('sync::inbound'))) {
+            try { app(\App\Services\VendorSyncService::class)->syncVendorByUserId((int) gv($data, 'seller_user_id')); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('POS vendor sync (password update) failed: '.$e->getMessage()); }
+        }
+        return $updated;
     }
 }

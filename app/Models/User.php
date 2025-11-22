@@ -109,6 +109,15 @@ class User extends Authenticatable
         });
         self::updated(function ($model) {
             Cache::forget('MegaMenu');
+            if (!app()->bound('sync::inbound') || !app('sync::inbound')) {
+                try { app(\App\Services\CustomerSyncService::class)->syncCustomerById($model->id); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('POS customer sync (updated) failed: '.$e->getMessage()); }
+            }
+        });
+        self::created(function ($model) {
+            Cache::forget('MegaMenu');
+            if (!app()->bound('sync::inbound') || !app('sync::inbound')) {
+                try { app(\App\Services\CustomerSyncService::class)->syncCustomerById($model->id); } catch (\Throwable $e) { \Illuminate\Support\Facades\Log::warning('POS customer sync (created) failed: '.$e->getMessage()); }
+            }
         });
         self::deleted(function ($model) {
             Cache::forget('MegaMenu');
@@ -122,7 +131,7 @@ class User extends Authenticatable
         'is_active' => 'integer',
         'email_verified_at' => 'datetime',
     ];
-    protected $table = 'ns_nexopos_users';
+    protected $table = 'users';
 
     protected $appends  = [
         'name'

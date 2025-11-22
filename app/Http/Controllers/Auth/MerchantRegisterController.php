@@ -469,6 +469,52 @@ class MerchantRegisterController extends Controller
         }
         $user->slug = $this->productSlug($data['name']);
         $user->save();
+        // Ensure core seller related records exist (so seller navbar/features work)
+        try {
+            // Seller account
+            \Modules\MultiVendor\Entities\SellerAccount::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'user_id' => $user->id,
+                    'seller_id' => 'BDEXCJ' . rand(99999, 10000000),
+                    'seller_shop_display_name' => $data['name'],
+                    'seller_commission_id' => 1, // flat
+                    'commission_rate' => 0,
+                    'subscription_type' => 'monthly',
+                    'seller_phone' => $data['phone'] ?? null,
+                ]
+            );
+
+            // Business info defaults
+            \Modules\MultiVendor\Entities\SellerBusinessInformation::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'user_id' => $user->id,
+                    'business_country' => app('general_setting')->default_country,
+                    'business_state' => app('general_setting')->default_state,
+                ]
+            );
+
+            // Bank account stub
+            \Modules\MultiVendor\Entities\SellerBankAccount::updateOrCreate(
+                ['user_id' => $user->id],
+                ['user_id' => $user->id]
+            );
+
+            // Warehouse and return address stubs
+            \Modules\MultiVendor\Entities\SellerWarehouseAddress::updateOrCreate(
+                ['user_id' => $user->id],
+                ['user_id' => $user->id,
+                 'warehouse_country' => app('general_setting')->default_country,
+                 'warehouse_state' => app('general_setting')->default_state]
+            );
+            \Modules\MultiVendor\Entities\SellerReturnAddress::updateOrCreate(
+                ['user_id' => $user->id],
+                ['user_id' => $user->id,
+                 'return_country' => app('general_setting')->default_country,
+                 'return_state' => app('general_setting')->default_state]
+            );
+        } catch (\Throwable $e) { \Modules\UserActivityLog\Traits\LogActivity::errorLog('seller bootstrap failed: '.$e->getMessage()); }
         // User Notification Setting Create
         (new UserNotificationSetting())->createForRegisterUser($user->id);
         $this->adminNotificationUrl = '/admin/merchants';

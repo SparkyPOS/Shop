@@ -17,6 +17,8 @@ use App\Http\Controllers\API\PaymentMethodController;
 use App\Http\Controllers\API\SupportTicketController;
 use App\Http\Controllers\API\PushNotificationController;
 use App\Http\Controllers\API\SyncSparkyController;
+use App\Http\Controllers\API\SyncCustomerController;
+use App\Http\Controllers\API\SyncVendorController;
 use Modules\Product\Http\Controllers\API\CategoryController;
 
 /*
@@ -178,4 +180,6 @@ Route::prefix('version2')->group(function () {
 
 Route::get('marketing/new-user-zones', [NewUserZoneController::class, 'getAll']);
 
-Route::post('/webhook/sync-sparky', [SyncSparkyController::class, 'sync'])->middleware('webhook.auth');
+Route::post('/webhook/sync-sparky', [SyncSparkyController::class, 'sync']);
+Route::post('/webhook/sync-sparky-customer', [SyncCustomerController::class, 'sync']);
+Route::post('/webhook/sync-sparky-vendor', [SyncVendorController::class, 'sync']);

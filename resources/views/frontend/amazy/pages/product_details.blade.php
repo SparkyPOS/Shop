@@ -107,8 +107,12 @@
     </style>
 @endpush
 @section('content')
+    @if(isset($auction) && $auction)
+        @include('auctionproducts::components.place_bid_modal', ['auction' => $auction, 'max_bid' => $max_bid])
+        <div id="showHistor"></div>
+    @endif
     <!-- product_details_wrapper::start  -->
-    <div class="product_details_wrapper">
+    <div class="product_details_wrapper @if(isset($hide_purchase_cta) && $hide_purchase_cta) auction-hide-cta @endif">
         <div class="container">
             <div class="row">
                 <div class="col-xl-9">
@@ -158,7 +162,12 @@
                                         <span class="stokeout_badge">{{__('amazy.Out of stock')}}</span>
                                     @endif
                                 </div>
-                                <h3>{{$product->product_name}}</h3>
+                                <h3 class="d-inline-block align-middle">{{$product->product_name}}</h3>
+                                @if(isset($auction) && $auction)
+                                    <a href="{{ route('auctionproducts.view', [$auction->id, $product->id]) }}" class="ms-2 align-middle" title="{{ __('auctionproduct.auction') }}">
+                                        <span class="table_badge_btn style3 text-nowrap">{{ __('auctionproduct.auction') }}</span>
+                                    </a>
+                                @endif
                                 @if(app('general_setting')->product_subtitle_show)
                                     @if($product->subtitle_1)
                                         <h5>{{$product->subtitle_1}}</h5>
@@ -423,6 +432,104 @@
                                         </div>
                                     @endif
 
+
+                                    @if(isset($auction) && $auction)
+                                        @php
+                                            $start_date = date('Y/m/d',strtotime($auction->auction_start_date));
+                                            $end_date = date('Y/m/d',strtotime($auction->auction_end_date));
+                                            $current_date = date('Y/m/d');
+                                            $auction_date = '1990/01/01';
+                                            $start = 1;
+                                            if($start_date<= $current_date && $end_date >= $current_date){
+                                                $auction_date = $end_date;
+                                                $start = 1;
+                                            } elseif ($start_date >= $current_date && $end_date >= $current_date) {
+                                                $auction_date = $start_date;
+                                                $start = 0;
+                                            }
+                                        @endphp
+                                        <div class="single_pro_varient">
+                                            <h5 class="font_16 f_w_500 theme_text3 pt-2 text-6870" > @if($start == 0) {{__('auctionproduct.auction_starts_in')}}: @else {{__('auctionproduct.auction_ends_in')}}: @endif </h5>
+                                            <div class="product_number_count mr_5">
+                                                <div id="count_down" class="deals_end_count amazy_date_counter"></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="product_info">
+                                            <div class="single_pro_varient">
+                                                <h5 class="font_16 f_w_500 theme_text3 pt-2 text-6870" >{{__('auctionproduct.starting_bid')}}:</h5>
+                                                <div class="product_number_count mr_5">
+                                                    <span class="font_17">{{ getNumberTranslate(single_price($auction->starting_bidding_price)) }}</span>
+                                                </div>
+                                            </div>
+
+                                            @php
+                                                $highestBid = 0;
+                                                $counter=0;
+                                                if(!empty($auction->auction_bid) && $auction->auction_bid->count() > 0){
+                                                    foreach ($auction->auction_bid as  $bid) {
+                                                        $counter++;
+                                                    }
+                                                    $highestBid = $auction->auction_bid[$counter-1]->bid_amount;
+                                                }
+                                            @endphp
+
+                                            <div class="single_pro_varient m-n-30" >
+                                                <h5 class="font_16 f_w_500 theme_text3 pt-2 text-6870" >{{__('auctionproduct.highest_bid')}}:</h5>
+                                                <div class="product_number_count mr_5">
+                                                    <span class="font_17">{{ getNumberTranslate(single_price($highestBid)) }}</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mt_30 " id="add_to_cart_div">
+                                                @if($start == 1)
+                                                    @if($is_entry_amount_paid == 0)
+                                                        <div class="col-lg-12 mb-3">
+                                                            <p>{{__('auctionproduct.to_start_bidding_on_this_auction_you_need_to_pay_entry_amount')}} {{ single_price($auction->entry_amount) }}</p>
+                                                        </div>
+                                                    @endif
+                                                    @if($auction->status == 1 && $auction->auction_end_date > date('Y-m-d'))
+                                                        @if($is_entry_amount_paid == 1)
+                                                            <div class="col-md-6">
+                                                                <button type="button" id="placeBid" class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase" data-id="{{$auction->id}}" data-type="product">{{__('auctionproduct.place_bid')}}</button>
+                                                            </div>
+                                                        @elseif($is_entry_amount_paid == 2)
+                                                            @auth
+                                                                <div class="col-md-6">
+                                                                    <a href="javascript:void(0)"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.panding_entry_amount')}}</a>
+                                                                </div>
+                                                            @endauth
+                                                            @guest
+                                                                <div class="col-md-6">
+                                                                    <a href="{{url('/login')}}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
+                                                                </div>
+                                                            @endguest
+                                                        @else
+                                                            @auth
+                                                                <div class="col-md-6">
+                                                                    <a href="{{ route('auction.payentryAmount',$auction->id) }}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
+                                                                </div>
+                                                            @endauth
+                                                            @guest
+                                                                <div class="col-md-6">
+                                                                    <a href="{{url('/login')}}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
+                                                                </div>
+                                                            @endguest
+                                                        @endif
+                                                    @else
+                                                        <div class="col-md-6">
+                                                            <button type="button" disabled class="amaz_primary_btn style2 mb_20  add_to_cart text-uppercase flex-fill text-center w-100">{{__('auctionproduct.place_bid')}}</button>
+                                                        </div>
+                                                    @endif
+                                                    <div class="col-md-6">
+                                                        <button class="amaz_primary_btn style2 mb_20  bid_histoy text-uppercase flex-fill text-center w-100" data-url="{{ route('auction.auctionHistory',$auction->id) }}">
+                                                            {{ __('Bid History') }}
+                                                        </button>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endif
 
                                     @if(isGuestAddtoCart() == true)
                                         <div class="row mt_30 " id="add_to_cart_div">
@@ -777,7 +884,9 @@
                                 </div>
                                 <div class="selectBox_box">
                                     @php
-                                        $pickup_locations = \Modules\Shipping\Entities\PickupLocation::where('created_by', $product->user_id)->where('status', 1)->get();
+                                        $pickup_locations = \Modules\Shipping\Entities\PickupLocation::where('status', 1)
+//                                        ->where('created_by', $product->user_id)
+                                        ->get();
                                     @endphp
                                     <select class="amaz_select2 w-100" id="selectPickup">
                                         <option data-display="Choose pickup location" disabled>{{__('amazy.Choose pickup location')}}</option>
@@ -2269,3 +2378,114 @@
 
 @include(theme('partials.add_to_cart_script'))
 @include(theme('partials.add_to_compare_script'))
+
+@push('styles')
+<style>
+    .auction-hide-cta .buy_now_btn,
+    .auction-hide-cta .add_to_cart_btn,
+    .auction-hide-cta .product_details_button.style1.buy_now_btn,
+    .auction-hide-cta .product_details_button.add_to_cart_btn { display: none !important; }
+</style>
+@endpush
+
+@push('scripts')
+@if(isset($auction) && $auction)
+    @php
+        $start_date_js = date('Y/m/d',strtotime($auction->auction_start_date));
+        $end_date_js = date('Y/m/d',strtotime($auction->auction_end_date));
+        $current_date_js = date('Y/m/d');
+        $auction_date_js = '';
+        if($start_date_js<= $current_date_js && $end_date_js >= $current_date_js){
+            $auction_date_js = $end_date_js;
+        } elseif ($start_date_js >= $current_date_js && $end_date_js >= $current_date_js) {
+            $auction_date_js = $start_date_js;
+        }
+    @endphp
+    <script>
+        (function($){
+            "use strict";
+            // Auction countdown
+            if ($("#count_down").length > 0) {
+                let auctionDate = "{{ $auction_date_js }}";
+                if (auctionDate) {
+                    $("#count_down").countdown(auctionDate, function (event) {
+                        $(this).html(
+                            event.strftime('<div class="single_count"><span>%D</span><p>Days</p></div><div class="single_count"><span>%H</span><p>Hours</p></div><div class="single_count"><span>%M</span><p>Minutes</p></div><div class="single_count"><span>%S</span><p>Seconds</p></div>')
+                        );
+                    });
+                }
+            }
+
+            // Place bid
+            $(document).on('click','#placeBid', function(event){
+                event.preventDefault();
+                @if(isset($max_bid) && $max_bid > 0)
+                    let bid_amount = parseFloat("{{ $max_bid + ($auction->increment_price ?? 0) }}");
+                @else
+                    let bid_amount = parseFloat("{{ $auction->starting_bidding_price ?? 0 }}");
+                @endif
+                $('#bid_amount').val(bid_amount);
+                @if(Illuminate\Support\Facades\Auth::check())
+                    $('#placebid_modal').modal('show');
+                @else
+                    window.location.href = '{{url("/login")}}';
+                @endif
+            });
+
+            // Submit bid
+            $("#place_bid_form").submit(function (event) {
+                $('#pre-loader').show();
+                let formData = {
+                    bid_amount : $('#bid_amount').val(),
+                    auction_id : $('#auction_id').val(),
+                    _token: "{{ csrf_token() }}"
+                };
+                $.ajax({
+                    type: "POST",
+                    url: "{{ route('auctionproducts.place.bid') }}",
+                    data: formData,
+                    dataType: "json",
+                    encode: true,
+                }).done(function (data) {
+                    $('#pre-loader').hide();
+                    $("#bid_amount-group").removeClass("has-error");
+                    $('.help-block').remove();
+                    if(data.success===0){
+                        if (data.errors.bid_amount) {
+                            $("#bid_amount-group").addClass("has-error");
+                            $("#bid_amount-group").append('<div class="help-block text-danger">' + data.errors.bid_amount[0] + "</div>");
+                        }
+                    }
+                    if(data.success==2 && data.data=='first_low_bid'){
+                        toastr.error("Bid amount should be greater than Starting Bid!", "{{__('common.error')}}");
+                    }
+                    if(data.success==3 && data.data=='low_bid_amount'){
+                        toastr.error("Bid amount should be greater than Highest Bid!", "{{__('common.error')}}");
+                    }
+                    if(data.success===1 && data.data==true){
+                        $('#placebid_modal').modal('hide');
+                        toastr.success("Bid placed successfully", "{{__('common.success')}}");
+                        location.reload();
+                    }else if(data.success !== 0){
+                        toastr.error("Can't place Bid!", "{{__('common.error')}}");
+                    }
+                });
+                event.preventDefault();
+            });
+
+            // Bid history
+            $(document).on('click','.bid_histoy',function(){
+                let url = $(this).attr('data-url');
+                $.ajax({ url:url, method:"get"}).done(function(response){
+                    if(response.status == 1){
+                        $("#showHistor").html(response.html);
+                        $("#bidHistory").modal("show");
+                    }else{
+                        toastr.error('Something went wrong !','Error');
+                    }
+                });
+            });
+        })(jQuery);
+    </script>
+@endif
+@endpush

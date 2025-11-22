@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 use Modules\Seller\Entities\SellerProduct;
 use Modules\Shipping\Entities\ProductShipping;
+use App\Services\ProductSyncService;
+use Illuminate\Support\Facades\Log;
 
 class Product extends Model
 {
@@ -86,7 +88,7 @@ class Product extends Model
         });
         self::created(function ($model) {
             Cache::forget('MegaMenu');
-            Cache::forget('HeaderSection');
+
         });
         self::updating(function ($model) {
             $model->slug = $model->createSlug($model->product_name, $model->id);
@@ -94,10 +96,25 @@ class Product extends Model
         self::updated(function ($model) {
             Cache::forget('MegaMenu');
             Cache::forget('HeaderSection');
+            // Real-time sync to SparkyPOS (skip if inbound webhook)
+            if (!app()->bound('sync::inbound') || !app('sync::inbound')) {
+                try { app(ProductSyncService::class)->syncProductById($model->id); } catch (\Throwable $e) { Log::warning('POS sync (updated) failed: '.$e->getMessage()); }
+            }
         });
         self::deleted(function ($model) {
             Cache::forget('MegaMenu');
             Cache::forget('HeaderSection');
+            // Notify SparkyPOS deletion
+            if (!app()->bound('sync::inbound') || !app('sync::inbound')) {
+                try {
+                    $baseUrl = rtrim(config('sync.base_url',''), '/');
+                    if ($baseUrl) {
+                        \Illuminate\Support\Facades\Http::timeout(10)->acceptJson()->withHeaders([
+                            'X-Sync-Token'=> config('sync.token', env('SYNC_TOKEN','123456')),
+                        ])->delete($baseUrl . '/api/sync/products/'.$model->id, [ 'by' => 'external' ]);
+                    }
+                } catch (\Throwable $e) { Log::warning('POS delete sync failed: '.$e->getMessage()); }
+            }
         });
     }
     public function unit_type()

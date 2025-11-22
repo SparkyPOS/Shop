@@ -1,0 +1,65 @@
+{
+  "info": {
+    "name": "Shop Sync API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Collection for the sync webhook endpoint (\u002Fapi\u002Fwebhook\u002Fsync-sparky). Set collection variables base_url, origin, and webhook_private_key before sending. The pre-request script computes X-Webhook-Auth from origin's domain and the private key."
+  },
+  "item": [
+    {
+      "name": "Sync Sparky",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Origin", "value": "{{origin}}" },
+          { "key": "X-Webhook-Auth", "value": "{{x_webhook_auth}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/webhook/sync-sparky",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "webhook",
+            "sync-sparky"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_category\": [\n    {\n      \"id\": 1,\n      \"name\": \"Shoes\",\n      \"product_key\": \"shoes\",\n      \"parent_id\": null,\n      \"preview_url\": \"https://cdn.example.com/cat/shoes.png\",\n      \"total_items\": 120\n    }\n  ],\n  \"product_attribute_set\": [\n    { \"id\": 1, \"title\": \"Color\", \"display_layout\": \"color\", \"status\": \"published\" },\n    { \"id\": 2, \"title\": \"Size\", \"display_layout\": \"text\", \"status\": \"published\" }\n  ],\n  \"product_attribute\": [\n    { \"id\": 1, \"attribute_set_id\": 1, \"title\": \"Red\", \"color\": \"#FF0000\" },\n    { \"id\": 2, \"attribute_set_id\": 2, \"title\": \"L\" }\n  ],\n  \"product\": {\n    \"id\": 1001,\n    \"name\": \"Running Shoe\",\n    \"sku\": \"RUN-SHOE\",\n    \"variant_sku_prefix\": \"RUN-SHOE\",\n    \"barcode_type\": \"C39\",\n    \"shortdescription\": \"Lightweight running shoe\",\n    \"status\": \"available\",\n    \"category_id\": 1,\n    \"galleries\": [ { \"url\": \"https://cdn.example.com/products/1001-1.jpg\" } ],\n    \"attribute_sets\": [1, 2],\n    \"variations\": [\n      {\n        \"id\": 2001,\n        \"items\": [\n          { \"attribute_set_id\": 1, \"attribute_id\": 1 },\n          { \"attribute_set_id\": 2, \"attribute_id\": 2 }\n        ],\n        \"sale_price\": 59.99\n      }\n    ]\n  }\n}"
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Compute X-Webhook-Auth from origin domain and private key",
+          "const origin = pm.collectionVariables.get('origin') || pm.variables.get('origin');",
+          "const privateKey = pm.collectionVariables.get('webhook_private_key') || pm.variables.get('webhook_private_key');",
+          "if (!origin || !privateKey) {",
+          "  console.warn(\"Set collection variables 'origin' and 'webhook_private_key' to compute X-Webhook-Auth.\");",
+          "  pm.collectionVariables.unset('x_webhook_auth');",
+          "} else {",
+          "  let domain = origin;",
+          "  try { domain = new URL(origin).host; } catch (e) { domain = origin.replace(/^https?:\\/\\//i, '').split('/')[0]; }",
+          "  const hmac = CryptoJS.HmacSHA256(domain, privateKey).toString(CryptoJS.enc.Hex);",
+          "  pm.collectionVariables.set('x_webhook_auth', hmac);",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://localhost", "type": "string" },
+    { "key": "origin", "value": "https://example.com", "type": "string" },
+    { "key": "webhook_private_key", "value": "", "type": "string" },
+    { "key": "x_webhook_auth", "value": "", "type": "string" }
+  ]
+}
+
