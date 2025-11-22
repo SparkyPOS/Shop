@@ -208,7 +208,7 @@
                                 @else
                                     <div class="product__meta text-center">
                                         <span class="product_banding ">{{ @$product->brand->name ?? " " }}</span>
-                                        <a class="home10_primary_btn2 w-100" href="{{ url('/login') }}">
+                                        <a class="home10_primary_btn2 w-100" href="https://app.sparkypos.com">
                                             {{__('auctionproduct.login_to_bid')}}
                                         </a>
                                     </div>

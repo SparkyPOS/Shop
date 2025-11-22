@@ -149,7 +149,7 @@
             </div>
         @else
             <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
-                <a class="amaz_primary_btn w-100" href="{{ url('/login') }}" style="text-indent: 0;">
+                <a class="amaz_primary_btn w-100" href="https://app.sparkypos.com" style="text-indent: 0;">
                     {{__('defaultTheme.login_to_order')}}
                 </a>
             </div>

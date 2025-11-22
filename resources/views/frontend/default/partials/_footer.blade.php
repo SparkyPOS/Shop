@@ -83,7 +83,7 @@
         <span>{{__('common.cart')}} (<span id="cart_count_bottom">{{$items}}</span>)</span>
     </a>
     @guest
-    <a href="{{ url('/login') }}" class="account_drawer_activator">
+    <a href="https://app.sparkypos.com" class="account_drawer_activator">
         <i class="ti-user"></i>
         <span>{{ __('defaultTheme.login') }}/ {{__('defaultTheme.register')}}</span>
     </a>

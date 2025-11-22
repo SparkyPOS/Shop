@@ -103,9 +103,9 @@
 
                                             @guest
                                             <div class="account_btn">
-                                                <a href="{{ url('/register') }}" class="sing_up">{{ __('defaultTheme.sign_up')
+                                                <a href="https://app.sparkypos.com" class="sing_up">{{ __('defaultTheme.sign_up')
                                                     }}</a>
-                                                <a href="{{ url('/login') }}" class="login">{{ __('defaultTheme.login') }}</a>
+                                                <a href="https://app.sparkypos.com" class="login">{{ __('defaultTheme.login') }}</a>
                                             </div>
 
                                             @else
@@ -327,8 +327,8 @@
 
                                             @guest
                                             <div class="account_btn">
-                                                <a href="{{ url('/register') }}" class="sing_up">{{ __('defaultTheme.sign_up') }}</a>
-                                                <a href="{{ url('/login') }}" class="login">{{ __('defaultTheme.login') }}</a>
+                                                <a href="https://app.sparkypos.com" class="sing_up">{{ __('defaultTheme.sign_up') }}</a>
+                                                <a href="https://app.sparkypos.com" class="login">{{ __('defaultTheme.login') }}</a>
                                             </div>
 
                                             @else
