@@ -156,6 +156,8 @@ class ProductRepository
             $data['tax'] = ($selling_price * $gst->tax_percentage) / 100;
         }
         $host = activeFileStorage();
+        $user = Auth::user();
+        $isAdmin = in_array(optional($user->role)->type, ['superadmin','admin','staff']);
         $product = new Product();
         $user = Auth::user();
         if ($user->role->type == 'superadmin' || $user->role->type == 'admin' || $user->role->type == 'staff') {
@@ -179,10 +181,13 @@ class ProductRepository
         if(isset($data['gst_group'])){
             $data['gst_group_id'] = $data['gst_group'];
         }
+        // Always accept condition; default to 'new' when missing
+        if (!isset($data['condition']) || $data['condition'] === null || $data['condition'] === '') {
+            $data['condition'] = 'new';
+        }
         if(isModuleActive('GoogleMerchantCenter')){
-            $data['condition'] = $data['condition'];
-            $data['gtin'] = $data['gtin'];
-            $data['mpn'] = $data['mpn'];
+            $data['gtin'] = $data['gtin'] ?? null;
+            $data['mpn'] = $data['mpn'] ?? null;
         }
 
         if(isModuleActive('GoldPrice')){
@@ -216,8 +221,11 @@ class ProductRepository
             }
         }
 
+        // Tags: default to empty; keep table/relations intact
         $tags = [];
-        $tags = explode(',', $data['tags']);
+        if (!empty($data['tags'])) {
+            $tags = array_filter(array_map('trim', explode(',', (string) $data['tags'])));
+        }
         foreach ($tags as $key => $tag) {
             $tag = Tag::where('name', $tag)->updateOrCreate([
                 'name' => strtolower($tag)
@@ -477,14 +485,19 @@ class ProductRepository
         if(isset($data['gst_group'])){
             $data['gst_group_id'] = $data['gst_group'];
         }
+        // Always accept condition; default to 'new' when missing
+        if (!isset($data['condition']) || $data['condition'] === null || $data['condition'] === '') {
+            $data['condition'] = 'new';
+        }
         if(isModuleActive('GoogleMerchantCenter')){
-            $data['condition'] = $data['condition'];
-            $data['gtin'] = $data['gtin'];
-            $data['mpn'] = $data['mpn'];
+            $data['gtin'] = $data['gtin'] ?? null;
+            $data['mpn'] = $data['mpn'] ?? null;
         }
         if(isModuleActive('GoldPrice')){
             $data['auto_update'] = $data['auto_update_required']?$data['auto_update_required']:0;
         }
+        // Ensure stock_manage persists on product model
+        if (!isset($data['stock_manage'])) { $data['stock_manage'] = $product->stock_manage; }
         $product->update($data);
         if (isModuleActive('FrontendMultiLang')) {
             if (!isModuleActive('MultiVendor')) {
@@ -516,6 +529,8 @@ class ProductRepository
                 $sellerProduct->status = $product->status;
                 $sellerProduct->subtitle_1 = $productSubtitle_1;
                 $sellerProduct->subtitle_2 = $productSubtitle_2;
+                // Keep seller product in sync for manage stock flag
+                $sellerProduct->stock_manage = (int) $data['stock_manage'];
                 $sellerProduct->save();
             }
         }else{
@@ -529,18 +544,22 @@ class ProductRepository
                     'tax_type' => $product->tax_type,
                     'slug' => $this->productSlug($product->product_name),
                     'subtitle_1' => $product->subtitle_1,
-                    'subtitle_2' => $product->subtitle_2
+                    'subtitle_2' => $product->subtitle_2,
+                    'stock_manage' => (int) $data['stock_manage']
                 ]);
             }
 
         }
-        //for tag start
+        // Tags: default empty, and clear existing when not provided
         $tags = [];
-        $tags = explode(',', $data['tags']);
-        $oldtags = ProductTag::where('product_id', $id)->whereHas('tag', function ($q) use ($tags) {
-            $q->whereNotIn('name', $tags);
+        if (!empty($data['tags'])) {
+            $tags = array_filter(array_map('trim', explode(',', (string) $data['tags'])));
+        }
+        // Remove tags not present anymore
+        $oldtags = ProductTag::where('product_id', $id)->when(!empty($tags), function($q) use ($tags){
+            $q->whereHas('tag', function ($qq) use ($tags) { $qq->whereNotIn('name', $tags); });
         })->pluck('id');
-        ProductTag::destroy($oldtags);
+        if ($oldtags->count()) { ProductTag::destroy($oldtags); }
         foreach ($tags as $key => $tag) {
             $tag = Tag::where('name', $tag)->updateOrCreate([
                 'name' => strtolower($tag)
@@ -550,7 +569,6 @@ class ProductRepository
                 'tag_id' => $tag->id,
             ]);
         }
-        // for tag end
         if (isset($data['category_ids'])) {
             $deleted_cats = CategoryProduct::where('product_id', $id)->whereNotIn('category_id', $data['category_ids'])->pluck('id');
             CategoryProduct::destroy($deleted_cats);
@@ -574,7 +592,14 @@ class ProductRepository
             $product_sku->breadth = isset($data['breadth'])?$data['breadth']:0;
             $product_sku->height = isset($data['height'])?$data['height']:0;
             $product_sku->selling_price = $data['selling_price'];
-            $product_sku->product_stock = isset($data['single_stock'])?$data['single_stock']:0;
+            // Admin can update stock regardless of MultiVendor; otherwise respect module rules
+            $stock = $product_sku->product_stock;
+            if ((int)$data['stock_manage'] === 1 && isset($data['single_stock'])) {
+                $stock = (int) $data['single_stock'];
+            } else if ((int)$data['stock_manage'] !== 1) {
+                $stock = 0;
+            }
+            $product_sku->product_stock = $stock;
             $product_sku->additional_shipping = isset($data['additional_shipping']) ? $data['additional_shipping'] : 0;
             $product_sku->status = $data['status'];
             $product_sku->save();
@@ -704,17 +729,18 @@ class ProductRepository
                             }
                         }
                         $product_sku->status = $data['status'];
-                        $stock = 0;
-                        if (!isModuleActive('MultiVendor')) {
-                            if ($data['stock_manage'] == 1) {
-                                if ($data['product_type'] == 1) {
-                                    $stock = isset($data['single_stock'])?$data['single_stock']:0;
-                                } else {
-                                    $stock = isset($data['sku_stock'])?$data['sku_stock'][$key]:0;
-                                }
+                        // Allow admin to update stock for variants as well
+                        $vstock = $product_sku->product_stock;
+                        if ((int)$data['stock_manage'] === 1) {
+                            if ($data['product_type'] == 1 && isset($data['single_stock'])) {
+                                $vstock = (int) $data['single_stock'];
+                            } elseif ($data['product_type'] == 2 && isset($data['sku_stock'][$key])) {
+                                $vstock = (int) $data['sku_stock'][$key];
                             }
+                        } else {
+                            $vstock = 0;
                         }
-                        $product_sku->product_stock = $stock;
+                        $product_sku->product_stock = $vstock;
                         $product_sku->save();
                         if (isset($data['variant_image_' . $image_increment])) {
                             UsedMedia::create([
@@ -793,17 +819,17 @@ class ProductRepository
                             }
                         }
                         $sku_exist->status = $data['status'];
-                        $stock = 0;
-                        if (!isModuleActive('MultiVendor')) {
-                            if ($data['stock_manage'] == 1) {
-                                if ($data['product_type'] == 1) {
-                                    $stock = isset($data['single_stock'])?$data['single_stock']:0;
-                                } else {
-                                    $stock = isset($data['sku_stock'])? $data['sku_stock'][$key]:0;
-                                }
+                        $vstock = $sku_exist->product_stock;
+                        if ((int)$data['stock_manage'] === 1) {
+                            if ($data['product_type'] == 1 && isset($data['single_stock'])) {
+                                $vstock = (int) $data['single_stock'];
+                            } else if ($data['product_type'] == 2 && isset($data['sku_stock'][$key])) {
+                                $vstock = (int) $data['sku_stock'][$key];
                             }
+                        } else {
+                            $vstock = 0;
                         }
-                        $sku_exist->product_stock = $stock;
+                        $sku_exist->product_stock = $vstock;
                         $sku_exist->save();
                         if (!isModuleActive('MultiVendor')) {
                             $front_sku = $product->sellerProducts->where('user_id', 1)->first()->skus->where('product_sku_id', $sku_exist->id)->first();
@@ -945,17 +971,17 @@ class ProductRepository
                         }
                     }
                     $product_sku->status = $data['status'];
-                    $stock = 0;
-                    if (!isModuleActive('MultiVendor')) {
-                        if ($data['stock_manage'] == 1) {
-                            if ($data['product_type'] == 1) {
-                                $stock = isset($data['single_stock'])?$data['single_stock']:0;
-                            } else {
-                                $stock = isset($data['sku_stock'])?$data['sku_stock'][$key]:0;
-                            }
+                    $vstock = $product_sku->product_stock;
+                    if ((int)$data['stock_manage'] === 1) {
+                        if ($data['product_type'] == 1 && isset($data['single_stock'])) {
+                            $vstock = (int) $data['single_stock'];
+                        } else if ($data['product_type'] == 2 && isset($data['sku_stock'][$key])) {
+                            $vstock = (int) $data['sku_stock'][$key];
                         }
+                    } else {
+                        $vstock = 0;
                     }
-                    $product_sku->product_stock = $stock;
+                    $product_sku->product_stock = $vstock;
                     $product_sku->save();
                     if (isset($data['variant_image_' . $image_increment])) {
                         UsedMedia::create([

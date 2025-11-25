@@ -112,6 +112,29 @@ class MediaManagerRepository
         ];
     }
 
+    /**
+     * Save an uploaded file into MediaManager and return the created media id.
+     *
+     * @param UploadedFile $file
+     * @param int $userId
+     * @param string|null $externalLink
+     * @return array{success:bool, media_id?:int, error?:string}
+     */
+    public function saveUploadedFile(UploadedFile $file, int $userId = 1, ?string $externalLink = null): array
+    {
+        try {
+            $file_info = $this->mediaUpload($file);
+            $file_info['user_id'] = $userId;
+            if ($externalLink) {
+                $file_info['external_link'] = $externalLink;
+            }
+            $mediaId = DB::table('media_managers')->insertGetId($file_info);
+            return [ 'success' => true, 'media_id' => $mediaId ];
+        } catch (\Throwable $e) {
+            return [ 'success' => false, 'error' => $e->getMessage() ];
+        }
+    }
+
     public function destroy($id){
         $file = MediaManager::where('id', $id)->where('user_id', getParentSellerId())->first();
         if($file){

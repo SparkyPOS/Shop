@@ -49,6 +49,7 @@ class Product extends Model
         'video_link' => 'string',
         'description' => 'string',
         'specification' => 'string',
+        'condition' => 'string',
         'minimum_order_qty' => 'integer',
         'max_order_qty' => 'integer',
         'meta_title' => 'string',

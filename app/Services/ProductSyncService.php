@@ -63,6 +63,12 @@ class ProductSyncService
 
         $totalStock = (int) $skus->sum('product_stock');
         $hasVariants = $skus->count() > 1 || $product->product_type == 2;
+        \Log::info('shop.out.stock.computed', [
+            'product_id' => $productId,
+            'has_variants' => $hasVariants,
+            'quantity' => $totalStock,
+            'sku_count' => $skus->count(),
+        ]);
 
         if ($hasVariants) {
             $payload['product_type'] = 'variable';

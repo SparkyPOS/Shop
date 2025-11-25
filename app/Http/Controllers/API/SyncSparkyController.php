@@ -28,17 +28,70 @@ class SyncSparkyController extends Controller
     {
 
     }
+    /**
+     * Resolve a category identifier that may be an external id, local id, full name or partial name/slug.
+     */
+    private function resolveCategoryId($input): ?int
+    {
+        if (is_array($input)) {
+            $input = $input['id'] ?? $input['name'] ?? $input['slug'] ?? null;
+        }
+        if ($input === null || $input === '') {
+            return null;
+        }
+
+        // Numeric: try external id first, then local id
+        if (is_numeric($input)) {
+            $num = (int) $input;
+            $byExternal = Category::where('external_category_id', $num)->value('id');
+            if ($byExternal) return $byExternal;
+            $byLocal = Category::where('id', $num)->value('id');
+            if ($byLocal) return $byLocal;
+        }
+
+        $needle = $this->normalizeCategoryString((string) $input);
+        $categories = Category::query()->get(['id','name','slug']);
+
+        // Exact name match (case-insensitive, normalized)
+        $exact = $categories->first(function($c) use ($needle) {
+            return $this->normalizeCategoryString((string) $c->name) === $needle
+                || $this->normalizeCategoryString((string) $c->slug) === $needle;
+        });
+        if ($exact) return $exact->id;
+
+        // Contains match on name or slug
+        $contains = $categories->first(function($c) use ($needle) {
+            return mb_stripos($this->normalizeCategoryString((string)$c->name), $needle) !== false
+                || mb_stripos($this->normalizeCategoryString((string)$c->slug), $needle) !== false;
+        });
+        if ($contains) return $contains->id;
+
+        return null;
+    }
+
+    private function normalizeCategoryString(string $value): string
+    {
+        $decoded = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $decoded = preg_replace('/\s+/u', ' ', $decoded ?? '');
+        return mb_strtolower(trim($decoded));
+    }
     public function sync(Request $request)
     {
         try {
-            Log::debug(json_encode($request->all()));
+            Log::debug(json_encode(['headers'=>$request->headers->all(),'has_files'=>$request->hasFile(null),'keys'=>array_keys($request->all())]));
             // Mark this request as inbound to avoid re-propagation loops
             app()->instance('sync::inbound', true);
-            $productCategories = $request->post('product_category');
-            $productAttributeSet = $request->post('product_attribute_set');
-            $productAttribute = $request->post('product_attribute');
-            $product = $request->post('product');
-            $action = $request->post('action');
+            // Support multipart: accept a JSON payload field named "payload"
+            $payload = null;
+            if ($request->has('payload') && is_string($request->input('payload'))) {
+                $decoded = json_decode($request->input('payload'), true);
+                if (is_array($decoded)) { $payload = $decoded; }
+            }
+            $productCategories = $payload['product_category'] ?? $request->post('product_category');
+            $productAttributeSet = $payload['product_attribute_set'] ?? $request->post('product_attribute_set');
+            $productAttribute = $payload['product_attribute'] ?? $request->post('product_attribute');
+            $product = $payload['product'] ?? $request->post('product');
+            $action = $payload['action'] ?? $request->post('action');
 
 
             // Handle delete action
@@ -81,9 +134,7 @@ class SyncSparkyController extends Controller
                     $ids[] = $categoryModel->id;
                 }
 
-                if (!empty($ids)) {
-                    Category::whereNotIn('id', $ids)->delete();
-                }
+                // Avoid mass-deleting categories; only upsert from payload
             }
 
             if (!empty($productAttributeSet) && is_array($productAttributeSet)) {
@@ -105,11 +156,6 @@ class SyncSparkyController extends Controller
 
                     $attributeSetIds[] = $attribute->id;
                 }
-//                dd($attributeSetIds);
-//
-//                if (!empty($attributeSetIds)) {
-//                    Attribute::whereNotIn('id', $attributeSetIds)->delete();
-//                }
             }
 
 
@@ -149,38 +195,10 @@ class SyncSparkyController extends Controller
                     }
                 }
 
-                if (!empty($attributeValueIds)) {
-                    AttributeValue::whereNotIn('id', $attributeValueIds)->delete();
-                    Color::whereNotIn('attribute_value_id', $attributeValueIds)->delete();
-                }
+                // Avoid mass-deleting attribute values; only upsert from payload
             }
-
-            if (!empty($productAttributeSet) && !empty($productAttribute)) {
-                // Get the valid attribute IDs and attribute value IDs
-                $validAttributeIds = Attribute::pluck('id')->toArray();
-                $validAttributeValueIds = AttributeValue::pluck('id')->toArray();
-
-                // Fetch the product_variation IDs and associated product_sku_id values before deletion
-                $variationsToDelete = ProductVariations::whereNotIn('attribute_id', $validAttributeIds)
-                    ->orWhereNotIn('attribute_value_id', $validAttributeValueIds)
-                    ->get(['id', 'product_sku_id']); // Fetch both id and product_sku_id
-
-                // Extract the product_sku_ids that need to be deleted
-                $productSkuIdsToDelete = $variationsToDelete->pluck('product_sku_id')->unique()->toArray();
-
-                // Extract the product_variation IDs
-                $variationIdsToDelete = $variationsToDelete->pluck('id')->toArray();
-
-                // Delete the invalid product variations
-                ProductVariations::whereIn('id', $variationIdsToDelete)->delete();
-
-                // Delete the corresponding product_sku records
-                ProductSku::whereIn('id', $productSkuIdsToDelete)->delete();
-
-
-                // Optional: Log or return the deleted variation IDs
-                return $variationsToDelete;
-            }
+            // Do not purge existing product variations/SKUs globally here.
+            // We’ll handle optional cleanup per-product during variant upsert below.
 
 
             if (!empty($product) && ($product['id'] ?? null)) {
@@ -211,10 +229,12 @@ class SyncSparkyController extends Controller
                         'product_type' => $variant_product ? 2 : 1,
                         'variant_sku_prefix' => $product['variant_sku_prefix'] ?? $product['sku'],
                         'barcode_type' => $product['barcode_type'],
-                        'description' => $product['shortdescription'],
+                        // Prefer full description; fallback to shortdescription
+                        'description' => $product['description'] ?? ($product['shortdescription'] ?? null),
                         'unit_type_id' => 7,
                         'discount_type' => 1,
                         'minimum_order_qty' => 1,
+                        'condition' => $product['condition'] ?? 'new',
                         'is_physical' => 1,
                         'is_approved' => 1,
                         'status' => $product['status'] == 'available' ? 1 : 0 ,
@@ -222,8 +242,9 @@ class SyncSparkyController extends Controller
                     ]
                 );
 
-                // Update Product Category
-                $localCategoryId = Category::where('external_category_id', $product['category_id'])->value('id');
+                // Update Product Category: resolve using external id, id, name, or slug (lenient)
+                $categoryInput = $product['category_id'] ?? ($product['category'] ?? ($product['category_name'] ?? null));
+                $localCategoryId = $this->resolveCategoryId($categoryInput);
                 if ($localCategoryId) {
                     CategoryProduct::updateOrCreate(
                         ['product_id' => $newProduct->id],
@@ -236,15 +257,42 @@ class SyncSparkyController extends Controller
                 $mediaRepository = null;
                 $mediaIds = [];
                 // Update Product Images
-                ProductGalaryImage::where('product_id', $newProduct->id)->delete();
-                foreach ($galleries as $gallery) {
-                    $media = MediaManager::where('external_link', $gallery['url'])->first();
-                    if (!$media) {
-                        if (!$mediaRepository) {
-                            $mediaRepository = app(MediaManagerRepository::class);
+                // If replace=true, clear existing galleries. Otherwise, append.
+                $replace = (bool) ($request->boolean('replace') ?? ($product['replace'] ?? false));
+                if ($replace) {
+                    ProductGalaryImage::where('product_id', $newProduct->id)->delete();
+                }
+                // 1) Handle multipart uploaded images first (galleries[] or images[])
+                $galleryFiles = [];
+                if ($request->hasFile('galleries')) { $galleryFiles = array_merge($galleryFiles, (array) $request->file('galleries')); }
+                if ($request->hasFile('images')) { $galleryFiles = array_merge($galleryFiles, (array) $request->file('images')); }
+                if (!empty($galleryFiles)) {
+                    if (!$mediaRepository) { $mediaRepository = app(MediaManagerRepository::class); }
+                    foreach ($galleryFiles as $file) {
+                        if (!$file) continue;
+                        $resp = $mediaRepository->saveUploadedFile($file, 1);
+                        if (!empty($resp['success']) && !empty($resp['media_id'])) {
+                            $media = MediaManager::find($resp['media_id']);
+                            if ($media) {
+                                $gal = new ProductGalaryImage();
+                                $gal->product_id = $newProduct->id;
+                                $gal->images_source = $media->file_name;
+                                $gal->media_id = $media->id;
+                                $gal->save();
+                                $mediaIds[] = $media->id;
+                            }
                         }
-                        $response = $mediaRepository->downloadAndSaveImage($gallery['url']);
-                        if ($response['success']) {
+                    }
+                }
+                // 2) Handle URL galleries in payload (backward compatible)
+                foreach ((array) $galleries as $gallery) {
+                    $url = is_array($gallery) ? ($gallery['url'] ?? null) : (is_string($gallery) ? $gallery : null);
+                    if (!$url) continue;
+                    $media = MediaManager::where('external_link', $url)->first();
+                    if (!$media) {
+                        if (!$mediaRepository) { $mediaRepository = app(MediaManagerRepository::class); }
+                        $response = $mediaRepository->downloadAndSaveImage($url);
+                        if (!empty($response['success'])) {
                             $media = MediaManager::find($response['media_id']);
                         }
                     }
@@ -259,7 +307,7 @@ class SyncSparkyController extends Controller
                 }
 
                 if (!empty($mediaIds)) {
-                    $newProduct->media_ids = implode($mediaIds);
+                    $newProduct->media_ids = implode(',', $mediaIds);
                     $newProduct->save();
                 }
                 if (!$variant_product) {
@@ -273,8 +321,16 @@ class SyncSparkyController extends Controller
                     $newProductSku->track_sku = $product['sku'];
                     $newProductSku->purchase_price = $product['purchase_price'];
                     $newProductSku->selling_price = $product['selling_price'];
-                    if (isset($product['stock'])) {
-                        $newProductSku->product_stock = (int) $product['stock'];
+                    $incomingQty = null;
+                    if (isset($product['stock']) && is_numeric($product['stock'])) { $incomingQty = (int) $product['stock']; }
+                    elseif (isset($product['quantity']) && is_numeric($product['quantity'])) { $incomingQty = (int) $product['quantity']; }
+                    if ($incomingQty !== null) {
+                        \Log::info('shop.sync.stock.single_applied', [
+                            'product_id' => $newProduct->id,
+                            'sku' => $product['sku'] ?? null,
+                            'quantity' => $incomingQty,
+                        ]);
+                        $newProductSku->product_stock = $incomingQty;
                     }
                     // Optional shipping dimensions from payload
                     if (isset($product['weight'])) $newProductSku->weight = (float) $product['weight'];
@@ -282,13 +338,10 @@ class SyncSparkyController extends Controller
                     if (isset($product['breadth'])) $newProductSku->breadth = (float) $product['breadth'];
                     if (isset($product['height'])) $newProductSku->height = (float) $product['height'];
                     if (isset($product['additional_shipping'])) $newProductSku->additional_shipping = (float) $product['additional_shipping'];
-                    $newProductSku->weight = 0;
-                    $newProductSku->length = 0;
-                    $newProductSku->breadth = 0;
-                    $newProductSku->height = 0;
-                    $newProductSku->status = $product['status'];
+                    $newProductSku->status = ($product['status'] == 'available') ? 1 : 0;
                     $newProductSku->save();
                 } else {
+                    $replace = (bool) ($request->boolean('replace') ?? ($product['replace'] ?? false));
                     $skuIds = [];
                     $pVariationIds = [];
                     // Prepare lookup maps for name-based fallback
@@ -315,23 +368,85 @@ class SyncSparkyController extends Controller
                         'external_product_id' => $product['id'] ?? null,
                         'count' => is_array($variations) ? count($variations) : 0,
                     ]);
+
+                    $variantAttributes = (array) $request->input('variant_attributes', []);
+                    $namedKeysMode = false;
+                    // If variations do not carry 'items', use named keys from 'variant_attributes' & top-level 'variants'
+                    if (!empty($variantAttributes) && (!isset($variations[0]['items']) || empty($variations[0]['items']))) {
+                        $variations = (array) $request->input('variants', []);
+                        $namedKeysMode = true;
+                        Log::info('shop.sync.variants.namedkeys.detected', ['variants_count'=>count($variations),'variant_attributes'=>$variantAttributes]);
+                    }
+
+                    $receivedAnyVariantStock = false;
                     foreach ($variations as $ind => $variant) {
-                        $sku = '';
-                        $sku .= str_replace(' ', '-', $newProduct->variant_sku_prefix);
-                        foreach ($variant['items'] as $item) {
-                            $itemValue = \Modules\Product\Entities\AttributeValue::where('external_attribute_id', $item['attribute_id'])->first();
-                            $appendSku = null;
-                            if ($itemValue) {
-                                $appendSku = $itemValue->attribute_id == 1 ? ($itemValue->color->name ?? $itemValue->value ?? $itemValue->title) : ($itemValue->value ?? $itemValue->title);
-                            } else {
-                                // Fallback using name/title map from product_attribute
-                                $mapped = $attrValsMap[$item['attribute_id'] ?? null] ?? null;
-                                $appendSku = $mapped['value'] ?? $mapped['title'] ?? null;
+                        $basePrefix = $newProduct->variant_sku_prefix ?: \Illuminate\Support\Str::slug((string)$newProduct->product_name, '_');
+                        if (empty($basePrefix)) { $basePrefix = 'VAR'; }
+                        $sku = str_replace(' ', '-', $basePrefix);
+                        $localPairs = [];
+                        if ($namedKeysMode) {
+                            // Build pairs from variant_attributes names and values from current variant row
+                            foreach ($variantAttributes as $va) {
+                                if (empty($va['name'])) continue;
+                                $attName = (string) $va['name'];
+                                // read the value from the variant keyed by attribute name (case-insensitive)
+                                $valRaw = null;
+                                foreach ($variant as $k=>$v) {
+                                    if (mb_strtolower($k) === mb_strtolower($attName)) { $valRaw = $v; break; }
+                                }
+                                if ($valRaw === null) continue;
+                                $valStr = trim((string)$valRaw);
+                                $appendSku = $valStr;
+                                if ($appendSku) { $sku .= '-' . str_replace(' ', '', (string)$appendSku); }
+
+                                // Resolve or create Attribute by name
+                                $localAttrId = Attribute::whereRaw('LOWER(name) = ?', [mb_strtolower($attName)])->value('id');
+                                if (!$localAttrId) {
+                                    $attr = new Attribute();
+                                    $attr->name = $attName;
+                                    $attr->display_type = 'text';
+                                    $attr->status = 1;
+                                    $attr->save();
+                                    $localAttrId = $attr->id;
+                                    Log::info('shop.sync.variants.attrset.created.byname', ['id'=>$localAttrId,'title'=>$attName]);
+                                }
+                                // Resolve or create AttributeValue by value/title
+                                $low = mb_strtolower($valStr);
+                                $valId = AttributeValue::where('attribute_id', $localAttrId)
+                                    ->where(function($q) use ($low){ $q->whereRaw('LOWER(value)=?',[$low])->orWhereRaw('LOWER(title)=?',[$low]); })
+                                    ->value('id');
+                                if (!$valId) {
+                                    $val = new AttributeValue();
+                                    $val->attribute_id = $localAttrId;
+                                    $val->value = $valStr;
+                                    // Store color code if attribute name suggests color
+                                    if (mb_strtolower($attName) === 'color') { $val->color = $valStr; }
+                                    $val->save();
+                                    $valId = $val->id;
+                                    Log::info('shop.sync.variants.attrval.created.byname', ['id'=>$valId,'value'=>$valStr,'attribute'=>$attName]);
+                                }
+                                $localPairs[] = [$localAttrId, $valId];
                             }
-                            if ($appendSku) {
-                                $sku .= '-' . str_replace(' ', '', (string) $appendSku);
+                        } else {
+                            // Original items based mapping
+                            foreach ($variant['items'] as $item) {
+                                $itemValue = \Modules\Product\Entities\AttributeValue::where('external_attribute_id', $item['attribute_id'])->first();
+                                $appendSku = null;
+                                if ($itemValue) {
+                                    $appendSku = $itemValue->attribute_id == 1 ? ($itemValue->color->name ?? $itemValue->value ?? $itemValue->title) : ($itemValue->value ?? $itemValue->title);
+                                } else {
+                                    // Fallback using name/title map from product_attribute
+                                    $mapped = $attrValsMap[$item['attribute_id'] ?? null] ?? null;
+                                    $appendSku = $mapped['value'] ?? $mapped['title'] ?? null;
+                                }
+                                if ($appendSku) {
+                                    $sku .= '-' . str_replace(' ', '', (string) $appendSku);
+                                }
                             }
                         }
+
+                        // Track if variant-level stock provided
+                        if (isset($variant['stock'])) { $receivedAnyVariantStock = true; }
 
                         // Update Product Sku (idempotent by SKU per product)
                         $newProductSku = ProductSku::where('product_id', $newProduct->id)
@@ -348,17 +463,72 @@ class SyncSparkyController extends Controller
                         $newProductSku->length = 0;
                         $newProductSku->breadth = 0;
                         $newProductSku->height = 0;
-                        $newProductSku->status = 1;
+                        $newProductSku->status = ($product['status'] == 'available') ? 1 : 0;
                         // Optional per-variant shipping fields
-                        if (isset($variant['stock'])) $newProductSku->product_stock = (int) $variant['stock'];
+                        if (isset($variant['stock'])) {
+                            $newProductSku->product_stock = (int) $variant['stock'];
+                            \Log::info('shop.sync.stock.variant_row_applied', [
+                                'product_id' => $newProduct->id,
+                                'sku' => $sku,
+                                'quantity' => (int) $variant['stock'],
+                            ]);
+                        }
                         if (isset($variant['weight'])) $newProductSku->weight = (float) $variant['weight'];
                         if (isset($variant['length'])) $newProductSku->length = (float) $variant['length'];
                         if (isset($variant['breadth'])) $newProductSku->breadth = (float) $variant['breadth'];
                         if (isset($variant['height'])) $newProductSku->height = (float) $variant['height'];
                         if (isset($variant['additional_shipping'])) $newProductSku->additional_shipping = (float) $variant['additional_shipping'];
                         $newProductSku->save();
+                        // Variant image via multipart: variant_images_by_sku[<SKU>]
+                        if ($request->hasFile('variant_images_by_sku')) {
+                            $map = (array) $request->file('variant_images_by_sku');
+                            if (isset($map[$sku]) && $map[$sku]) {
+                                try {
+                                    if (!$mediaRepository) { $mediaRepository = app(MediaManagerRepository::class); }
+                                    $resp = $mediaRepository->saveUploadedFile($map[$sku], 1);
+                                    if (!empty($resp['success']) && !empty($resp['media_id'])) {
+                                        $media = MediaManager::find($resp['media_id']);
+                                        if ($media) {
+                                            $newProductSku->variant_image = $media->file_name;
+                                            $newProductSku->save();
+                                        }
+                                    }
+                                } catch (\Throwable $e) { Log::warning('shop.sync.variant_image.save_failed', ['sku'=>$sku,'error'=>$e->getMessage()]); }
+                            }
+                        }
+                        Log::info('shop.sync.variants.sku.upsert', [
+                            'product_id' => $newProduct->id,
+                            'sku_id' => $newProductSku->id,
+                            'sku' => $newProductSku->sku,
+                            'price' => $newProductSku->selling_price,
+                        ]);
                         $skuIds[] = $newProductSku->id;
 
+                        if ($namedKeysMode) {
+                            foreach ($localPairs as [$localAttrId, $localAttrValueId]) {
+                                $productVariation = ProductVariations::where('product_id', $newProduct->id)
+                                    ->where('product_sku_id',  $newProductSku->id)
+                                    ->where('attribute_id', $localAttrId)
+                                    ->where('attribute_value_id', $localAttrValueId)
+                                    ->first();
+                                if (!$productVariation) {
+                                    $productVariation = new ProductVariations();
+                                    $productVariation->product_sku_id = $newProductSku->id;
+                                    $productVariation->product_id = $newProduct->id;
+                                    $productVariation->attribute_id = $localAttrId;
+                                    $productVariation->attribute_value_id = $localAttrValueId;
+                                    $productVariation->save();
+                                    Log::info('shop.sync.variants.pvar.created', [
+                                        'id' => $productVariation->id,
+                                        'product_id' => $newProduct->id,
+                                        'sku_id' => $newProductSku->id,
+                                        'attr_id' => $localAttrId,
+                                        'attr_val_id' => $localAttrValueId,
+                                    ]);
+                                }
+                                $pVariationIds[] = $productVariation->id;
+                            }
+                        } else {
                         foreach ($variant['items'] as $item) {
                             // Resolve local attribute id (by external id or by set title)
                             $localAttrId = Attribute::where('external_attribute_set_id', $item['attribute_set_id'])->value('id');
@@ -436,18 +606,45 @@ class SyncSparkyController extends Controller
                                 $productVariation->attribute_id = $localAttrId;
                                 $productVariation->attribute_value_id = $localAttrValueId;
                                 $productVariation->save();
+                                Log::info('shop.sync.variants.pvar.created', [
+                                    'id' => $productVariation->id,
+                                    'product_id' => $newProduct->id,
+                                    'sku_id' => $newProductSku->id,
+                                    'attr_id' => $localAttrId,
+                                    'attr_val_id' => $localAttrValueId,
+                                ]);
                             }
                             $pVariationIds[] = $productVariation->id;
                         }
+                        }
                     }
 
-                    if (!empty($skuIds)) {
-                        ProductSku::where('product_id', $newProduct->id)->whereNotIn('id', $skuIds)->delete();
-                        Log::info('shop.sync.variants.cleanup.sku', ['product_id'=>$newProduct->id, 'kept'=> $skuIds]);
+                    // If no variant stock provided, but top-level quantity/stock provided, set it to the first SKU
+                    if (!$receivedAnyVariantStock) {
+                        $topQty = null;
+                        if (isset($product['quantity']) && is_numeric($product['quantity'])) { $topQty = (int) $product['quantity']; }
+                        elseif (isset($product['stock']) && is_numeric($product['stock'])) { $topQty = (int) $product['stock']; }
+                        if ($topQty !== null) {
+                            $firstSku = ProductSku::where('product_id', $newProduct->id)->orderBy('id')->first();
+                            if ($firstSku) {
+                                $firstSku->product_stock = $topQty;
+                                $firstSku->save();
+                                \Log::info('shop.sync.variants.top_stock_applied', ['product_id'=>$newProduct->id,'sku_id'=>$firstSku->id,'stock'=>$topQty]);
+                            }
+                        }
                     }
-                    if (!empty($pVariationIds)) {
-                        ProductVariations::where('product_id', $newProduct->id)->whereNotIn('id', $pVariationIds)->delete();
-                        Log::info('shop.sync.variants.cleanup.pvars', ['product_id'=>$newProduct->id, 'kept'=> $pVariationIds]);
+
+                    if ($replace) {
+                        if (!empty($skuIds)) {
+                            ProductSku::where('product_id', $newProduct->id)->whereNotIn('id', $skuIds)->delete();
+                            Log::info('shop.sync.variants.cleanup.sku', ['product_id'=>$newProduct->id, 'kept'=> $skuIds]);
+                        }
+                        if (!empty($pVariationIds)) {
+                            ProductVariations::where('product_id', $newProduct->id)->whereNotIn('id', $pVariationIds)->delete();
+                            Log::info('shop.sync.variants.cleanup.pvars', ['product_id'=>$newProduct->id, 'kept'=> $pVariationIds]);
+                        }
+                    } else {
+                        Log::info('shop.sync.variants.cleanup.skipped', ['product_id' => $newProduct->id]);
                     }
                     // Ensure product marked as variant when variations provided
                     $newProduct->product_type = 2; // 2 = variant product
@@ -461,6 +658,8 @@ class SyncSparkyController extends Controller
                 }
                 if (isset($product['shipping_type'])) $newProduct->shipping_type = (int) $product['shipping_type'];
                 if (isset($product['shipping_cost'])) $newProduct->shipping_cost = (float) $product['shipping_cost'];
+                // Ensure name is up to date as well
+                if (!empty($product['name'])) $newProduct->product_name = $product['name'];
                 $newProduct->save();
 
                 // Upsert seller product and auction info when vendor_id provided

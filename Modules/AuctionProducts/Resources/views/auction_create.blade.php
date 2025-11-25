@@ -52,7 +52,7 @@ $LanguageList = getLanguageList();
                                         <div class="col-lg-12">
                                             <div class="primary_input mb-25">
                                                 <label class="primary_input_label" for="quantity">{{__('auctionproduct.quantity')}} <span class="text-danger">*</span></label>
-                                                <input class="primary_input_field" type="text" id="quantity" name="quantity" min='0' pattern="[0-9]*" autocomplete="off" value="{{ old('quantity') }}" placeholder="{{__('auctionproduct.quantity')}}">
+                                                <input class="primary_input_field" type="text" id="quantity" name="quantity" min='0' pattern="[0-9]*" autocomplete="off" value="{{ old('quantity')??1 }}" placeholder="{{__('auctionproduct.quantity')}}">
                                                 @error('quantity')
                                                     <span class="text-danger" id="error_quantity">{{ $message }}</span>
                                                 @enderror

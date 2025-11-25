@@ -228,30 +228,30 @@
                                         </div>
                                     </div>
 
+                                    <div class="col-lg-3">
+                                        <div class="primary_input mb-25">
+                                            <label class="primary_input_label" for="condition">{{ __('product.product_condition')}}</label>
+                                            <select class="primary_select mb-25" name="condition" id="condition">
+                                                <option value="new" @if(old('condition') && old('condition') == 'new') selected @endif>{{ __('product.new') }}</option>
+                                                <option value="used" @if(old('condition') && old('condition') == 'used') selected @endif>{{ __('product.used') }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
                                     @if(isModuleActive('GoogleMerchantCenter'))
-                                        <div class="col-lg-3">
-                                            <div class="primary_input mb-25">
-                                                <label class="primary_input_label" for="condition">{{ __('product.product_condition')}}</label>
-                                                <select class="primary_select mb-25" name="condition" id="condition">
-                                                    <option value="new" @if(old('condition') && old('condition') == 'new') selected @endif>{{ __('product.new') }}</option>
-                                                    <option value="used" @if(old('condition') && old('condition') == 'used') selected @endif>{{ __('product.used') }}</option>
-                                                </select>
-                                            </div>
+                                    <div class="col-lg-6">
+                                        <div class="primary_input mb-15">
+                                            <label class="primary_input_label" for="gtin"> {{ __('common.gtin') }}</label>
+                                            <input class="primary_input_field" name="gtin" id="gtin" placeholder="{{ __('common.gtin') }}" type="text" value="{{ old('gtin') }}">
+                                            <span class="text-danger" id="error_gtin">{{ $errors->first('gtin') }}</span>
                                         </div>
-                                        <div class="col-lg-6">
-                                            <div class="primary_input mb-15">
-                                                <label class="primary_input_label" for="gtin"> {{ __('common.gtin') }}</label>
-                                                <input class="primary_input_field" name="gtin" id="gtin" placeholder="{{ __('common.gtin') }}" type="text" value="{{ old('gtin') }}">
-                                                <span class="text-danger" id="error_gtin">{{ $errors->first('gtin') }}</span>
-                                            </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="primary_input mb-15">
+                                            <label class="primary_input_label" for="mpn"> {{ __('common.mpn') }}</label>
+                                            <input class="primary_input_field" name="mpn" id="mpn" placeholder="{{ __('common.mpn') }}" type="text" value="{{ old('mpn') }}">
+                                            <span class="text-danger" id="error_mpn">{{ $errors->first('mpn') }}</span>
                                         </div>
-                                        <div class="col-lg-6">
-                                            <div class="primary_input mb-15">
-                                                <label class="primary_input_label" for="mpn"> {{ __('common.mpn') }}</label>
-                                                <input class="primary_input_field" name="mpn" id="mpn" placeholder="{{ __('common.mpn') }}" type="text" value="{{ old('mpn') }}">
-                                                <span class="text-danger" id="error_mpn">{{ $errors->first('mpn') }}</span>
-                                            </div>
-                                        </div>
+                                    </div>
                                     @endif
 
                                     @if(isModuleActive('ClubPoint'))
@@ -263,22 +263,7 @@
                                             </div>
                                         </div>
                                     @endif
-                                    <div class="col-lg-12">
-                                        <div class="single_field ">
-                                            <label for="">@lang('blog.tags') (@lang('product.comma_separated'))<span class="text-danger">*</span></label>
-                                        </div>
-                                        <div class="tagInput_field mb_26">
-                                            <input name="tags" id="tags" class="tag-input" type="text" value="{{old('tags')}}" data-role="tagsinput" />
-                                        </div>
-                                        <br>
-                                        <div class="suggeted_tags">
-                                            <label>@lang('blog.suggested_tags')</label>
-                                            <div id="tag_show" class="suggested_tag_show">
-                                            </div>
-                                        </div>
-                                        <br>
-                                        <span class="text-danger" id="error_tags"></span>
-                                    </div>
+                                    {{-- Tags removed from UI as per requirement --}}
                                     <div class="col-lg-12 attribute_div" id="attribute_select_div">
                                         @include('product::products.components._attribute_list_select')
                                     </div>

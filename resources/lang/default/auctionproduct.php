@@ -71,4 +71,8 @@
 "pusher_secret" => "Pusher Secret",
 "pusher_cluster" => "Pusher Cluster",
 
+// Bid history modal
+'sl' => 'SL',
+'user' => 'User',
+
 ];

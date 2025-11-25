@@ -94,6 +94,10 @@
             });
             getActiveFieldShipping();
             get_combinations('load');
+            // Initialize stock manage UI based on current value
+            if ($('#stock_manage').length) {
+                $('#stock_manage').trigger('change');
+            }
             $(document).on('change','#galary_image', function(event){
                 galleryImage($(this)[0],'#galler_img_prev');
             });

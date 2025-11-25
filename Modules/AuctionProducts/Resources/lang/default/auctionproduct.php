@@ -55,5 +55,8 @@
 "pay_entry_amount" => "Pay entry Amount",
 "to_start_bidding_on_this_auction_you_need_to_pay_entry_amount" => "To start bidding on this auction you need to pay entry amount",
 "Auction Entry Amount" => "Auction Entry Amount",
-"bid_history" => "Bid History"
+"bid_history" => "Bid History",
+// Bid history modal
+'sl' => 'SL',
+'user' => 'User'
 ];

@@ -248,7 +248,6 @@ $LanguageList = getLanguageList();
                                                 <span class="text-danger">{{$errors->first('max_order_qty')}}</span>
                                             </div>
                                         </div>
-                                        @if(isModuleActive('GoogleMerchantCenter'))
                                             <div class="col-lg-3">
                                                 <div class="primary_input mb-25">
                                                     <label class="primary_input_label" for="condition">{{__('product.product_condition')
@@ -259,6 +258,7 @@ $LanguageList = getLanguageList();
                                                     </select>
                                                 </div>
                                             </div>
+                                        @if(isModuleActive('GoogleMerchantCenter'))
                                             <div class="col-lg-6">
                                                 <div class="primary_input mb-15">
                                                     <label class="primary_input_label" for="gtin"> {{__('common.gtin') }}</label>
@@ -283,28 +283,7 @@ $LanguageList = getLanguageList();
                                                 </div>
                                             </div>
                                         @endif
-                                        <div class="col-lg-12">
-                                            <div class="primary_input mb-25">
-                                                <label for="">@lang('blog.tags') (@lang('product.comma_separated'))<span class="text-danger">*</span></label>
-                                                <div class="tagInput_field mb_26">
-                                                    @php
-                                                        $tags = [];
-                                                        foreach ($product->tags as $tag) {
-                                                            $tags[] = $tag->name;
-                                                        }
-                                                        $tags = implode(',', $tags);
-                                                    @endphp
-                                                    <input name="tags" class="tag-input" id="tag-input-upload-shots"
-                                                        type="text" value="{{ $tags }}" data-role="tagsinput" />
-                                                </div>
-                                                <div class="suggeted_tags">
-                                                    <label>@lang('blog.suggested_tags')</label><br>
-                                                    <ul id="tag_show"  class="suggested_tag_show">
-                                                    </ul>
-                                                </div>
-                                                <span class="text-danger" id="error_tags">{{ $errors->first('tags') }}</span>
-                                            </div>
-                                        </div>
+                                        {{-- Tags removed from UI as per requirement --}}
                                         <div class="col-lg-12 attribute_div">
                                             <div class="primary_input mb-25">
                                                 <label class="primary_input_label" for="">{{ __('product.attribute') }}</label>
