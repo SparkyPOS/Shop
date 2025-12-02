@@ -102,7 +102,23 @@
                                     <span class="text-danger" id="error_status"></span>
                                 </div>
                             </div>
-                            
+                            <div class="col-md-3">
+                                <div class="primary_input mb-25">
+                                    <label class="primary_input_label" for="address">{{__('common.avatar')}} (165x165)PX</label>
+                                    <div class="primary_file_uploader">
+                                      <input class="primary-input" type="text" id="photo" placeholder="{{__('common.browse_image_file')}}" readonly>
+                                      <button class="" type="button">
+                                          <label class="primary-btn small fix-gr-bg" for="document_file_1">{{__("common.avatar")}} </label>
+                                          <input type="file" class="d-none" name="photo" id="document_file_1" accept="image/*">
+                                      </button>
+                                   </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="avatar_div">
+                                    <img id="avatarPreview" src="{{ ($customer->avatar) ? showImage($customer->avatar) : showImage('backend/img/default.png') }}" alt="" style="max-width: 100%; height: auto;">
+                                </div>
+                            </div>
 
                             <div class="col-lg-12 text-center">
                                 <div class="d-flex justify-content-center pt_20">
@@ -125,8 +141,23 @@
         "use strict";
 
         $(document).ready(function(){
-            
-
+            $(document).on('change', '#document_file_1', function(){
+                if (typeof getFileName === 'function') {
+                    getFileName($(this).val(),'#photo');
+                } else {
+                    $('#photo').val($(this).val().split('\\\\').pop());
+                }
+                if (typeof imageChangeWithFile === 'function') {
+                    imageChangeWithFile($(this)[0],'#avatarPreview');
+                } else {
+                    // Simple fallback preview
+                    const [file] = this.files;
+                    if (file) {
+                        const url = URL.createObjectURL(file);
+                        $('#avatarPreview').attr('src', url);
+                    }
+                }
+            });
         });
 
     })(jQuery);

@@ -11,12 +11,24 @@
 <!-- checkout_v3_area::end  -->
 @endsection
 <style>
-    .cart_thumb_div .summery_pro_content {
-        max-width: calc(100% - var(--thum-width)) !important;
-    }
+    /* Smaller image thumb and better mobile layout */
+    .cart_thumb_div{ --thum-width: 70px !important; }
+    /* Fix cart item layout so product name shows */
+    .cart_thumb_div{width: 100% !important;}
+    .cart_thumb_div .thumb{flex: 0 0 var(--thum-width) !important;}
+    .cart_thumb_div .summery_pro_content {flex: 1 1 calc(100% - var(--thum-width)) !important; max-width: 100% !important; min-width: 0;}
     @media (max-width: 767.98px){
-        .cart_thumb_div .summery_pro_content{
-            padding-left: 20px !important;
+        .cart_thumb_div{width: 100% !important; flex-wrap: wrap; gap: 0 !important;}
+        .cart_thumb_div .thumb{flex: 0 0 var(--thum-width) !important; max-width: var(--thum-width) !important; height: var(--thum-width) !important;}
+        .cart_thumb_div .summery_pro_content{flex: 1 1 calc(100% - var(--thum-width)) !important; max-width: 100% !important; padding-left: 12px !important;}
+        /* Force 2-line clamp for product title on mobile */
+        .amazy_table4 .summery_pro_content h4{
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            white-space: normal;
         }
     }
 </style>
@@ -250,6 +262,8 @@
                 });
 
                 $(document).on('click', '.change_qty', function(event){
+                    event.preventDefault();
+                    event.stopPropagation();
                     let type = $(this).val();
                     let cahnge_qty = 1;
                     let qty_id = $(this).data("qty_id");
@@ -403,7 +417,9 @@
 
 
 
-                $(document).on('click', '.qty_change', function(){
+                $(document).on('click', '.qty_change', function(event){
+                    event.preventDefault();
+                    event.stopPropagation();
                     var val = $(this).attr("data-value");
                     var id = $(this).attr("data-id");
                     var p_id = $(this).attr("data-product-id");

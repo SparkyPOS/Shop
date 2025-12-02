@@ -79,6 +79,6 @@ return [
     'name' => 'name',
     'Followers' => 'Followers',
     'Please send reset password' => 'Please send reset password',
-    'Vendor ID' => 'ID',
+    'Vendor ID' => 'Vendor',
     'Filter Merchants'=>'Filter Merchants',
 ];

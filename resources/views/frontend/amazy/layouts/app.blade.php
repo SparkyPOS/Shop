@@ -84,6 +84,53 @@
 @include('frontend.amazy.partials._head',['promotionbar' => $promotionbar])
 
 <body>
+    <style>
+        /* Mobile-only header color overrides */
+        @media (max-width: 767.98px) {
+            /* Mobile header background for top area only */
+            header.amazcartui_header .header_area .header_top_area {
+                background: var(--base_color) !important;
+            }
+            /* Make header top area text and icons white */
+            header.amazcartui_header .header_area .header_top_area,
+            header.amazcartui_header .header_area .header_top_area a,
+            header.amazcartui_header .header_area .header_top_area i,
+            header.amazcartui_header .header_area .header_top_area span,
+            header.amazcartui_header .header_area .header_top_area [class^="ti-"],
+            header.amazcartui_header .header_area .header_top_area [class*=" ti-"] {
+                color: #fff !important;
+            }
+            /* Inline SVG fills inside header top area */
+            header.amazcartui_header .header_area .header_top_area svg [fill]:not([fill='none']) {
+                fill: #fff !important;
+            }
+
+            /* Mobile menu panel: black background, white text */
+            .mobile_menu .slicknav_nav {
+                background: #000 !important;
+                box-shadow: none !important;
+            }
+            .mobile_menu .slicknav_nav a,
+            .mobile_menu .slicknav_nav .slicknav_row,
+            .mobile_menu .slicknav_nav .slicknav_txtnode {
+                color: #fff !important;
+            }
+            .mobile_menu .slicknav_nav .slicknav_row:hover,
+            .mobile_menu .slicknav_nav a:hover {
+                background: rgba(255,255,255,0.08) !important;
+                color: #fff !important;
+            }
+            .mobile_menu .slicknav_nav ul.submenu {
+                background: #111 !important;
+            }
+
+            /* Hamburger bars: white */
+            .amazcartui_header .slicknav_menu .slicknav_icon-bar,
+            .slicknav_btn .slicknav_icon-bar {
+                background-color: #fff !important;
+            }
+        }
+    </style>
     <!-- preloader  -->
     <!--
         <div class="preloader" >

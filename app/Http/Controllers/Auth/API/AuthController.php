@@ -20,6 +20,7 @@ use Modules\Affiliate\Repositories\AffiliateRepository;
 use Modules\GeneralSetting\Entities\NotificationSetting;
 use Modules\GeneralSetting\Entities\UserNotificationSetting;
 use Modules\GeneralSetting\Services\NotificationSettingService;
+use App\Services\CustomerSyncService;
 
 /**
  * @group User Management
@@ -129,6 +130,7 @@ class AuthController extends Controller
         }
         if ($user && Hash::check($request->password, $user->password) && $user->role->type == 'customer') {
             $token = $user->createToken('my_token')->plainTextToken;
+            try { app(CustomerSyncService::class)->syncCustomerById($user->id); } catch (\Throwable $e) { \Log::warning('customersync.pos.sync_after_login_failed', ['error'=>$e->getMessage()]); }
             $response = [
                 'user' => $user,
                 'token' => $token,
@@ -154,6 +156,7 @@ class AuthController extends Controller
             ->first();
         if ($user && password_verify($request->password, $user->password) && $user->role->type == 'customer') {
             $token = $user->createToken('my_token')->plainTextToken;
+            try { app(CustomerSyncService::class)->syncCustomerById($user->id); } catch (\Throwable $e) { \Log::warning('customersync.pos.sync_after_customer_login_failed', ['error'=>$e->getMessage()]); }
             $response = [
                 'user' => $user,
                 'token' => $token,

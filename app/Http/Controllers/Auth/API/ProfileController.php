@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\File;
 use Modules\Customer\Entities\CustomerAddress;
 use Modules\Customer\Http\Requests\CreateAddressRequest;
 use App\Services\OrderService;
+use App\Services\CustomerSyncService;
 
 /**
 * @group User Management
@@ -27,11 +28,13 @@ class ProfileController extends Controller
     protected $couponService;
     protected $wishlistService;
     protected $orderService;
+    protected $customerSyncService;
 
-    public function __construct(CouponService $couponService, WishlistService $wishlistService, OrderService $orderService){
+    public function __construct(CouponService $couponService, WishlistService $wishlistService, OrderService $orderService, CustomerSyncService $customerSyncService){
         $this->couponService = $couponService;
         $this->wishlistService = $wishlistService;
         $this->orderService = $orderService;
+        $this->customerSyncService = $customerSyncService;
     }
 
 
@@ -69,6 +72,8 @@ class ProfileController extends Controller
              ];
 
             $user->update($data);
+            // sync updated customer info to POS
+            try { $this->customerSyncService->syncCustomerById($user->id); } catch (\Throwable $e) { \Log::warning('customersync.pos.sync_after_profile_failed', ['error'=>$e->getMessage()]); }
 
             return response()->json([
                 'message' => 'profile updated successfully'
@@ -106,6 +111,8 @@ class ProfileController extends Controller
             $user->update([
                 'avatar' => $data['avatar']
             ]);
+            // trigger POS sync with new avatar
+            try { app(\App\Services\CustomerSyncService::class)->syncCustomerById($user->id); } catch (\Throwable $e) { \Log::warning('customersync.pos.sync_after_photo_failed', ['error'=>$e->getMessage()]); }
             return response()->json([
                 'message' => 'updated successfully'
             ],202);

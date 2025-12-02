@@ -7,9 +7,54 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Modules\Customer\Entities\CustomerAddress;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use App\Traits\ImageStore;
+use Illuminate\Support\Str;
 
 class SyncCustomerController extends Controller
 {
+    use ImageStore;
+    public function show(Request $request, int $id)
+    {
+        // simple token guard
+        $token = $request->header('X-Sync-Token');
+        abort_unless($token && hash_equals($token, config('sync.token', env('SYNC_TOKEN',''))), 403);
+
+        $user = User::with(['customerBillingAddress','customerShippingAddress'])->findOrFail($id);
+        $avatar = $user->avatar;
+        if ($avatar && !Str::startsWith($avatar, ['http://','https://'])) {
+            $avatar = url('/'.ltrim($avatar, '/'));
+        }
+        $fullName = trim(($user->first_name.' '.$user->last_name) ?: ($user->first_name ?? ''));
+        return [
+            'external_customer_id' => (string) $user->id,
+            'first_name' => (string) ($user->first_name ?? ''),
+            'last_name' => (string) ($user->last_name ?? ''),
+            'name' => (string) ($user->username ?? $user->email ?? $user->phone ?? ''), // POS username
+            'full_name' => $fullName,
+            'email' => (string) ($user->email ?? ''),
+            'phone' => (string) ($user->phone ?? ''),
+            'avatar_url' => $avatar,
+            'address' => [
+                'billing' => [
+                    'address_1' => $user->customerBillingAddress->address ?? null,
+                    'postal_code' => $user->customerBillingAddress->postal_code ?? null,
+                    'phone' => $user->customerBillingAddress->phone ?? null,
+                    'city' => $user->customerBillingAddress->city ?? null,
+                    'state' => $user->customerBillingAddress->state ?? null,
+                    'country' => $user->customerBillingAddress->country ?? null,
+                ],
+                'shipping' => [
+                    'address_1' => $user->customerShippingAddress->address ?? null,
+                    'postal_code' => $user->customerShippingAddress->postal_code ?? null,
+                    'phone' => $user->customerShippingAddress->phone ?? null,
+                    'city' => $user->customerShippingAddress->city ?? null,
+                    'state' => $user->customerShippingAddress->state ?? null,
+                    'country' => $user->customerShippingAddress->country ?? null,
+                ],
+            ],
+        ];
+    }
     public function sync(Request $request)
     {
         try {
@@ -19,12 +64,16 @@ class SyncCustomerController extends Controller
             $externalId = $request->post('external_customer_id');
             $email = $request->post('email');
             $phone = $request->post('phone');
+            // On POS side, `name` is considered the username; `full_name` holds First Last
             $name = trim((string) $request->post('name',''));
+            $fullName = trim((string) $request->post('full_name',''));
             $first = $request->post('first_name');
             $last = $request->post('last_name');
 
-            if (!$first && !$last && $name) {
-                $parts = preg_split('/\s+/', $name);
+            // Prefer explicit full_name for splitting into first/last when first/last missing
+            $nameForSplit = $fullName ?: $name;
+            if (!$first && !$last && $nameForSplit) {
+                $parts = preg_split('/\s+/', $nameForSplit);
                 $last = array_pop($parts);
                 $first = trim(implode(' ', $parts)) ?: $last;
             }
@@ -44,6 +93,9 @@ class SyncCustomerController extends Controller
                 'phone' => $phone,
                 'is_active' => 1,
             ];
+            if ($name) { // map POS `name` to our `username`
+                $payload['username'] = $name;
+            }
 
             if ($user) {
                 $user->fill(array_filter($payload, fn($v)=>!is_null($v)));
@@ -58,6 +110,34 @@ class SyncCustomerController extends Controller
             if ($externalId) {
                 $user->external_customer_id = $externalId;
                 $user->save();
+            }
+
+            // Handle avatar sync (multipart avatar file preferred)
+            try {
+                $hasUploadedFile = $request->hasFile('avatar') || $request->hasFile('photo');
+                $newAvatarPath = null;
+
+                if ($hasUploadedFile) {
+                    $file = $request->file('avatar') ?: $request->file('photo');
+                    $this->deleteImage($user->avatar);
+                    $newAvatarPath = $this->saveImage($file, 150, 150);
+                }
+
+                // Fallback: accept avatar_url when file upload isn't provided
+                if (!$hasUploadedFile) {
+                    $url = (string) ($request->input('avatar_url') ?? $request->input('photo_url') ?? $request->input('image_url') ?? '');
+                    if ($url !== '') {
+                        $this->deleteImage($user->avatar);
+                        $newAvatarPath = $url;
+                    }
+                }
+
+                if ($newAvatarPath) {
+                    $user->avatar = $newAvatarPath;
+                    $user->save();
+                }
+            } catch (\Throwable $e) {
+                Log::warning('sync.customer.avatar_failed', ['error'=>$e->getMessage()]);
             }
 
             // Addresses

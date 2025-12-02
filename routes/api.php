@@ -182,4 +182,6 @@ Route::get('marketing/new-user-zones', [NewUserZoneController::class, 'getAll'])
 
 Route::post('/webhook/sync-sparky', [SyncSparkyController::class, 'sync']);
 Route::post('/webhook/sync-sparky-customer', [SyncCustomerController::class, 'sync']);
+// POS can read customer by id with token header
+Route::get('/sync/customers/{id}', [SyncCustomerController::class, 'show']);
 Route::post('/webhook/sync-sparky-vendor', [SyncVendorController::class, 'sync']);

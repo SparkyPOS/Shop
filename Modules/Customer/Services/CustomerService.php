@@ -2,9 +2,12 @@
 
 namespace Modules\Customer\Services;
 use \Modules\Customer\Repositories\CustomerRepository;
+use App\Models\User;
+use App\Traits\ImageStore;
 
 class CustomerService
 {
+    use ImageStore;
     protected $customerRepository;
 
     public function __construct(CustomerRepository  $customerRepository)
@@ -23,10 +26,23 @@ class CustomerService
     }
 
     public function store($data){
+        if (!empty($data['photo'])) {
+            // save as plain path string for compatibility with showImage/display
+            $photo = $this->saveImage($data['photo'], 165, 165);
+            $data['avatar'] = $photo;
+        }
         return $this->customerRepository->store($data);
     }
 
     public function update($data, $id){
+        if (!empty($data['photo'])) {
+            $user = User::find($id);
+            if ($user && $user->avatar) {
+                $this->deleteImage($user->avatar);
+            }
+            $photo = $this->saveImage($data['photo'], 165, 165);
+            $data['avatar'] = $photo;
+        }
         return $this->customerRepository->update($data, $id);
     }
 

@@ -132,7 +132,8 @@ class CustomerController extends Controller
             'email' => ['required', 'string', 'max:255', 'unique:users,email', 'check_unique_phone'],
             'password' => 'required|confirmed|min:8',
             'referral_code' => ['sometimes', 'nullable', Rule::exists('referral_codes', 'referral_code')->where('status', 1)],
-            'status' => 'required'
+            'status' => 'required',
+            'photo' => 'nullable|mimes:jpg,jpeg,png,bmp'
         ]);
         try{
             $this->customerService->store($request->except('_token'));
@@ -156,7 +157,8 @@ class CustomerController extends Controller
             'last_name' => 'nullable|max:255',
             'email' => ['required', 'string', 'max:255', 'unique:users,email,'.$id],
             'password' => 'sometimes|nullable|confirmed|min:8',
-            'status' => 'required'
+            'status' => 'required',
+            'photo' => 'nullable|mimes:jpg,jpeg,png,bmp'
         ]);
         try{
             $this->customerService->update($request->except('_token'), $id);
@@ -302,6 +304,8 @@ class CustomerController extends Controller
             }
 
             $user->update($data);
+            // Trigger POS sync after profile info/photo change
+            try { app(\App\Services\CustomerSyncService::class)->syncCustomerById($user->id); } catch (\Throwable $e) { \Log::warning('customersync.pos.sync_after_web_profile_failed', ['error'=>$e->getMessage()]); }
             LogActivity::successLog('update info');
             return response()->json($user);
         } catch (Exception $e) {

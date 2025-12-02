@@ -55,6 +55,7 @@ class CustomerRepository
             'currency_id' => app('general_setting')->currency,
             'lang_code' => app('general_setting')->language_code,
             'currency_code' => app('general_setting')->currency_code,
+            'avatar' => isset($data['avatar']) ? $data['avatar'] : NULL,
         ]);
 
         // User Notification Setting Create
@@ -88,14 +89,18 @@ class CustomerRepository
             $email = $data['email'];
         }
         $user = User::find($id);
-        $user->update([
+        $payload = [
             'first_name' => $data['first_name'],
             'last_name' => $data['last_name'],
             'username' => isset($phone) ? $phone : NULL,
             'email' => isset($email) ? $email : NULL,
             'password' => ($data['password'] != null)?Hash::make($data['password']):$user->password,
             'is_active' => $data['status']
-        ]);
+        ];
+        if (!empty($data['avatar'])) {
+            $payload['avatar'] = $data['avatar'];
+        }
+        $user->update($payload);
         return $user;
 
     }
