@@ -18,18 +18,39 @@
     .cart_thumb_div .thumb{flex: 0 0 var(--thum-width) !important;}
     .cart_thumb_div .summery_pro_content {flex: 1 1 calc(100% - var(--thum-width)) !important; max-width: 100% !important; min-width: 0;}
     @media (max-width: 767.98px){
-        .cart_thumb_div{width: 100% !important; flex-wrap: wrap; gap: 0 !important;}
-        .cart_thumb_div .thumb{flex: 0 0 var(--thum-width) !important; max-width: var(--thum-width) !important; height: var(--thum-width) !important;}
-        .cart_thumb_div .summery_pro_content{flex: 1 1 calc(100% - var(--thum-width)) !important; max-width: 100% !important; padding-left: 12px !important;}
-        /* Force 2-line clamp for product title on mobile */
-        .amazy_table4 .summery_pro_content h4{
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+        /* Stack name above image on mobile; keep a small thumbnail */
+        .cart_thumb_div{width: 100% !important; flex-direction: column; align-items: flex-start; gap: 6px !important;}
+        /* Make the original gap_20 a bit smaller on mobile */
+        .cart_thumb_div.gap_20{ gap: 6px !important; }
+        /* Slightly smaller thumbnail so title gets more space */
+        .cart_thumb_div{ --thum-width: 60px !important; }
+        .cart_thumb_div .summery_pro_content{order: 1; flex: 0 0 auto !important; max-width: 100% !important; padding-left: 0 !important;}
+        .cart_thumb_div .thumb{order: 2; flex: 0 0 var(--thum-width) !important; width: var(--thum-width) !important; height: var(--thum-width) !important;}
+        .cart_thumb_div .thumb img{width: 100% !important; height: 100% !important; object-fit: contain !important;}
+        /* Hide original title in image block on mobile (we'll render it beside qty) */
+        .amazy_table4 .summery_pro_content h4{ display: none !important; }
+        /* One-line title next to qty */
+        .mobile_cart_title{ display:none; }
+        .mobile_title_full{ width:100%; }
+        .mobile_full_title{
+            font-size: 14px;
+            font-weight: 700;
             white-space: normal;
+            overflow: visible;
+            line-height: 1.3;
         }
+        .mobile_title_qty_row{ width: 100%; display:flex; align-items:center; }
+        .mobile_title_qty_row .product_number_count{ flex: 0 0 110px; }
+        .mobile_price{ flex: 0 0 110px; text-align: right; }
+        .mobile_delete{ flex: 0 0 24px; text-align: right; }
+
+        /* Tighten paddings/margins on cart rows */
+        .checkout_v3_area .amazy_table4 .list-group-item{ padding: 8px 10px !important; }
+        .checkout_v3_area .amazy_table4 .list-group-item.mb_10{ margin-bottom: 6px !important; }
+        .checkout_v3_area .amazy_table4_body{ padding-left: 0 !important; margin: 0 !important; }
+        .checkout_v3_area .cart_thumb_div{ gap: 4px !important; }
+        .checkout_v3_area .mobile_title_qty_row{ margin-top: 6px !important; }
+        .mobile_qty_price_row{ align-items: center !important; }
     }
 </style>
 

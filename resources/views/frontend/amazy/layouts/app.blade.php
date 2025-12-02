@@ -129,6 +129,9 @@
             .slicknav_btn .slicknav_icon-bar {
                 background-color: #fff !important;
             }
+            footer.home_three_footer .copyright_area {
+                 padding-bottom: 28px !important;
+            }
         }
     </style>
     <!-- preloader  -->

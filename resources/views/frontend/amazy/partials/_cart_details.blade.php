@@ -116,25 +116,28 @@
                                                                 </p>
                                                             </div>
                                                         </a>
-                                                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-10 mt-3 d-lg-none">
-                                                            <div>
-                                                                <div class="product_number_count style_4" data-target="amount-3">
+                                                        <div class="mobile_title_full d-lg-none mt-2 w-100">
+                                                            <div class="mobile_full_title">{{ @$cart->product->product->product_name }}</div>
+                                                        </div>
+                                                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-10 mt-2 d-lg-none mobile_qty_price_row">
+                                                            <div class="d-flex align-items-center mobile_title_qty_row w-100">
+                                                                <div class="product_number_count style_4 ms-auto" data-target="amount-3">
                                                                     <button class="count_single_item inumber_decrement change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
                                                                         data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{@$cart->product->product_stock}}" data-stock_manage="{{@$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="-"> <i class="ti-minus"></i></button>
-                                                                    <input name="qty[]" id="qty_{{$cart->id}}" maxlength="12" data-value="{{$cart->qty}}" value="{{getNumberTranslate($cart->qty)}}" class="count_single_item input-number qty" type="text" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
-                                                                    data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{@$cart->product->product_stock}}" data-stock_manage="{{@$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}">
-                                                                    <input type="hidden" value="{{$cart->id}}" name="cart_id[]">
-                                                                    <input type="hidden" id="maximum_qty_{{$cart->id}}" value="{{@$cart->product->product->product->max_order_qty}}">
-                                                                    <input type="hidden" id="minimum_qty_{{$cart->id}}" value="{{@$cart->product->product->product->minimum_order_qty}}">
-                                                                    <button class="count_single_item number_increment change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
-                                                                        data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{@$cart->product->product_stock}}" data-stock_manage="{{@$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="+"> <i class="ti-plus"></i></button>
-                                                                    @if(isModuleActive('WholeSale'))
-                                                                        <input type="hidden" id="getWholesalePrice_{{$cart->id}}" value="@if(@$cart->product->wholeSalePrices->count()){{ json_encode(@$cart->product->wholeSalePrices) }} @else 0 @endif">
-                                                                    @endif
+                                                                        <input name="qty[]" id="qty_{{$cart->id}}" maxlength="12" data-value="{{$cart->qty}}" value="{{getNumberTranslate($cart->qty)}}" class="count_single_item input-number qty" type="text" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
+                                                                        data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{@$cart->product->product_stock}}" data-stock_manage="{{@$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}">
+                                                                        <input type="hidden" value="{{$cart->id}}" name="cart_id[]">
+                                                                        <input type="hidden" id="maximum_qty_{{$cart->id}}" value="{{@$cart->product->product->product->max_order_qty}}">
+                                                                        <input type="hidden" id="minimum_qty_{{$cart->id}}" value="{{@$cart->product->product->product->minimum_order_qty}}">
+                                                                        <button class="count_single_item number_increment change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
+                                                                            data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{@$cart->product->product_stock}}" data-stock_manage="{{@$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="+"> <i class="ti-plus"></i></button>
+                                                                        @if(isModuleActive('WholeSale'))
+                                                                            <input type="hidden" id="getWholesalePrice_{{$cart->id}}" value="@if(@$cart->product->wholeSalePrices->count()){{ json_encode(@$cart->product->wholeSalePrices) }} @else 0 @endif">
+                                                                        @endif
                                                                 </div>
                                                             </div>
-                                                            <div class="d-inline"><h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap">{{single_price($cart->total_price)}}</h4></div>
-                                                            <span class="close_icon style_2 lh-1 cart_item_delete_btn cursor_pointer" data-id="{{$cart->id}}" data-product_id="{{$cart->product_id}}" data-unique_id="#delete_item_{{$cart->id}}">
+                                                            <div class="d-inline mobile_price"><h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap">{{single_price($cart->total_price)}}</h4></div>
+                                                            <span class="close_icon style_2 lh-1 cart_item_delete_btn cursor_pointer mobile_delete" data-id="{{$cart->id}}" data-product_id="{{$cart->product_id}}" data-unique_id="#delete_item_{{$cart->id}}">
                                                                 <svg  width="12.249" height="15.076" viewBox="0 0 12.249 15.076">
                                                                     <g  transform="translate(-48)">
                                                                         <path  data-name="Path 1449" d="M59.071,1.884H56.48V1.413A1.415,1.415,0,0,0,55.067,0H53.182a1.415,1.415,0,0,0-1.413,1.413v.471H49.178A1.179,1.179,0,0,0,48,3.062V4.711a.471.471,0,0,0,.471.471h.257l.407,8.547a1.412,1.412,0,0,0,1.412,1.346H57.7a1.412,1.412,0,0,0,1.412-1.346l.407-8.547h.257a.471.471,0,0,0,.471-.471V3.062A1.179,1.179,0,0,0,59.071,1.884Zm-6.36-.471a.472.472,0,0,1,.471-.471h1.884a.472.472,0,0,1,.471.471v.471H52.711ZM48.942,3.062a.236.236,0,0,1,.236-.236h9.893a.236.236,0,0,1,.236.236V4.24H48.942Zm9.23,10.623a.471.471,0,0,1-.471.449H50.547a.471.471,0,0,1-.471-.449l-.4-8.5h8.905Z" fill="#00124e"></path>
@@ -382,26 +385,29 @@
                                                                         @endif
                                                                     </p>
                                                                 </div>
-                                                            </a>
-                                                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-10 mt-3 d-lg-none">
-                                                                <div>
-                                                                    <div class="product_number_count style_4" data-target="amount-3">
+    </a>
+    <div class="mobile_title_full d-lg-none mt-2 w-100">
+        <div class="mobile_full_title">{{ @$cart->product->product->product_name }}</div>
+    </div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-10 mt-2 d-lg-none mobile_qty_price_row">
+        <div class="d-flex align-items-center mobile_title_qty_row w-100">
+            <div class="product_number_count style_4 ms-auto" data-target="amount-3">
                                                                         <button class="count_single_item inumber_decrement change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
                                                                             data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="-"> <i class="ti-minus"></i></button>
-                                                                        <input name="qty[]" id="qty_{{$cart->id}}" maxlength="12" data-value="{{$cart->qty}}" value="{{getNumberTranslate($cart->qty)}}" class="count_single_item input-number qty" type="text" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
-                                                                        data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}">
-                                                                        <input type="hidden" value="{{$cart->id}}" name="cart_id[]">
-                                                                        <input type="hidden" id="maximum_qty_{{$cart->id}}" value="{{$cart->product->product->product->max_order_qty}}">
-                                                                        <input type="hidden" id="minimum_qty_{{$cart->id}}" value="{{$cart->product->product->product->minimum_order_qty}}">
-                                                                        <button class="count_single_item number_increment change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
-                                                                            data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="+"> <i class="ti-plus"></i></button>
-                                                                        @if(isModuleActive('WholeSale'))
-                                                                            <input type="hidden" id="getWholesalePrice_{{$cart->id}}" value="@if(@$cart->product->wholeSalePrices->count()){{ json_encode(@$cart->product->wholeSalePrices) }} @else 0 @endif">
-                                                                        @endif
+                                                                            <input name="qty[]" id="qty_{{$cart->id}}" maxlength="12" data-value="{{$cart->qty}}" value="{{getNumberTranslate($cart->qty)}}" class="count_single_item input-number qty" type="text" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
+                                                                            data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}">
+                                                                            <input type="hidden" value="{{$cart->id}}" name="cart_id[]">
+                                                                            <input type="hidden" id="maximum_qty_{{$cart->id}}" value="{{$cart->product->product->product->max_order_qty}}">
+                                                                            <input type="hidden" id="minimum_qty_{{$cart->id}}" value="{{$cart->product->product->product->minimum_order_qty}}">
+                                                                            <button class="count_single_item number_increment change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
+                                                                                data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="+"> <i class="ti-plus"></i></button>
+                                                                            @if(isModuleActive('WholeSale'))
+                                                                                <input type="hidden" id="getWholesalePrice_{{$cart->id}}" value="@if(@$cart->product->wholeSalePrices->count()){{ json_encode(@$cart->product->wholeSalePrices) }} @else 0 @endif">
+                                                                            @endif
                                                                     </div>
-                                                                </div>
-                                                                <div class="d-inline"><h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap">{{single_price($cart->total_price)}}</h4></div>
-                                                                <span class="close_icon style_2 lh-1 cart_item_delete_btn cursor_pointer" data-id="{{$cart->id}}" data-product_id="{{$cart->product_id}}" data-unique_id="#delete_item_{{$cart->id}}">
+        </div>
+        <div class="d-inline mobile_price"><h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap">{{single_price($cart->total_price)}}</h4></div>
+        <span class="close_icon style_2 lh-1 cart_item_delete_btn cursor_pointer mobile_delete" data-id="{{$cart->id}}" data-product_id="{{$cart->product_id}}" data-unique_id="#delete_item_{{$cart->id}}">
                                                                     <svg  width="12.249" height="15.076" viewBox="0 0 12.249 15.076">
                                                                         <g  transform="translate(-48)">
                                                                             <path  data-name="Path 1449" d="M59.071,1.884H56.48V1.413A1.415,1.415,0,0,0,55.067,0H53.182a1.415,1.415,0,0,0-1.413,1.413v.471H49.178A1.179,1.179,0,0,0,48,3.062V4.711a.471.471,0,0,0,.471.471h.257l.407,8.547a1.412,1.412,0,0,0,1.412,1.346H57.7a1.412,1.412,0,0,0,1.412-1.346l.407-8.547h.257a.471.471,0,0,0,.471-.471V3.062A1.179,1.179,0,0,0,59.071,1.884Zm-6.36-.471a.472.472,0,0,1,.471-.471h1.884a.472.472,0,0,1,.471.471v.471H52.711ZM48.942,3.062a.236.236,0,0,1,.236-.236h9.893a.236.236,0,0,1,.236.236V4.24H48.942Zm9.23,10.623a.471.471,0,0,1-.471.449H50.547a.471.471,0,0,1-.471-.449l-.4-8.5h8.905Z" fill="#00124e"></path>
