@@ -39,7 +39,7 @@ return [
     'customer_profile' => 'customer_profile',
     'no_more_data_to_show' => 'No more data to show',
     'no_results_found' => 'No results found',
-    'merchants' => 'Merchants',
+    'merchants' => 'Vendors',
     'quick_search' => 'Quick Search',
     'status' => 'Status',
     'action' => 'Action',

@@ -18,7 +18,16 @@
                 <div class="col-lg-12">
                     <div class="QA_section QA_section_heading_custom check_box_table">
                         <div class="QA_table ">
-
+                            <div class="mb-3">
+                                <ul class="nav nav-tabs" role="tablist">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" data-toggle="tab" href="#shopsTab" role="tab" aria-selected="true" id="tabShops">Shops</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-toggle="tab" href="#vendorsTab" role="tab" aria-selected="false" id="tabVendors">Vendors</a>
+                                    </li>
+                                </ul>
+                            </div>
                             <div class="">
                                 <table class="table" id="sellerTable">
                                     <thead>
@@ -183,12 +192,18 @@
                                 { data: 'action', name: 'action' }
                             ];
                 }
-                $('#sellerTable').DataTable({
+                function dataUrl() {
+                    const activeIsVendors = $('#tabVendors').hasClass('active');
+                    const category = activeIsVendors ? 'vendors' : 'shops';
+                    return "{{ route('admin.merchants_list.get-data') }}" + '?category=' + category;
+                }
+
+                let sellerDT = $('#sellerTable').DataTable({
                     processing: true,
                     serverSide: true,
                     stateSave: true,
                     "ajax": ( {
-                        url: "{{ route('admin.merchants_list.get-data') }}"
+                        url: dataUrl()
                     }),
                     "initComplete":function(json){
 
@@ -271,6 +286,10 @@
                         visible: false
                     }],
                     responsive: true,
+                });
+
+                $('#tabShops, #tabVendors').on('shown.bs.tab', function () {
+                    sellerDT.ajax.url(dataUrl()).load();
                 });
 
                 $(document).on('change', ".ac", function(){

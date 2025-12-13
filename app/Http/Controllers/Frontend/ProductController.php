@@ -174,25 +174,117 @@ class ProductController extends Controller
     }
     public function showVendors(Request $request)
     {
+        // Show all sellers (both Shops and Vendors)
+        $sort_by = $request->get('sort_by');
+        $paginate = (int) $request->get('paginate', 9);
+        if ($paginate <= 0) { $paginate = 9; }
 
-//        $user=User::find(41);
-//        dd($user->role);
-        $sort_by = null;
-        $paginate = 9;
-        $products=User::whereHas('role',function($q){
-            return $q->where('name','Seller');
-        });
-        $data['products'] = $this->filterService->sortAndPaginate($products, $sort_by, $paginate);
+        $products = User::query()
+            ->with('SellerAccount')
+            ->whereHas('role', function ($q) { $q->where('name', 'Seller'); })
+            ->join('seller_accounts', 'seller_accounts.user_id', '=', 'users.id')
+            ->select('users.*');
 
-        if ($request->ajax()) {
-            return  view(theme('partials.sellers_paginate_data'),$data);
-        }else{
-            $data['products']->appends($request->except('page'));
-
-            return view(theme('pages.vendors'),$data);
+        if ($sort_by === 'alpha_asc') {
+            $products->orderBy('seller_accounts.seller_shop_display_name', 'asc');
+        } elseif ($sort_by === 'alpha_desc') {
+            $products->orderBy('seller_accounts.seller_shop_display_name', 'desc');
+        } else {
+            $products->orderBy('users.created_at', 'desc');
         }
 
+        $data['products'] = $products->paginate($paginate);
 
+        if ($request->ajax()) {
+            return view(theme('partials.sellers_paginate_data'), $data);
+        } else {
+            $data['products']->appends($request->except('page'));
+            return view(theme('pages.vendors'), $data);
+        }
+    }
+
+    public function showShopVendors(Request $request, $seller)
+    {
+        // Accept seller slug or base64 user id
+        $shop = null;
+        try {
+            $shop = User::where('slug', $seller)->first();
+            if (!$shop) {
+                $id = (int) base64_decode($seller);
+                if ($id > 0) {
+                    $shop = User::find($id);
+                }
+            }
+        } catch (\Throwable $e) {
+            $shop = null;
+        }
+        if (!$shop || !$shop->SellerAccount || $shop->SellerAccount->parent_seller_id !== null) {
+            return abort(404);
+        }
+
+        $sort_by = $request->get('sort_by');
+        $paginate = (int) $request->get('paginate', 9);
+        if ($paginate <= 0) { $paginate = 9; }
+        $products = User::query()
+            ->with('SellerAccount')
+            ->whereHas('role', function ($q) { $q->where('name', 'Seller'); })
+            ->whereHas('SellerAccount', function ($q) use ($shop) { $q->where('parent_seller_id', $shop->id); })
+            ->join('seller_accounts', 'seller_accounts.user_id', '=', 'users.id')
+            ->select('users.*');
+
+        if ($sort_by === 'alpha_asc') {
+            $products->orderBy('seller_accounts.seller_shop_display_name', 'asc');
+        } elseif ($sort_by === 'alpha_desc') {
+            $products->orderBy('seller_accounts.seller_shop_display_name', 'desc');
+        } else {
+            $products->orderBy('users.created_at', 'desc');
+        }
+        $data['products'] = $products->paginate($paginate);
+        $data['shop'] = $shop;
+
+        if ($request->ajax()) {
+            return view('frontend.amazy.partials.sellers_paginate_data', $data);
+        } else {
+            $data['products']->appends($request->except('page'));
+            return view('frontend.amazy.pages.shop_vendors', $data);
+        }
+    }
+
+    public function showShops(Request $request)
+    {
+        // Show only Shops (no parent) that have at least one Vendor
+        $sort_by = $request->get('sort_by');
+        $paginate = (int) $request->get('paginate', 9);
+        if ($paginate <= 0) { $paginate = 9; }
+
+        $products = User::query()
+            ->with('SellerAccount')
+            ->whereHas('role', function ($q) { $q->where('name', 'Seller'); })
+            ->whereHas('SellerAccount', function ($q) { $q->whereNull('parent_seller_id'); })
+            ->whereExists(function($q){
+                $q->selectRaw('1')
+                  ->from('seller_accounts as sa2')
+                  ->whereColumn('sa2.parent_seller_id', 'users.id');
+            })
+            ->join('seller_accounts', 'seller_accounts.user_id', '=', 'users.id')
+            ->select('users.*');
+
+        if ($sort_by === 'alpha_asc') {
+            $products->orderBy('seller_accounts.seller_shop_display_name', 'asc');
+        } elseif ($sort_by === 'alpha_desc') {
+            $products->orderBy('seller_accounts.seller_shop_display_name', 'desc');
+        } else {
+            $products->orderBy('users.created_at', 'desc');
+        }
+
+        $data['products'] = $products->paginate($paginate);
+
+        if ($request->ajax()) {
+            return view(theme('partials.sellers_paginate_data'), $data);
+        } else {
+            $data['products']->appends($request->except('page'));
+            return view(theme('pages.vendors'), $data);
+        }
     }
     public function show_in_modal(Request $request)
     {

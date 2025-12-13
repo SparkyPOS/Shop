@@ -63,6 +63,30 @@
 @include(theme('partials.add_to_cart_script'))
 @include(theme('partials.add_to_compare_script'))
 @push('scripts')
+<script type="text/javascript">
+(function($){
+    "use strict";
+    $(document).ready(function(){
+        function reloadSellerList(){
+            const paginate = $('#paginate_by').val();
+            const sort_by = $('#product_short_list').val();
+            const url = new URL(window.location.href);
+            if (paginate) url.searchParams.set('paginate', paginate);
+            if (sort_by) url.searchParams.set('sort_by', sort_by);
+            $('#pre-loader').removeClass('d-none');
+            $.get(url.toString(), function(data){
+                const html = $(data).find('#dataWithPaginate').html();
+                $('#dataWithPaginate').html(html);
+                $('#pre-loader').addClass('d-none');
+                if ($.fn.niceSelect) { $('select').niceSelect(); }
+            });
+        }
+        $(document).on('change', '.sellers_filter', reloadSellerList);
+    });
+})(jQuery);
+</script>
+@endpush
+@push('scripts')
     <script type="text/javascript">
         (function($){
             "use strict";

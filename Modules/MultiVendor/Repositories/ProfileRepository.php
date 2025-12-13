@@ -42,6 +42,7 @@ class ProfileRepository {
             'seller_phone' => $data['seller_phone'],
             'seller_shop_display_name' => $data['shop_display_name'],
             'seller_commission_id' => isset($data['commission_type'])?$data['commission_type']:$seller_data->seller_commission_id,
+            'parent_seller_id' => $data['parent_seller_id'] ?? null,
             'holiday_mode' => $data['holiday_mode'],
             'holiday_type' => $data['holiday_mode'] == 1?$data['holiday_type']:null,
             'holiday_date' => $data['holiday_mode'] == 1 && $data['holiday_type'] == 1?$data['holiday_date']:null,

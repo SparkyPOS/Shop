@@ -138,6 +138,7 @@
                                 </div>
                             </div>
                         </div>
+
                         <div class="wish_cart_mobile">
                             <div class="home6_search_toggle ">
                                 <i class="ti-search"></i>

@@ -63,6 +63,22 @@
                                 </div>
                             </div>
 
+                            <div class="col-md-4">
+                                <div class="primary_input mb-25">
+                                    <label class="primary_input_label" for="parent_seller_id">Parent Shop (optional)</label>
+                                    <select class="primary_select" name="parent_seller_id" id="parent_seller_id">
+                                        <option value="">No parent (Shop)</option>
+                                        @if(!empty($parentShops))
+                                            @foreach($parentShops as $parent)
+                                                <option value="{{ $parent->user_id }}" @if(old('parent_seller_id') == $parent->user_id) selected @endif>
+                                                    {{ $parent->seller_shop_display_name ?? ($parent->user->first_name.' '.$parent->user->last_name) }}
+                                                </option>
+                                            @endforeach
+                                        @endif
+                                    </select>
+                                </div>
+                            </div>
+
 
                             <div class="col-md-4">
                                 <div class="primary_input mb-25">

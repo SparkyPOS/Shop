@@ -68,12 +68,19 @@ class MerchantController extends Controller
     }
 
     public function getData(Request $request){
-
         if($request->type == "deactive"){
             $seller = $this->merchantService->getInactive();
         }else{
-
             $seller = $this->merchantService->getActive();
+        }
+
+        // Filter by Shops (no parent) vs Vendors (has parent)
+        if ($request->has('category')) {
+            if ($request->get('category') === 'vendors') {
+                $seller = $seller->whereNotNull('parent_seller_id');
+            } else if ($request->get('category') === 'shops') {
+                $seller = $seller->whereNull('parent_seller_id');
+            }
         }
         return DataTables::of($seller)
             ->filterColumn('name', function($query, $keyword) {
@@ -217,11 +224,21 @@ class MerchantController extends Controller
 
     public function edit($id)
     {
+        // Restrict this page strictly to admin/superadmin
+        if (!in_array(auth()->user()->role->type, ['admin', 'superadmin'])) {
+            abort(404);
+        }
         $data['seller'] = $this->profileService->getData($id);
         $data['countries'] = Country::all();
         $commissionRepo = new CommisionRepository();
         $data['commissions'] = $commissionRepo->getAllActive();
         $data['pricings'] = Pricing::where('status', 1)->get();
+        // Parent shops list for re-parenting (only top-level shops)
+        $data['parentShops'] = \Modules\MultiVendor\Entities\SellerAccount::with('user')
+            ->whereNull('parent_seller_id')
+            ->whereHas('user', function($q){ $q->where('is_active', 1)->where('id', '>', 1); })
+            ->orderByDesc('id')
+            ->get();
         return view('multivendor::profile.index', $data);
     }
 
@@ -229,6 +246,12 @@ class MerchantController extends Controller
     {
         $commisionRepo = new CommisionRepository();
         $data['commissions'] = $commisionRepo->getAllActive();
+        // Parent shops list (only top-level sellers)
+        $data['parentShops'] = \Modules\MultiVendor\Entities\SellerAccount::with('user')
+            ->whereNull('parent_seller_id')
+            ->whereHas('user', function($q){ $q->where('is_active', 1)->where('id', '>', 1); })
+            ->orderByDesc('id')
+            ->get();
         return view('multivendor::merchants.create', $data);
     }
 

@@ -75,6 +75,25 @@
                             </div>
 
                         </div>
+                        <div class="col-xl-6">
+                            <div class="primary_input mb-25">
+                                <label class="primary_input_label" for="parent_seller_id">Parent Shop</label>
+                                <select class="primary_select" name="parent_seller_id" id="parent_seller_id">
+                                    <option value="">No parent (Shop)</option>
+                                    @if(isset($parentShops))
+                                        @foreach($parentShops as $parent)
+                                            @php
+                                                $selectedParent = old('parent_seller_id') ?? optional($seller->sellerAccount)->parent_seller_id;
+                                            @endphp
+                                            <option value="{{ $parent->user_id }}" @if($selectedParent == $parent->user_id) selected @endif>
+                                                {{ $parent->seller_shop_display_name ?? ($parent->user->first_name.' '.$parent->user->last_name) }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                                <small class="text-muted">Leave empty to keep as Shop. Select a parent to make this a Vendor.</small>
+                            </div>
+                        </div>
                         @if(permissionCheck('seller.change_subscription_type'))
                         <div class="col-xl-6 ">
                             <div class="primary_input mb-25">

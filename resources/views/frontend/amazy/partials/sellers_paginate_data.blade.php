@@ -30,29 +30,29 @@
                 <div class="short_select d-flex align-items-center gap_10 flex-wrap">
 
                     <div class="shorting_box d-none d-md-block">
-                        <select name="paginate_by" class="amaz_select getFilterUpdateByIndex" id="paginate_by">
-                            <option value="9" @if (isset($paginate) && $paginate == '9') selected @endif>
+                        <select name="paginate_by" class="amaz_select sellers_filter" id="paginate_by">
+                            <option value="9" @if (request('paginate') == '9') selected @endif>
                                 {{ __('common.show') }} {{ getNumberTranslate(9) }} {{ __('common.item’s') }}</option>
-                            <option value="12" @if (isset($paginate) && $paginate == '12') selected @endif>
+                            <option value="12" @if (request('paginate') == '12') selected @endif>
                                 {{ __('common.show') }} {{ getNumberTranslate(12) }} {{ __('common.item’s') }}
                             </option>
-                            <option value="16" @if (isset($paginate) && $paginate == '16') selected @endif>
+                            <option value="16" @if (request('paginate') == '16') selected @endif>
                                 {{ __('common.show') }} {{ getNumberTranslate(16) }} {{ __('common.item’s') }}
                             </option>
-                            <option value="25" @if (isset($paginate) && $paginate == '25') selected @endif>
+                            <option value="25" @if (request('paginate') == '25') selected @endif>
                                 {{ __('common.show') }} {{ getNumberTranslate(25) }} {{ __('common.item’s') }}
                             </option>
-                            <option value="30" @if (isset($paginate) && $paginate == '30') selected @endif>
+                            <option value="30" @if (request('paginate') == '30') selected @endif>
                                 {{ __('common.show') }} {{ getNumberTranslate(30) }} {{ __('common.item’s') }}
                             </option>
                         </select>
                     </div>
                     <div class="shorting_box">
-                        <select class="amaz_select getFilterUpdateByIndex" name="sort_by" id="product_short_list">
+                        <select class="amaz_select sellers_filter" name="sort_by" id="product_short_list">
                             <option disabled selected>{{ __('amazy.Sorting by') }}</option>
-                            <option value="alpha_asc" @if (isset($sort_by) && $sort_by == 'alpha_asc') selected @endif>
+                            <option value="alpha_asc" @if (request('sort_by') == 'alpha_asc') selected @endif>
                                 {{ __('defaultTheme.name_a_to_z') }}</option>
-                            <option value="alpha_desc" @if (isset($sort_by) && $sort_by == 'alpha_desc') selected @endif>
+                            <option value="alpha_desc" @if (request('sort_by') == 'alpha_desc') selected @endif>
                                 {{ __('defaultTheme.name_z_to_a') }}</option>
 
                         </select>
@@ -119,6 +119,27 @@
                                     <a href="{{route('frontend.seller',['seller_id'=>$product->slug,'vendor_id'=>@$product->SellerAccount->vendor_id])}}">
                                         <h4>@if ($product->SellerAccount->seller_shop_display_name) {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @else {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @endif</h4>
                                     </a>
+                                    @if(isset($product->SellerAccount) && is_null($product->SellerAccount->parent_seller_id))
+                                        <div class="mt-1">
+                                            @php
+                                                $shopSlug = $product->slug ?: base64_encode($product->id);
+                                            @endphp
+                                            <a class="theme_btn_small" href="{{ route('frontend.shop.vendors', $shopSlug) }}">View Sellers</a>
+                                        </div>
+                                    @endif
+                                    @if(!empty(@$product->SellerAccount->about_seller))
+                                        <div class="mt-1">
+                                            <span class="product_banding">{{ __('seller.about_seller') }}: {{ textLimit(strip_tags(@$product->SellerAccount->about_seller), 100) }}</span>
+                                        </div>
+                                    @endif
+                                    @if(@$product->SellerAccount && @$product->SellerAccount->vendor_id)
+                                        <div class="mt-1">
+                                            <span class="product_banding">Vendor ID: {{ @$product->SellerAccount->vendor_id }}</span>
+                                        </div>
+                                    @endif
+                                    <div class="mt-1">
+                                        <span class="product_banding">Seller: {{ textLimit($product->name, 60) }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

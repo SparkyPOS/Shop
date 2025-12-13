@@ -101,6 +101,7 @@ class MerchantRepository
             'commission_rate' => (!empty($data['commission_rate'])) ? $data['commission_rate'] : 0,
             'subscription_type' => 'monthly',
             'vendor_id'=>$data['vendor_id'],
+            'parent_seller_id' => $data['parent_seller_id'] ?? null,
             'seller_phone' => $data['phone_number']
         ]);
         SellerBusinessInformation::create([
