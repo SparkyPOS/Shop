@@ -97,7 +97,7 @@ class AuthController extends Controller
             [$userId, $date, $redirectTo] = $result = explode('|', $pasedToken);
             $timeDifference = time() - strtotime($date);
             if ($timeDifference > 0 || $timeDifference < 300) {
-                $user = User::where('pos_user', $userId)->first();
+                $user = User::where('pos_user_id', $userId)->first();
                 if ($user instanceof User) {
                     Auth::loginUsingId($user->id);
                     $redirectTo = $redirectTo . '?success=true';
