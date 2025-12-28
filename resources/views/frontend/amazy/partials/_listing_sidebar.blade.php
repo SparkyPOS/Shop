@@ -73,6 +73,54 @@
                     @endforeach
                 @endif
             @endisset
+
+            <div class="single_pro_categry">
+                <h4 class="font_18 f_w_700">Filter Stores</h4>
+                <div class="mb_15">
+                    <input type="text" id="store_query" class="primary_input4 w-100" placeholder="Store name, vendor_id or phone" />
+                </div>
+                <h4 class="font_18 f_w_700">Filter Vendors</h4>
+                <div class="mb_35">
+                    <input type="text" id="vendor_query" class="primary_input4 w-100" placeholder="Vendor name, vendor_id or phone" />
+                </div>
+            </div>
+            <script>
+                (function($){
+                    let debounceTimer = null;
+                    function applySellerQuery(type, value){
+                        try{ if(typeof filterType === 'undefined'){ window.filterType = []; } }catch(e){ window.filterType = []; }
+                        const idx = filterType.findIndex(function(obj){ return obj.filterTypeId === type; });
+                        if(idx >= 0){ filterType.splice(idx,1); }
+                        const val = (value || '').trim();
+                        if(val.length){ filterType.push({ filterTypeId: type, filterTypeValue: [val] }); }
+                        const requestItem = $('#item_request').val();
+                        const requestItemType = $('#item_request_type').val();
+                        $('#pre-loader').show();
+                        $.post($('#filterUrl').val(), {
+                            _token: '{{ csrf_token() }}',
+                            filterType: filterType,
+                            requestItem: requestItem,
+                            requestItemType: requestItemType
+                        }, function(data){
+                            $('#dataWithPaginate').html(data);
+                            if($.fn.niceSelect){ $('#product_short_list').niceSelect(); $('#paginate_by').niceSelect(); }
+                            $('#pre-loader').hide();
+                            if(typeof activeTab === 'function'){ activeTab(); }
+                            if(typeof initLazyload === 'function'){ initLazyload(); }
+                        });
+                    }
+                    $('#vendor_query').on('keyup', function(){
+                        clearTimeout(debounceTimer);
+                        const v = $(this).val();
+                        debounceTimer = setTimeout(function(){ applySellerQuery('vendor_query', v); }, 400);
+                    });
+                    $('#store_query').on('keyup', function(){
+                        clearTimeout(debounceTimer);
+                        const v = $(this).val();
+                        debounceTimer = setTimeout(function(){ applySellerQuery('store_query', v); }, 400);
+                    });
+                })(jQuery);
+            </script>
             @isset($color)
                 @if ($color != null && $color->id == 1)
                     <div class="single_pro_categry">

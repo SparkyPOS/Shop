@@ -86,7 +86,7 @@ $LanguageList = getLanguageList();
                                     <div id="variant_sku_div" class="col-xl-6 d-none">
                                         <div class="primary_input mb-25">
                                             <label class="primary_input_label" for="product_sku">{{ __('product.select_product_sku') }} <span class="text-danger">*</span></label>
-                                            <select class="primary_select mb-25" name="product_sku []" id="product_sku" multiple>
+                                            <select class="primary_select mb-25" name="product_sku[]" id="product_sku" multiple>
                                                 <option value="" selected disabled>{{ __('common.select') }}</option>
                                             </select>
                                         </div>

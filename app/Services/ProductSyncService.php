@@ -23,7 +23,7 @@ class ProductSyncService
             return;
         }
 
-        $product = Product::with(['skus', 'categories'])->find($productId);
+        $product = Product::with(['skus', 'categories', 'gallary_images'])->find($productId);
         if (!$product) {
             return;
         }
@@ -156,8 +156,12 @@ class ProductSyncService
             $payload['variants'] = $variants;
 
             // Provide parent-level price fields for POS unit quantity defaults
-            $payload['sale_price_edit'] = isset($variants[0]['sale_price']) ? $variants[0]['sale_price'] : 0;
-            $payload['wholesale_price_edit'] = $product->skus->first()->purchase_price ?? 0;
+            // Use the minimum sale price across variants for a sensible base
+            $variantPrices = array_map(function($v){ return (float)($v['sale_price'] ?? 0); }, $variants);
+            $payload['sale_price_edit'] = !empty($variantPrices) ? min($variantPrices) : 0;
+            // Use minimum purchase price across skus for wholesale baseline
+            $wholesaleCandidates = $product->skus->pluck('purchase_price')->filter()->map(fn($v) => (float)$v)->all();
+            $payload['wholesale_price_edit'] = !empty($wholesaleCandidates) ? min($wholesaleCandidates) : (float) ($product->skus->first()->purchase_price ?? 0);
         } else {
             $payload['sale_price_edit'] = optional($product->skus->first())->selling_price ?? 0;
             $payload['wholesale_price_edit'] = optional($product->skus->first())->purchase_price ?? 0;
@@ -189,6 +193,25 @@ class ProductSyncService
             }
         } catch (\Throwable $e) {
             // Ignore if module or relations are not present
+        }
+
+        // Include product galleries as absolute URLs so POS can fetch them
+        try {
+            $galleryUrls = [];
+            foreach ((array) $product->gallary_images as $gi) {
+                if (!empty($gi->images_source)) {
+                    $galleryUrls[] = asset(asset_path($gi->images_source));
+                }
+            }
+            if (!empty($galleryUrls)) {
+                $payload['galleries'] = array_map(function ($u) {
+                    return ['url' => $u];
+                }, $galleryUrls);
+                // indicate POS to replace existing galleries with provided list
+                $payload['replace'] = true;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('POS sync galleries build failed: '.$e->getMessage());
         }
 
         $url = $baseUrl . '/api/sync/products';

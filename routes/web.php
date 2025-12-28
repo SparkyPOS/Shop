@@ -164,7 +164,7 @@ Route::get('/giftcard/reviews/get-data',[GiftCardController::class,'getReviewByP
 Route::post('/item/get-pickup-by-city', [ProductController::class,'getPickupByCity'])->name('frontend.item.get_pickup_by_city');
 Route::post('/item/get-pickup-info', [ProductController::class,'getPickupInfo'])->name('frontend.item.get_pickup_info');
 Route::get('/vendors',[ProductController::class,'showVendors'])->name('frontend.vendors');
-Route::get('/shops',[ProductController::class,'showShops'])->name('frontend.shops');
+Route::get('/stores',[ProductController::class,'showShops'])->name('frontend.shops');
 Route::get('/shop/{seller}/sellers', [ProductController::class, 'showShopVendors'])->name('frontend.shop.vendors');
 
 Route::group(['middleware' => ['auth','seller'],'prefix' => 'media-manager'], function () {

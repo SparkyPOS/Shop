@@ -177,13 +177,16 @@
                 if(page != 'undefined'){
                     var paginate = $('#paginate_by').val();
                     var sort_by = $('#product_short_list').val();
-                    if (sort_by != null && paginate != null) {
-                        var url = window.location.href+'&sort_by='+sort_by+'&paginate='+paginate+'&page='+page;
-                    }else if (sort_by == null && paginate != null) {
-                        var url = window.location.href+'&paginate='+paginate+'&page='+page;
-                    }else {
-                        var url = window.location.href+'&page='+page;
-                    }
+
+                    var baseUrl = window.location.href;
+                    var hasQuery = baseUrl.indexOf('?') !== -1;
+                    var params = [];
+                    if (sort_by != null) params.push('sort_by=' + encodeURIComponent(sort_by));
+                    if (paginate != null) params.push('paginate=' + encodeURIComponent(paginate));
+                    params.push('page=' + encodeURIComponent(page));
+                    var queryString = params.join('&');
+                    var url = baseUrl + (hasQuery ? '&' : '?') + queryString;
+
                     $.ajax({
                         url: url,
                         success:function(data)

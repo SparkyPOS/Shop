@@ -26,7 +26,7 @@
                                     </div>
                                     <div class="products_details_single">
                                         <span>{{__('product.SKU')}} </span>
-                                        <span>: {{ $product->product->skus->first()->sku }}</span>
+                                        <span>: {{ optional($product->product->skus->first())->sku }}</span>
                                     </div>
                                     <div class="products_details_single">
                                         <span>{{__('product.product_type')}} </span>
@@ -69,7 +69,7 @@
                                     @if($product->product->product_type == 1)
                                     <div class="products_details_single">
                                         <span>{{__('product.selling_price')}}  </span>
-                                        <span>: {{ single_price($product->skus->first()->selling_price) }}</span>
+                                        <span>: {{ $product->skus->first() ? single_price($product->skus->first()->selling_price) : '-' }}</span>
                                     </div>
                                     @endif
 

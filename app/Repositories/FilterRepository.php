@@ -115,6 +115,64 @@ class FilterRepository
                 $products = $this->productThroughRating($rating, $requestType, $requestItem, $products);
                 $giftCards = $giftCards->where('avg_rating', '>=', $rating);
             }
+            if ($filter['filterTypeId'] == "vendor_query" && !empty($filter['filterTypeValue'])) {
+                $term = is_array($filter['filterTypeValue']) ? end($filter['filterTypeValue']) : $filter['filterTypeValue'];
+                $term = trim($term);
+                if ($term !== '') {
+                    $products = $products->whereHas('seller', function($qs) use ($term) {
+                        $qs->whereHas('SellerAccount', function($acc) use ($term){
+                            $acc->whereNotNull('parent_seller_id')
+                                ->where(function($w) use ($term){
+                                    $w->where('vendor_id', 'like', "%$term%")
+                                      ->orWhere('seller_phone', 'like', "%$term%")
+                                      ->orWhere('seller_shop_display_name', 'like', "%$term%");
+                                });
+                        })->where(function($w) use ($term){
+                            $w->orWhere('first_name', 'like', "%$term%")
+                              ->orWhere('last_name', 'like', "%$term%")
+                              ->orWhere('username', 'like', "%$term%")
+                              ->orWhere('phone', 'like', "%$term%")
+                              ->orWhere(DB::raw("concat(first_name,' ',last_name)"), 'like', "%$term%");
+                        });
+                    });
+                }
+            }
+            if ($filter['filterTypeId'] == "store_query" && !empty($filter['filterTypeValue'])) {
+                $term = is_array($filter['filterTypeValue']) ? end($filter['filterTypeValue']) : $filter['filterTypeValue'];
+                $term = trim($term);
+                if ($term !== '') {
+                    $products = $products->whereHas('seller', function($qs) use ($term) {
+                        $qs->whereHas('SellerAccount', function($acc) use ($term){
+                            $acc->whereNull('parent_seller_id')
+                                ->where(function($w) use ($term){
+                                    $w->where('vendor_id', 'like', "%$term%")
+                                      ->orWhere('seller_phone', 'like', "%$term%")
+                                      ->orWhere('seller_shop_display_name', 'like', "%$term%");
+                                });
+                        })->where(function($w) use ($term){
+                            $w->orWhere('first_name', 'like', "%$term%")
+                              ->orWhere('last_name', 'like', "%$term%")
+                              ->orWhere('username', 'like', "%$term%")
+                              ->orWhere('phone', 'like', "%$term%")
+                              ->orWhere(DB::raw("concat(first_name,' ',last_name)"), 'like', "%$term%");
+                        });
+                    });
+                }
+            }
+            if ($filter['filterTypeId'] == "seller_type" && !empty($filter['filterTypeValue'])) {
+                $vals = $filter['filterTypeValue'];
+                $hasStore = in_array('store', $vals);
+                $hasVendor = in_array('vendor', $vals);
+                if ($hasStore && !$hasVendor) {
+                    $products = $products->whereHas('seller.SellerAccount', function($q){
+                        $q->whereNull('parent_seller_id');
+                    });
+                } elseif ($hasVendor && !$hasStore) {
+                    $products = $products->whereHas('seller.SellerAccount', function($q){
+                        $q->whereNotNull('parent_seller_id');
+                    });
+                }
+            }
             if ($data['requestItemType'] == "category" && empty($filter['filterTypeValue'])) {
                 $cat = $data['requestItem'];
                 $catRepo = new CategoryRepository(new Category());
@@ -413,6 +471,64 @@ class FilterRepository
             if ($filter['filterTypeId'] == "rating") {
                 $rating = $filter['filterTypeValue'][0];
                 $products = $this->productThroughRatingForAllListing($rating, $products);
+            }
+            if ($filter['filterTypeId'] == "vendor_query" && !empty($filter['filterTypeValue'])) {
+                $term = is_array($filter['filterTypeValue']) ? end($filter['filterTypeValue']) : $filter['filterTypeValue'];
+                $term = trim($term);
+                if ($term !== '') {
+                    $products = $products->whereHas('seller', function($qs) use ($term) {
+                        $qs->whereHas('SellerAccount', function($acc) use ($term){
+                            $acc->whereNotNull('parent_seller_id')
+                                ->where(function($w) use ($term){
+                                    $w->where('vendor_id', 'like', "%$term%")
+                                      ->orWhere('seller_phone', 'like', "%$term%")
+                                      ->orWhere('seller_shop_display_name', 'like', "%$term%");
+                                });
+                        })->where(function($w) use ($term){
+                            $w->orWhere('first_name', 'like', "%$term%")
+                              ->orWhere('last_name', 'like', "%$term%")
+                              ->orWhere('username', 'like', "%$term%")
+                              ->orWhere('phone', 'like', "%$term%")
+                              ->orWhere(DB::raw("concat(first_name,' ',last_name)"), 'like', "%$term%");
+                        });
+                    });
+                }
+            }
+            if ($filter['filterTypeId'] == "store_query" && !empty($filter['filterTypeValue'])) {
+                $term = is_array($filter['filterTypeValue']) ? end($filter['filterTypeValue']) : $filter['filterTypeValue'];
+                $term = trim($term);
+                if ($term !== '') {
+                    $products = $products->whereHas('seller', function($qs) use ($term) {
+                        $qs->whereHas('SellerAccount', function($acc) use ($term){
+                            $acc->whereNull('parent_seller_id')
+                                ->where(function($w) use ($term){
+                                    $w->where('vendor_id', 'like', "%$term%")
+                                      ->orWhere('seller_phone', 'like', "%$term%")
+                                      ->orWhere('seller_shop_display_name', 'like', "%$term%");
+                                });
+                        })->where(function($w) use ($term){
+                            $w->orWhere('first_name', 'like', "%$term%")
+                              ->orWhere('last_name', 'like', "%$term%")
+                              ->orWhere('username', 'like', "%$term%")
+                              ->orWhere('phone', 'like', "%$term%")
+                              ->orWhere(DB::raw("concat(first_name,' ',last_name)"), 'like', "%$term%");
+                        });
+                    });
+                }
+            }
+            if ($filter['filterTypeId'] == "seller_type" && !empty($filter['filterTypeValue'])) {
+                $vals = $filter['filterTypeValue'];
+                $hasStore = in_array('store', $vals);
+                $hasVendor = in_array('vendor', $vals);
+                if ($hasStore && !$hasVendor) {
+                    $products = $products->whereHas('seller.SellerAccount', function($q){
+                        $q->whereNull('parent_seller_id');
+                    });
+                } elseif ($hasVendor && !$hasStore) {
+                    $products = $products->whereHas('seller.SellerAccount', function($q){
+                        $q->whereNotNull('parent_seller_id');
+                    });
+                }
             }
         }
         session()->put('filterDataFromCat', $data);

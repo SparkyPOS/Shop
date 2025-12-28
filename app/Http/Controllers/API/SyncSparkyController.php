@@ -19,8 +19,10 @@ use Modules\Product\Entities\ProductSku;
 use Modules\Product\Entities\ProductVariations;
 use Modules\MultiVendor\Entities\SellerAccount;
 use Modules\Seller\Entities\SellerProduct;
+use Modules\Seller\Entities\SellerProductSKU;
 use Modules\AuctionProducts\Entities\Auction;
 use Modules\Shipping\Entities\ProductShipping;
+use App\Models\UsedMedia;
 
 class SyncSparkyController extends Controller
 {
@@ -221,6 +223,15 @@ class SyncSparkyController extends Controller
                     'variant_product' => $variant_product,
                 ]);
 
+                // Decide stock management mapping (default: enabled)
+                $manageStock = 1;
+                if (isset($product['stock_management'])) {
+                    $val = strtolower((string) $product['stock_management']);
+                    $manageStock = in_array($val, ['enabled','1','true','yes']) ? 1 : 0;
+                } elseif (isset($product['stock_manage'])) {
+                    $manageStock = (int) $product['stock_manage'] ? 1 : 0;
+                }
+
                 // Update Product
                 $newProduct = Product::updateOrCreate(
                     ['external_product_id' => $product['id']],
@@ -238,9 +249,13 @@ class SyncSparkyController extends Controller
                         'is_physical' => 1,
                         'is_approved' => 1,
                         'status' => $product['status'] == 'available' ? 1 : 0 ,
+                        'stock_manage' => $manageStock,
                         'video_provider' => 'youtube'
                     ]
                 );
+
+                // Collect ProductSku rows to later upsert SellerProductSKU after ensuring seller product
+                $pendingSellerSkuRows = [];
 
                 // Update Product Category: resolve using external id, id, name, or slug (lenient)
                 $categoryInput = $product['category_id'] ?? ($product['category'] ?? ($product['category_name'] ?? null));
@@ -256,6 +271,7 @@ class SyncSparkyController extends Controller
 
                 $mediaRepository = null;
                 $mediaIds = [];
+                $primaryMediaId = null;
                 // Update Product Images
                 // If replace=true, clear existing galleries. Otherwise, append.
                 $replace = (bool) ($request->boolean('replace') ?? ($product['replace'] ?? false));
@@ -280,6 +296,7 @@ class SyncSparkyController extends Controller
                                 $gal->media_id = $media->id;
                                 $gal->save();
                                 $mediaIds[] = $media->id;
+                                if ($primaryMediaId === null) { $primaryMediaId = $media->id; }
                             }
                         }
                     }
@@ -303,11 +320,21 @@ class SyncSparkyController extends Controller
                         $gal->media_id = $media->id;
                         $gal->save();
                         $mediaIds[] = $media->id;
+                        if ($primaryMediaId === null) { $primaryMediaId = $media->id; }
                     }
                 }
 
                 if (!empty($mediaIds)) {
                     $newProduct->media_ids = implode(',', $mediaIds);
+                    // also ensure a thumbnail image is set for list views
+                    if ($replace || empty($newProduct->thumbnail_image_source)) {
+                        if ($primaryMediaId) {
+                            $primaryMedia = MediaManager::find($primaryMediaId);
+                            if ($primaryMedia) {
+                                $newProduct->thumbnail_image_source = $primaryMedia->file_name;
+                            }
+                        }
+                    }
                     $newProduct->save();
                 }
                 if (!$variant_product) {
@@ -322,7 +349,7 @@ class SyncSparkyController extends Controller
                     $newProductSku->purchase_price = $product['purchase_price'];
                     $newProductSku->selling_price = $product['selling_price'];
                     $incomingQty = null;
-                    if (isset($product['stock']) && is_numeric($product['stock'])) { $incomingQty = (int) $product['stock']; }
+                    if (isset($product['accurate_tracking']) && is_numeric($product['accurate_tracking'])) { $incomingQty = (int) $product['accurate_tracking']; }
                     elseif (isset($product['quantity']) && is_numeric($product['quantity'])) { $incomingQty = (int) $product['quantity']; }
                     if ($incomingQty !== null) {
                         \Log::info('shop.sync.stock.single_applied', [
@@ -340,6 +367,14 @@ class SyncSparkyController extends Controller
                     if (isset($product['additional_shipping'])) $newProductSku->additional_shipping = (float) $product['additional_shipping'];
                     $newProductSku->status = ($product['status'] == 'available') ? 1 : 0;
                     $newProductSku->save();
+
+                    // queue seller sku upsert for simple product
+                    $pendingSellerSkuRows[] = [
+                        'product_sku_id' => $newProductSku->id,
+                        'product_stock' => $incomingQty !== null ? $incomingQty : ((int) ($newProductSku->product_stock ?? 0)),
+                        'selling_price' => (float) ($newProductSku->selling_price ?? 0),
+                        'status' => (int) ($newProductSku->status ?? 1),
+                    ];
                 } else {
                     $replace = (bool) ($request->boolean('replace') ?? ($product['replace'] ?? false));
                     $skuIds = [];
@@ -457,8 +492,15 @@ class SyncSparkyController extends Controller
                         $newProductSku->product_id = $newProduct->id;
                         $newProductSku->sku = $sku;
                         $newProductSku->track_sku = $sku;
-                        $newProductSku->purchase_price = $variant['sale_price'];
-                        $newProductSku->selling_price = $variant['sale_price'];
+                        // Map prices: POS sends per-variant sale_price; purchase_price is product-level
+                        $basePurchase = null;
+                        if (isset($product['purchase_price']) && is_numeric($product['purchase_price'])) {
+                            $basePurchase = (float) $product['purchase_price'];
+                        } elseif (isset($product['wholesale_price_edit']) && is_numeric($product['wholesale_price_edit'])) {
+                            $basePurchase = (float) $product['wholesale_price_edit'];
+                        }
+                        $newProductSku->purchase_price = $basePurchase !== null ? $basePurchase : (float) ($product['selling_price'] ?? $variant['sale_price'] ?? 0);
+                        $newProductSku->selling_price = (float) $variant['sale_price'];
                         $newProductSku->weight = 0;
                         $newProductSku->length = 0;
                         $newProductSku->breadth = 0;
@@ -479,6 +521,14 @@ class SyncSparkyController extends Controller
                         if (isset($variant['height'])) $newProductSku->height = (float) $variant['height'];
                         if (isset($variant['additional_shipping'])) $newProductSku->additional_shipping = (float) $variant['additional_shipping'];
                         $newProductSku->save();
+
+                        // queue seller sku upsert for variant
+                        $pendingSellerSkuRows[] = [
+                            'product_sku_id' => $newProductSku->id,
+                            'product_stock' => isset($variant['stock']) && is_numeric($variant['stock']) ? (int) $variant['stock'] : ((int) ($newProductSku->product_stock ?? 0)),
+                            'selling_price' => (float) ($newProductSku->selling_price ?? 0),
+                            'status' => (int) ($newProductSku->status ?? 1),
+                        ];
                         // Variant image via multipart: variant_images_by_sku[<SKU>]
                         if ($request->hasFile('variant_images_by_sku')) {
                             $map = (array) $request->file('variant_images_by_sku');
@@ -630,6 +680,13 @@ class SyncSparkyController extends Controller
                                 $firstSku->product_stock = $topQty;
                                 $firstSku->save();
                                 \Log::info('shop.sync.variants.top_stock_applied', ['product_id'=>$newProduct->id,'sku_id'=>$firstSku->id,'stock'=>$topQty]);
+                                // also queue seller sku for this top-level stock assignment
+                                $pendingSellerSkuRows[] = [
+                                    'product_sku_id' => $firstSku->id,
+                                    'product_stock' => (int) $topQty,
+                                    'selling_price' => (float) ($firstSku->selling_price ?? 0),
+                                    'status' => (int) ($firstSku->status ?? 1),
+                                ];
                             }
                         }
                     }
@@ -662,7 +719,7 @@ class SyncSparkyController extends Controller
                 if (!empty($product['name'])) $newProduct->product_name = $product['name'];
                 $newProduct->save();
 
-                // Upsert seller product and auction info when vendor_id provided
+                // Upsert seller product, map SKUs to seller, and auction info when vendor_id provided
                 if (!empty($product['vendor_id'])) {
                     $sellerId = SellerAccount::where('vendor_id', $product['vendor_id'])->value('user_id');
                     if ($sellerId) {
@@ -673,17 +730,66 @@ class SyncSparkyController extends Controller
                             'product_name' => $newProduct->product_name,
                             'status' => 1,
                             'is_approved' => 1,
-                            'stock_manage' => $newProduct->stock_manage ?? 1,
+                            'stock_manage' => $manageStock,
                             'tax' => $newProduct->tax ?? 0,
                             'tax_type' => $newProduct->tax_type ?? '0',
                             'discount' => 0,
                             'discount_type' => 1,
                             'slug' => \Illuminate\Support\Str::slug($newProduct->product_name),
                         ]);
+                        // Keep stock_manage in sync on updates too
+                        if ($sellerProduct->stock_manage != $manageStock) {
+                            $sellerProduct->stock_manage = $manageStock;
+                            $sellerProduct->save();
+                        }
 
-                        // Map auction fields if provided
-                        $hasAuction = isset($product['start_auction']) || isset($product['end_auction']) || isset($product['auction_bid_start']);
-                        if ($hasAuction) {
+                        // ensure seller thumbnail is set so product shows on listings
+                        if ($primaryMediaId) {
+                            $primaryMedia = MediaManager::find($primaryMediaId);
+                            if ($primaryMedia) {
+                                if ($replace || empty($sellerProduct->thum_img)) {
+                                    $sellerProduct->thum_img = $primaryMedia->file_name;
+                                    $sellerProduct->save();
+                                }
+                                // map UsedMedia for thumb_image so other components can resolve
+                                UsedMedia::updateOrCreate([
+                                    'usable_id' => $sellerProduct->id,
+                                    'usable_type' => get_class($sellerProduct),
+                                    'used_for' => 'thumb_image',
+                                ], [
+                                    'media_id' => $primaryMedia->id,
+                                ]);
+                            }
+                        }
+
+                        // Upsert SellerProductSKU rows for all collected SKUs
+                        $keptSellerSkuIds = [];
+                        foreach ($pendingSellerSkuRows as $row) {
+                            $sellerSku = SellerProductSKU::updateOrCreate([
+                                'product_id' => $sellerProduct->id,
+                                'product_sku_id' => $row['product_sku_id'],
+                                'user_id' => $sellerId,
+                            ], [
+                                'product_stock' => (int) ($row['product_stock'] ?? 0),
+                                'selling_price' => (float) ($row['selling_price'] ?? 0),
+                                'status' => (int) ($row['status'] ?? 1),
+                            ]);
+                            $keptSellerSkuIds[] = $sellerSku->id;
+                        }
+
+                        // Cleanup removed SellerProductSKU when replace is requested
+                        $replace = (bool) ($request->boolean('replace') ?? ($product['replace'] ?? false));
+                        if ($replace && !empty($keptSellerSkuIds)) {
+                            SellerProductSKU::where('product_id', $sellerProduct->id)
+                                ->whereNotIn('id', $keptSellerSkuIds)
+                                ->delete();
+                        }
+
+                        // Map auction fields: only create/list when both dates are provided
+                        $hasStart = !empty($product['start_auction']);
+                        $hasEnd = !empty($product['end_auction']);
+                        $hasAuctionDates = $hasStart && $hasEnd;
+                        if ($hasAuctionDates) {
                             $auction = Auction::firstOrNew([
                                 'seller_product_id' => $sellerProduct->id,
                             ]);
@@ -691,14 +797,23 @@ class SyncSparkyController extends Controller
                             $auction->auction_title = $newProduct->product_name;
                             $auction->quantity = 1;
                             if (isset($product['auction_bid_start'])) $auction->starting_bidding_price = (float) $product['auction_bid_start'];
-                            if (isset($product['start_auction'])) $auction->auction_start_date = substr($product['start_auction'],0,10);
-                            if (isset($product['end_auction'])) $auction->auction_end_date = substr($product['end_auction'],0,10);
+                            $auction->auction_start_date = substr((string) $product['start_auction'], 0, 10);
+                            $auction->auction_end_date = substr((string) $product['end_auction'], 0, 10);
                             // optional extended fields if POS provides
                             if (isset($product['reserve_price'])) $auction->reserve_price = (float) $product['reserve_price'];
                             if (isset($product['increment_price'])) $auction->increment_price = (float) $product['increment_price'];
                             if (isset($product['entry_amount'])) $auction->entry_amount = (float) $product['entry_amount'];
-                            $auction->status = 1;
+                            $auction->status = 1; // list auction
                             $auction->save();
+                        } else {
+                            // If dates are missing/null, ensure auction is not listed
+                            $existingAuction = Auction::where('seller_product_id', $sellerProduct->id)->first();
+                            if ($existingAuction) {
+                                $existingAuction->status = 0; // unlist
+                                if (!$hasStart) { $existingAuction->auction_start_date = null; }
+                                if (!$hasEnd) { $existingAuction->auction_end_date = null; }
+                                $existingAuction->save();
+                            }
                         }
                     }
                 }

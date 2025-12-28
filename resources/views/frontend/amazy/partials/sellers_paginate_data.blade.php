@@ -116,30 +116,71 @@
 {{--    border-radius: 50%;--}}
 {{--    border: 1px solid black;--}}
 {{--    padding: 5px;" src="{{$product->photo?showImage($product->photo):showImage('frontend/default/img/avatar.jpg')}}" alt="#"></div>--}}
-                                    <a href="{{route('frontend.seller',['seller_id'=>$product->slug,'vendor_id'=>@$product->SellerAccount->vendor_id])}}">
-                                        <h4>@if ($product->SellerAccount->seller_shop_display_name) {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @else {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @endif</h4>
-                                    </a>
+                                    @if(isset($shop))
+                                        <div class="mb-1">
+                                            @if(@$product->SellerAccount && @$product->SellerAccount->vendor_id)
+                                                <span class="product_banding">Vendor: {{ @$product->SellerAccount->vendor_id }}</span>
+                                            @endif
+                                            <span class="product_banding">Store: {{ $shop->SellerAccount->seller_shop_display_name ?? ($shop->first_name.' '.$shop->last_name) }}</span>
+                                        </div>
+                                        <a href="{{route('frontend.seller',['seller_id'=> base64_encode($product->id),'vendor_id'=>@$product->SellerAccount->vendor_id])}}">
+                                            <h4 class="m-0">{{ trim(($product->first_name ?? '').' '.($product->last_name ?? '')) ?: textLimit($product->name, 50) }}</h4>
+                                        </a>
+                                    @else
+                                        @php
+                                            $sellerParam = (isset($product->SellerAccount) && !is_null($product->SellerAccount->parent_seller_id))
+                                                ? base64_encode($product->id)
+                                                : $product->slug;
+                                        @endphp
+                                        <a href="{{route('frontend.seller',['seller_id'=>$sellerParam,'vendor_id'=>@$product->SellerAccount->vendor_id])}}">
+                                            <h4 class="m-0">@if ($product->SellerAccount->seller_shop_display_name) {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @else {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @endif</h4>
+                                        </a>
+                                    @endif
+                                    @php
+                                        $biz = \Modules\MultiVendor\Entities\SellerBusinessInformation::where('user_id', $product->id)->first();
+                                        $addrParts = [];
+                                        if($biz && $biz->business_address1){ $addrParts[] = $biz->business_address1; }
+                                        if($biz && $biz->city){ $addrParts[] = $biz->city->name; }
+                                        if($biz && $biz->state){ $addrParts[] = $biz->state->name; }
+                                        if($biz && $biz->country){ $addrParts[] = $biz->country->name; }
+                                        $addrLine = implode(', ', $addrParts);
+                                        $phone = optional($product->SellerAccount)->seller_phone ?? $product->phone ?? $product->username;
+                                    @endphp
+                                    @if(!isset($shop))
+                                        @if(!empty($addrLine))
+                                            <div class="mt-0">
+                                                <small class="product_banding d-block">{{ $addrLine }}</small>
+                                            </div>
+                                        @endif
+                                        @if(!empty($phone))
+                                            <div class="mt-1">
+                                                <span class="product_banding">{{ __('common.phone') }}: {{ $phone }}</span>
+                                            </div>
+                                        @endif
+                                    @endif
                                     @if(isset($product->SellerAccount) && is_null($product->SellerAccount->parent_seller_id))
                                         <div class="mt-1">
                                             @php
                                                 $shopSlug = $product->slug ?: base64_encode($product->id);
                                             @endphp
-                                            <a class="theme_btn_small" href="{{ route('frontend.shop.vendors', $shopSlug) }}">View Sellers</a>
+                                            <a class="theme_btn_small" href="{{ route('frontend.shop.vendors', $shopSlug) }}">Vendors</a>
                                         </div>
                                     @endif
-                                    @if(!empty(@$product->SellerAccount->about_seller))
+                                    @if(!isset($shop) && !empty(@$product->SellerAccount->about_seller))
                                         <div class="mt-1">
                                             <span class="product_banding">{{ __('seller.about_seller') }}: {{ textLimit(strip_tags(@$product->SellerAccount->about_seller), 100) }}</span>
                                         </div>
                                     @endif
-                                    @if(@$product->SellerAccount && @$product->SellerAccount->vendor_id)
+                                    @if(!isset($shop) && @$product->SellerAccount && @$product->SellerAccount->vendor_id)
                                         <div class="mt-1">
                                             <span class="product_banding">Vendor ID: {{ @$product->SellerAccount->vendor_id }}</span>
                                         </div>
                                     @endif
-                                    <div class="mt-1">
-                                        <span class="product_banding">Seller: {{ textLimit($product->name, 60) }}</span>
-                                    </div>
+                                    @if(!isset($shop))
+                                        <div class="mt-1">
+                                            <span class="product_banding">Seller: {{ textLimit($product->name, 60) }}</span>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>

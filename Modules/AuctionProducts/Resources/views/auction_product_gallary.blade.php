@@ -25,6 +25,9 @@
         width: 50%;
         transform: unset !important;
     }
+    /* Center countdown on auction cards */
+    .auction-p-number{ display:flex; justify-content:center; }
+    .auction-p-number .amazy_date_counter{ display:inline-flex; gap:10px; align-items:center; }
 </style>
 @endpush
 

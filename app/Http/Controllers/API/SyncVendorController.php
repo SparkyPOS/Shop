@@ -10,9 +10,14 @@ use Illuminate\Support\Facades\Log;
 use Modules\MultiVendor\Entities\SellerAccount;
 use Modules\RolePermission\Entities\Role;
 use App\Services\SellerSidebarService;
+use App\Traits\ImageStore;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
 
 class SyncVendorController extends Controller
 {
+    use ImageStore;
     public function sync(Request $request)
     {
         try {
@@ -137,9 +142,11 @@ class SyncVendorController extends Controller
                 }
             }
 
-            // Business Information handling
+            // Business Information handling (prefer 'business' block)
             $biz = $root->get('business', []);
-            if (is_array($biz) && !empty($biz)) {
+            if (is_array($biz)) {
+                $hasAnyBiz = collect($biz)->filter(function($v){ return !is_null($v) && $v !== ''; })->isNotEmpty();
+                if ($hasAnyBiz) {
                 $countryId = $biz['country_id'] ?? null;
                 $stateId = $biz['state_id'] ?? null;
                 $cityId = $biz['city_id'] ?? null;
@@ -173,6 +180,90 @@ class SyncVendorController extends Controller
                         'business_seller_tin' => $biz['seller_tin'] ?? null,
                     ]
                 );
+                }
+            }
+
+            // Address block handling (alternative to 'business')
+            $addr = $root->get('address', []);
+            if (is_array($addr)) {
+                $hasAnyAddr = collect($addr)->filter(function($v){ return !is_null($v) && $v !== ''; })->isNotEmpty();
+                if ($hasAnyAddr) {
+                $countryId = $addr['country_id'] ?? null;
+                $stateId = $addr['state_id'] ?? null;
+                $cityId = $addr['city_id'] ?? null;
+
+                if (!$countryId && !empty($addr['country'])) {
+                    $countryId = optional(\Modules\Setup\Entities\Country::where('name', $addr['country'])->first())->id;
+                }
+                if (!$stateId && !empty($addr['state']) && $countryId) {
+                    $stateId = optional(\Modules\Setup\Entities\State::where('name', $addr['state'])->where('country_id', $countryId)->first())->id
+                        ?? optional(\Modules\Setup\Entities\State::where('name', $addr['state'])->first())->id;
+                }
+                if (!$cityId && !empty($addr['city']) && $stateId) {
+                    $cityId = optional(\Modules\Setup\Entities\City::where('name', $addr['city'])->where('state_id', $stateId)->first())->id
+                        ?? optional(\Modules\Setup\Entities\City::where('name', $addr['city'])->first())->id;
+                }
+
+                \Modules\MultiVendor\Entities\SellerBusinessInformation::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'user_id' => $user->id,
+                        'business_address1' => $addr['address'] ?? ($addr['address_1'] ?? null),
+                        'business_address2' => $addr['address2'] ?? null,
+                        'business_country' => $countryId ?? app('general_setting')->default_country,
+                        'business_state' => $stateId ?? app('general_setting')->default_state,
+                        'business_city' => $cityId ?? null,
+                        'business_postcode' => $addr['postal_code'] ?? ($addr['zip'] ?? null),
+                    ]
+                );
+                }
+            }
+
+
+            // Handle vendor avatar/photo
+            try {
+                $hasFile = $request->hasFile('avatar') || $request->hasFile('photo');
+                $newAvatarPath = null;
+                if ($hasFile) {
+                    $file = $request->file('avatar') ?: $request->file('photo');
+                    // Save avatar using ImageStore helper (resizes and stores properly)
+                    $newAvatarPath = $this->saveAvatar($file, 150, 150);
+                } else {
+                    // Fallback to URL fields
+                    $url = (string) ($request->vendor['avatar_url'] ?? $request->input('photo_url') ?? '');
+                    Log::debug('avatar_url', ['url'=>$url]);
+                    if ($url) {
+                        // Prefer downloading and storing locally so Shop serves the image reliably
+                        $host = parse_url($url, PHP_URL_HOST) ?: '';
+                        $isLocalHost = in_array($host, ['localhost','127.0.0.1']);
+                        try {
+                            $resp = Http::timeout(10)->get($url);
+                            if ($resp->successful()) {
+                                $filename = basename(parse_url($url, PHP_URL_PATH) ?: ('avatar_' . uniqid() . '.jpg'));
+                                $tempPath = 'tmp-sync/' . uniqid('av_') . '_' . $filename;
+                                Storage::disk('public')->put($tempPath, $resp->body());
+                                $abs = storage_path('app/public/' . $tempPath);
+                                $uploaded = new UploadedFile($abs, $filename, @mime_content_type($abs) ?: 'image/jpeg', null, true);
+                                $newAvatarPath = $this->saveAvatar($uploaded, 150, 150);
+                                Storage::disk('public')->delete($tempPath);
+                            } else if (!$isLocalHost) {
+                                // fallback to keeping remote URL only if not localhost
+                                $newAvatarPath = $url;
+                            }
+                        } catch (\Throwable $e) {
+                            if (!$isLocalHost) {
+                                $newAvatarPath = $url; // fallback to remote only if not localhost
+                            }
+                        }
+                    }
+                }
+                if ($newAvatarPath) {
+                    if ($user->avatar) { $this->deleteImage($user->avatar); }
+                    $user->avatar = $newAvatarPath;
+                    $user->save();
+                }
+            } catch (\Throwable $e) {
+                Log::warning('sync.vendor.avatar_failed', ['error'=>$e->getMessage()]);
             }
 
             // Ensure seller navbar/menu entries are created for this user

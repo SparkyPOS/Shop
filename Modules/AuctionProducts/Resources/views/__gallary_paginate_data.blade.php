@@ -191,6 +191,8 @@
                                 @if(isGuestAddtoCart())
                                     <div class="product__meta text-center">
                                         <span class="product_banding ">{{ @$product->brand->name ?? " " }}</span>
+                                        <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
+                                        <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                         <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                             <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
                                         </a>
@@ -208,6 +210,8 @@
                                 @else
                                     <div class="product__meta text-center">
                                         <span class="product_banding ">{{ @$product->brand->name ?? " " }}</span>
+                                        <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
+                                        <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                         <a class="home10_primary_btn2 w-100" href="https://app.sparkypos.com">
                                             {{__('auctionproduct.login_to_bid')}}
                                         </a>
@@ -337,6 +341,8 @@
                             </div>
                             <div class="product__meta text-start">
                                 <span class="product_banding ">{{ @$product->brand->name ?? " " }}</span>
+                                <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
+                                <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                 <div class="product_star mt-0 mb-3">
                                     @php
                                         $reviews = @$product->reviews->where('status', 1)->pluck('rating');
@@ -409,4 +415,3 @@
     <!--/ content  -->
     <x-pagination-component :items="$products" type="" />
 </div>
-

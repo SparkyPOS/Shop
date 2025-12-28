@@ -303,6 +303,7 @@
                                 <div class="row gutters-5 m-0 align-items-center">
                                     <div class="col-4 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">{{__('common.products')}}</h4> </div>
                                     <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">{{__('vendor')}}</h4> </div>
+                                    <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">{{__('common.store')}}</h4> </div>
                                     <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">{{__('common.price')}}</h4> </div>
                                     <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">{{__('common.quantity')}}</h4> </div>
                                     <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">{{__('common.subtotal')}}</h4> </div>
@@ -388,6 +389,11 @@
     </a>
     <div class="mobile_title_full d-lg-none mt-2 w-100">
         <div class="mobile_full_title">{{ @$cart->product->product->product_name }}</div>
+        <div class="font_12 opacity-75 mt-1">
+            <span>{{ __('vendor') }}: {{ @$cart->seller->SellerAccount->vendor_id }}</span>
+            <span class="mx-2">•</span>
+            <span>{{ __('common.store') }}: {{ @$cart->seller->SellerAccount->seller_shop_display_name }}</span>
+        </div>
     </div>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-10 mt-2 d-lg-none mobile_qty_price_row">
         <div class="d-flex align-items-center mobile_title_qty_row w-100">
@@ -423,6 +429,12 @@
                                                             <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('vendor')}}</span>
                                                             <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block">
                                                                 {{$cart->seller->sellerAccount->vendor_id}}
+                                                            </h4>
+                                                        </div>
+                                                        <div class="col order-1 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
+                                                            <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('common.store')}}</span>
+                                                            <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block">
+                                                                {{ @$cart->seller->SellerAccount->seller_shop_display_name }}
                                                             </h4>
                                                         </div>
                                                         <div class="col order-2 order-lg-0 my-3 my-lg-0 d-none d-lg-block">

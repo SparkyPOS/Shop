@@ -10327,7 +10327,7 @@ footer.home_three_footer .copyright_area .payment_imgs {
   margin-bottom: 30px;
   transition: 0.3s;
   line-height: 1.5;
-  min-height: 58px;
+  min-height: 35px;
 }
 @media (max-width: 767.98px) {
   .product_widget5 .product__meta h4 {
@@ -15004,7 +15004,7 @@ footer.home_three_footer .copyright_area .payment_imgs {
 }
 .checkout_v3_area .checkout_v3_left .checkout_v3_inner .checout_head_title {
   border-radius: 3px;
-  margin-bottom: 20px;
+  /*margin-bottom: 20px;*/
   flex-wrap: wrap;
   border-radius: 3px;
   border: 1px solid #eef0f4;

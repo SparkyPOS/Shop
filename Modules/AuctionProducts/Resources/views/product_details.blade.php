@@ -64,6 +64,11 @@
             }
         </style>
     @endif
+    <style>
+        /* Center auction timer on details page */
+        .single_pro_varient .product_number_count{ display:flex; justify-content:center; }
+        .single_pro_varient .amazy_date_counter{ display:inline-flex; gap:10px; align-items:center; }
+    </style>
 @endpush
 @section('content')
     @include('auctionproducts::components.place_bid_modal',compact('auction','max_bid'))

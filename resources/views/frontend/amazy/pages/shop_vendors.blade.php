@@ -19,7 +19,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-12 mb-3">
-                    <a class="menu_btn_1 text-nowrap" href="{{ route('frontend.vendors') }}">← Back to Shops</a>
+                    <a class="menu_btn_1 text-nowrap" href="{{ route('frontend.vendors') }}">← Back to Stores</a>
                 </div>
                 <div id="dataWithPaginate" class="col-lg-12 col-xl-12">
                     @include('frontend.amazy.partials.sellers_paginate_data')

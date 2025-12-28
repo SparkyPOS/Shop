@@ -180,6 +180,7 @@ class ProductController extends Controller
     }
     public function store(Request $request){
         $request->validate([
+            'product_id' => ['required','integer'],
             'product_name' => ['required',Rule::unique('seller_products', 'product_name')->where(function($query){
                 $seller_id = getParentSellerId();
                 return $query->where('user_id', $seller_id);
@@ -201,6 +202,28 @@ class ProductController extends Controller
                 }
             }
 
+            // Guard: ensure SKU data is present based on product type
+            $mainProduct = \Modules\Product\Entities\Product::find($request->input('product_id'));
+            if(!$mainProduct){
+                Toastr::error(__('common.error_message'), __('common.error'));
+                return back()->withInput();
+            }
+
+            // For single products, selling_price is required
+            if((int) $mainProduct->product_type === 1){
+                $request->validate([
+                    'selling_price' => ['required','numeric']
+                ]);
+            }
+            // For variable products, at least one variant price (selling_price_sku[]) must be submitted
+            if((int) $mainProduct->product_type === 2){
+                $variantPrices = $request->input('selling_price_sku');
+                $variantIds = $request->input('product_skus');
+                if(empty($variantPrices) || empty($variantIds)){
+                    Toastr::error('Please select at least one variant and set price.', __('common.error'));
+                    return back()->withInput();
+                }
+            }
 
             $this->productService->store($request->except('_token'));
 

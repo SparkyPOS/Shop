@@ -417,6 +417,7 @@
                                                 <x-rating :rating="$rating" />
                                             </div>
                                             <div class="product__meta text-center">
+                                                <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
                                                 <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                                 <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                                     <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -586,6 +587,7 @@
                                             <x-rating :rating="$rating" />
                                         </div>
                                         <div class="product__meta text-center">
+                                            <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
                                             <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                             <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                                 <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -797,6 +799,7 @@
                                                 <x-rating :rating="$rating" />
                                             </div>
                                             <div class="product__meta text-center">
+                                                <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
                                                 <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                                 <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                                     <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -968,6 +971,7 @@
                                             <x-rating :rating="$rating" />
                                         </div>
                                         <div class="product__meta text-center">
+                                            <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
                                             <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                             <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                                 <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -1176,6 +1180,7 @@
                                                 <x-rating :rating="$rating" />
                                             </div>
                                             <div class="product__meta text-center">
+                                                <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
                                                 <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                                 <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                                     <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -1347,6 +1352,7 @@
                                             <x-rating :rating="$rating" />
                                         </div>
                                         <div class="product__meta text-center">
+                                            <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
                                             <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                             <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                                 <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -1557,6 +1563,7 @@
                                     <x-rating :rating="$rating" />
                                 </div>
                                 <div class="product__meta px-3 text-center">
+                                    <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
                                     <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                     <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                         <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -1728,6 +1735,7 @@
                                     <x-rating :rating="$rating" />
                                 </div>
                                 <div class="product__meta px-3 text-center">
+                                    <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
                                     <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                     <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                         <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -1896,6 +1904,7 @@
                                         <x-rating :rating="$rating" />
                                     </div>
                                     <div class="product__meta px-3 text-center">
+                                        <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
                                         <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                         <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                             <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -2105,6 +2114,7 @@
                                 <x-rating :rating="$rating" />
                             </div>
                             <div class="product__meta text-center">
+                                <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
                                 <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                 <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                     <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>

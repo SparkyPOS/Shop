@@ -13,6 +13,20 @@
             padding: 10px
         }
     }
+    /* Package-wise grouping tweaks */
+    .checkout_shiped_box{
+        border: 1px solid #ececec;
+        border-radius: 8px;
+        background: #fff;
+        overflow: hidden;
+    }
+    .checout_shiped_head.package_head{
+        background: #f9fafb;
+        border-bottom: 1px solid #ececec;
+        padding: 12px 16px;
+        gap: 10px;
+    }
+    .checout_shiped_products{ padding: 8px 12px; }
 </style>
 <form action="{{route('frontend.checkout')}}" method="GET" enctype="multipart/form-data" id="mainOrderForm">
     <div class="checkout_v3_area">
@@ -39,13 +53,7 @@
                     @php
                         $package_wise_shipping = session()->get('package_wise_shipping');
                     @endphp
-                    <div class="checout_head_title d-flex align-items-center ">
-                        <span class="flex-fill">{{getNumberTranslate($total_items)}}  {{__('common.items')}}</span>
-                        <span>{{__('vendor')}}</span>
-                        <span>{{__('common.subtotal')}}</span>
-                        <span>{{__('common.quantity')}}</span>
-                        <span>{{__('common.price')}}</span>
-                    </div>
+                    
                     @foreach($cartData as $seller_id => $packages)
                         @php
                             $seller = App\Models\User::where('id',$seller_id)->first();
@@ -61,22 +69,35 @@
                         @endif
                         <div class="checkout_shiped_box mb_20">
                             @if(!isModuleActive('INTShipping'))
-                                <div class="checout_shiped_head flex-wrap d-flex align-items-center ">
+                                <div class="checout_shiped_head package_head flex-wrap d-flex align-items-center ">
+                                    <span class="vendor_name text-nowrap f_w_600">{{ __('vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
                                     <span class="package_text flex-fill">{{__('common.package')}} {{getNumberTranslate($current_pkg)}} {{__('common.of')}} {{getNumberTranslate($total_package)}}</span>
-                                    <p class="flex-wrap">
-                                        <span class="Shipped_text">{{__('defaultTheme.shipping')}} :</span>
-                                        <span class="name_text text-nowrap">
-                                            <a class="link_style font_16 f_w_700 text-nowrap m-0 theme_hover text_color" href="javascript:void(0)">
-                                                @if($is_physical_count > 0)
+                                    <span class="Shipped_text">{{__('defaultTheme.shipping')}} :</span>
+                                    <span class="name_text text-nowrap">
+                                        <a class="link_style font_16 f_w_700 text-nowrap m-0 theme_hover text_color" href="javascript:void(0)">
+                                            @if($is_physical_count > 0)
                                                 <span id="shipping_methods" data-target="shipping_methods_{{$package_wise_shipping[$seller_id]['seller_id']}}">{{single_price($package_wise_shipping[$seller_id]['shipping_cost'])}} {{__('common.via')}} {{$package_wise_shipping[$seller_id]['shipping_method']}}   {{$package_wise_shipping[$seller_id]['shipping_time']}} =></span>
-                                                @else
+                                            @else
                                                 {{single_price($package_wise_shipping[$seller_id]['shipping_cost'])}} {{__('common.via')}} {{$package_wise_shipping[$seller_id]['shipping_method']}}   {{$package_wise_shipping[$seller_id]['shipping_time']}}
-                                                @endif
-                                            </a>
+                                            @endif
+                                        </a>
                                     </span>
-                                    </p>
+                                </div>
+                            @else
+                                <div class="checout_shiped_head package_head flex-wrap d-flex align-items-center ">
+                                    <span class="vendor_name text-nowrap f_w_600">{{ __('vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
+                                    <span class="package_text flex-fill">{{__('common.package')}} {{getNumberTranslate($current_pkg)}} {{__('common.of')}} {{getNumberTranslate($total_package)}}</span>
                                 </div>
                             @endif
+
+                            <div class="checout_head_title d-flex align-items-center package_table_head px-3 py-2">
+                                <span class="flex-fill">{{ getNumberTranslate(count($packages)) }} {{ __('common.items') }}</span>
+                                <span>{{ __('vendor') }}</span>
+                                <span>{{ __('common.subtotal') }}</span>
+                                <span>{{ __('common.quantity') }}</span>
+                                <span>{{ __('common.price') }}</span>
+                            </div>
+
                             <div class="checout_shiped_products">
                                 <div class="table-responsive mb-0">
                                     <table class="table amazy_table3 style3 mb-0">

@@ -104,6 +104,15 @@
             .report-product:hover{
                 color: var(--base_color) !important;
             }
+            .condition_badge{
+                display: inline-block;
+                padding: 2px 8px;
+                font-size: 12px;
+                line-height: 1.4;
+                color: var(--text_color);
+                background: #f3f4f6;
+                border-radius: 999px;
+            }
     </style>
 @endpush
 @section('content')
@@ -154,12 +163,18 @@
                         <div class="col-lg-6 col-xl-6">
                             <div class="product_content_details mb_20">
                                 <div id="stock_div">
+                                    @php
+                                        $cond = $product->product->condition === 'used' ? __('product.used') : __('product.new');
+                                    @endphp
                                     @if ($product->stock_manage == 1 && @$product->skus->where('status',1)->first()->product_stock >= @$product->product->minimum_order_qty)
                                         <span class="stoke_badge">{{__('common.in_stock')}}</span>
+                                        <span class="condition_badge ms-2">{{ __('product.product_condition') }}: {{ $cond }}</span>
                                     @elseif($product->stock_manage == 0)
                                         <span class="stoke_badge">{{__('common.in_stock')}}</span>
+                                        <span class="condition_badge ms-2">{{ __('product.product_condition') }}: {{ $cond }}</span>
                                     @else
                                         <span class="stokeout_badge">{{__('amazy.Out of stock')}}</span>
+                                        <span class="condition_badge ms-2">{{ __('product.product_condition') }}: {{ $cond }}</span>
                                     @endif
                                 </div>
                                 <h3 class="d-inline-block align-middle">{{$product->product_name}}</h3>
@@ -1804,7 +1819,8 @@
                                             </div>
                                 `);
                             @endif
-                            $('#stock_div').html(`<span class="stoke_badge">{{__('common.in_stock')}}</span>`);
+                            var condLabel = `{{ __('product.product_condition') }}: ` + ((response.data.product.product.condition === 'used') ? `{{ __('product.used') }}` : `{{ __('product.new') }}`);
+                            $('#stock_div').html(`<span class="stoke_badge">{{__('common.in_stock')}}</span><span class="condition_badge ms-2">${condLabel}</span>`);
                             if($('#isMultiVendorActive').val() == 1){
                                 $('#cart_footer_mobile').html(`
                                     <a href="
@@ -1866,7 +1882,8 @@
                                             </div>
                                 `);
                             @endif
-                            $('#stock_div').html(`<span class="stokeout_badge">{{__('defaultTheme.out_of_stock')}}</span>`);
+                            var condLabel2 = `{{ __('product.product_condition') }}: ` + ((response.data.product.product.condition === 'used') ? `{{ __('product.used') }}` : `{{ __('product.new') }}`);
+                            $('#stock_div').html(`<span class="stokeout_badge">{{__('defaultTheme.out_of_stock')}}</span><span class="condition_badge ms-2">${condLabel2}</span>`);
 
                             $('#cart_footer_mobile').html(`
                                 <button type="button" class="product_details_button style1" disabled>
@@ -2239,7 +2256,8 @@
                             @endif
 
 
-                            $('#stock_div').html(`<span class="stoke_badge">{{__('common.in_stock')}}</span>`);
+                            var condLabel3 = `{{ __('product.product_condition') }}: ` + ((response.data.product.product.condition === 'used') ? `{{ __('product.used') }}` : `{{ __('product.new') }}`);
+                            $('#stock_div').html(`<span class="stoke_badge">{{__('common.in_stock')}}</span><span class="condition_badge ms-2">${condLabel3}</span>`);
                             if($('#isMultiVendorActive').val() == 1){
                                 $('#cart_footer_mobile').html(`
                                     <a href="
@@ -2302,7 +2320,8 @@
                                 `);
                             @endif
 
-                            $('#stock_div').html(`<span class="stokeout_badge">{{__('defaultTheme.out_of_stock')}}</span>`);
+                            var condLabel4 = `{{ __('product.product_condition') }}: ` + ((response.data.product.product.condition === 'used') ? `{{ __('product.used') }}` : `{{ __('product.new') }}`);
+                            $('#stock_div').html(`<span class="stokeout_badge">{{__('defaultTheme.out_of_stock')}}</span><span class="condition_badge ms-2">${condLabel4}</span>`);
 
                             $('#cart_footer_mobile').html(`
                                 <button type="button" class="product_details_button style1" disabled>

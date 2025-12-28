@@ -802,7 +802,7 @@
         display: block!important;
         overflow: auto;
     }
-    
+
     .checkout_v3_area .checkout_v3_inner.w-100 {
         --checkout: 830px;
         width: var(--checkout) !important;
