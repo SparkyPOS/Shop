@@ -40,6 +40,7 @@ return [
     'no_more_data_to_show' => 'No more data to show',
     'no_results_found' => 'No results found',
     'merchants' => 'Stores',
+    'vendors' => 'Vendors',
     'quick_search' => 'Quick Search',
     'status' => 'Status',
     'action' => 'Action',
@@ -562,5 +563,6 @@ return [
     "By Subscribing to our newsletter you agree to our" => "By Subscribing to our newsletter you agree to our",
     "Privacy Policy" => "Privacy Policy",
     "Don't show this popup again" => "Don't show this popup again",
-    "new_seller" => "New Seller"
+    "new_seller" => "New Seller",
+    'stores'=>'Stores'
 ];

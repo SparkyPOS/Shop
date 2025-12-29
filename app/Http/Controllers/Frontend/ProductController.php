@@ -194,6 +194,7 @@ class ProductController extends Controller
         }
 
         $data['products'] = $products->paginate($paginate);
+        $data['listingLabel'] = __('common.vendors');
 
         if ($request->ajax()) {
             return view(theme('partials.sellers_paginate_data'), $data);
@@ -278,12 +279,14 @@ class ProductController extends Controller
         }
 
         $data['products'] = $products->paginate($paginate);
+        $data['listingLabel'] = __('common.stores');
+        $data['linkStoresToVendors'] = true;
 
         if ($request->ajax()) {
             return view(theme('partials.sellers_paginate_data'), $data);
         } else {
             $data['products']->appends($request->except('page'));
-            return view(theme('pages.vendors'), $data);
+            return view(theme('pages.stores'), $data);
         }
     }
     public function show_in_modal(Request $request)

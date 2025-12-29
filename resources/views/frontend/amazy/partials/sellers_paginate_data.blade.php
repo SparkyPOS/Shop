@@ -25,7 +25,7 @@
             <h5 class="font_16 f_w_500 mr_10 mb-0">{{ __('defaultTheme.showing') }} @if ($show_start == $show_end) {{ getNumberTranslate($show_end) }}
                 @else
                     {{ getNumberTranslate($show_start) }} - {{ getNumberTranslate($show_end) }} @endif {{ __('defaultTheme.out_of_total') }} {{ getNumberTranslate($total_number_of_items) }}
-                {{ __('common.merchants') }}</h5>
+                {{ $listingLabel ?? __('common.merchants') }}</h5>
             <div class="box_header_right ">
                 <div class="short_select d-flex align-items-center gap_10 flex-wrap">
 
@@ -85,12 +85,15 @@
                         <div class="col-xl-3 col-md-6 col-sm-6 col-6 d-flex">
                             <div class="product_widget5 vendor_widget mb_30 style5 w-100">
                                 <div class="product_thumb_upper">
-                                    <a href=" @if ($product->slug)
-                                            {{route('frontend.seller',['seller_id'=>$product->slug,'vendor_id'=>@$product->SellerAccount->vendor_id])}}
-                                        @else
-                                            {{route('frontend.seller',base64_encode($product->id))}}
-                                        @endif"
-                                       class="thumb">
+                                    @php
+                                        $isShop = isset($product->SellerAccount) && is_null($product->SellerAccount->parent_seller_id);
+                                        $shopSlug = $product->slug ?: base64_encode($product->id);
+                                        $cardHref = route('frontend.seller', ['seller_id' => $product->slug ?: base64_encode($product->id), 'vendor_id' => @$product->SellerAccount->vendor_id]);
+                                        if (!empty($linkStoresToVendors) && $isShop) {
+                                            $cardHref = route('frontend.shop.vendors', $shopSlug);
+                                        }
+                                    @endphp
+                                    <a href="{{ $cardHref }}" class="thumb">
                                         <img data-src="{{$product->SellerAccount->banner?showImage($product->SellerAccount->banner):showImage('frontend/default/img/breadcrumb_bg.png')}}" src="{{$product->SellerAccount->banner?showImage($product->SellerAccount->banner):showImage('frontend/default/img/breadcrumb_bg.png')}}"
                                              alt="{{ @$product->SellerAccount->seller_shop_display_name }}" title="{{ @$product->seller_shop_display_name }}"
                                              class="lazyload">
@@ -132,7 +135,13 @@
                                                 ? base64_encode($product->id)
                                                 : $product->slug;
                                         @endphp
-                                        <a href="{{route('frontend.seller',['seller_id'=>$sellerParam,'vendor_id'=>@$product->SellerAccount->vendor_id])}}">
+                                        @php
+                                            $nameHref = route('frontend.seller', ['seller_id' => $sellerParam, 'vendor_id' => @$product->SellerAccount->vendor_id]);
+                                            if (!empty($linkStoresToVendors) && $isShop) {
+                                                $nameHref = route('frontend.shop.vendors', $shopSlug);
+                                            }
+                                        @endphp
+                                        <a href="{{ $nameHref }}">
                                             <h4 class="m-0">@if ($product->SellerAccount->seller_shop_display_name) {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @else {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @endif</h4>
                                         </a>
                                     @endif

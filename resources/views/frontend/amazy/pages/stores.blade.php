@@ -1,6 +1,6 @@
 @extends('frontend.amazy.layouts.app')
 @section('title')
-   {{__('common.vendors')}}
+   {{__('common.stores')}}
 @endsection
 @push('styles')
     <style>
@@ -35,7 +35,7 @@
             <div class="row">
                 <div class="col-12">
                     <h3 class="branding_text">
-                        {{__('common.vendors')}}
+                        {{__('common.stores')}}
                     </h3>
                 </div>
             </div>
@@ -45,10 +45,11 @@
     <div class="prodcuts_area ">
         <div class="container">
             <div class="row">
-{{--                @include('frontend.amazy.partials.sellers_sidebar')--}}
                 <div id="dataWithPaginate" class="col-lg-12 col-xl-12">
-
-                    @include('frontend.amazy.partials.sellers_paginate_data', ['listingLabel' => __('common.vendors')])
+                    @include('frontend.amazy.partials.sellers_paginate_data', [
+                        'listingLabel' => __('common.stores'),
+                        'linkStoresToVendors' => true,
+                    ])
                 </div>
             </div>
         </div>
@@ -126,8 +127,8 @@
 
                 });
                 $(document).on('click', '.getProductByChoice', function(event){
-                    let type = $(this).data('id');
-                    let el = $(this).data('value');
+                 let type = $(this).data('type');
+                 let el = $(this).data('value');
                     getProductByChoice(type, el);
                 });
                 $(document).on('change', '.getFilterUpdateByIndex', function(event){
@@ -217,115 +218,6 @@
                     maximum_price = price_range[1];
                     price_range_gloval = price_range;
                     myEfficientFn();
-                });
-                var myEfficientFn = debounce(function() {
-                    $('#min_price').val(minimum_price);
-                    $('#max_price').val(maximum_price);
-                    getProductByChoice("price_range",price_range_gloval);
-                }, 500);
-                function debounce(func, wait, immediate) {
-                    var timeout;
-                    return function() {
-                        var context = this, args = arguments;
-                        var later = function() {
-                            timeout = null;
-                            if (!immediate) func.apply(context, args);
-                        };
-                        var callNow = immediate && !timeout;
-                        clearTimeout(timeout);
-                        timeout = setTimeout(later, wait);
-                        if (callNow) func.apply(context, args);
-                    };
-                };
-                $(function () {
-                    var minVal = parseInt($('#min_price').val());
-                    var maxVal = parseInt($('#max_price').val());
-                    $("#slider-range").slider({
-                        range: true,
-                        min: minVal,
-                        max: maxVal,
-                        values: [minVal, maxVal],
-                        slide: function (event, ui) {
-                            $("#amount").val(numbertrans(ui.values[0])+" - "+numbertrans(ui.values[1]));
-                            $("#amount").data('value',ui.values[0]+"-"+ui.values[1]);
-                        },
-                    });
-                    $("#amount").val(
-                        numbertrans(minVal)+" - "+numbertrans(maxVal)
-                    );
-                    $("#amount").data('value',
-                        $("#slider-range").slider("values", 0)+"-"+$("#slider-range").slider("values", 1)
-                    );
-                });
-                function getProductByChoice(type,el)
-                {
-
-                    var requestItem = $('#item_request').val();
-                    var requestItemType = $('#item_request_type').val();
-                    var objNew = {filterTypeId:type, filterTypeValue:[el]};
-                    var objExistIndex = filterType.findIndex((objData) => objData.filterTypeId === type );
-                    if (objExistIndex < 0) {
-                        filterType.push(objNew);
-                    }else {
-                        var objExist = filterType[objExistIndex];
-                        if (objExist && objExist.filterTypeId == "price_range") {
-                            objExist.filterTypeValue.pop(el);
-                        }
-                        if (objExist && objExist.filterTypeId == "rating") {
-                            objExist.filterTypeValue.pop(el);
-                        }
-                        if (objExist.filterTypeValue.includes(el)) {
-                            const index = objExist.filterTypeValue.indexOf(el);
-                            if (index > -1) {
-                                objExist.filterTypeValue.splice(index, 1);
-                            }
-                        }else {
-                            objExist.filterTypeValue.push(el);
-                        }
-                    }
-                    let filterUrl = $("#filterUrl").val()
-                    $('#pre-loader').show();
-                    $.post(filterUrl, {_token:'{{ csrf_token() }}', filterType:filterType, requestItem:requestItem, requestItemType:requestItemType}, function(data){
-                        $('#dataWithPaginate').html(data);
-                        $('.filterCatCol').val(1);
-                        $('#product_short_list').niceSelect();
-                        $('#paginate_by').niceSelect();
-                        $('#pre-loader').hide();
-                        activeTab();
-                        initLazyload();
-                    });
-                }
-                function activeTab(){
-                    var active_tab = localStorage.getItem('view_product_tab');
-                    if(active_tab != null && active_tab == 'profile'){
-                        $("#profile").addClass("active");
-                        $("#profile").addClass("show");
-                        $("#home").removeClass('active');
-                        $("#home-tab").removeClass("active");
-                    }else{
-                        $("#home").addClass("active");
-                        $("#home").addClass("show");
-                        $("#profile").removeClass('active');
-                        $("#profile-tab").removeClass("active");
-                    }
-                }
-                activeTab();
-                $(document).on('click', ".view-product", function () {
-                    var target = $(this).attr("href");
-                    if(target == '#profile'){
-                        localStorage.setItem('view_product_tab', 'profile');
-                        $(this).addClass("active");
-                        $("#profile").addClass("active");
-                        $("#profile").addClass("show");
-                        $("#home").removeClass('active');
-                        $("#home-tab").removeClass("active");
-                    }else{
-                        localStorage.setItem('view_product_tab', 'home');
-                        $("#home").addClass("active");
-                        $("#home").addClass("show");
-                        $("#profile").removeClass('active');
-                        $("#profile-tab").removeClass("active");
-                    }
                 });
             });
         })(jQuery);
