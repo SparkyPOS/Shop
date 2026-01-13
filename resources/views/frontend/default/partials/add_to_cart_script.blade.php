@@ -16,7 +16,8 @@
                         let stock = $(this).data('stock');
                         let min_qty = $(this).data('min_qty');
 
-                        if(is_stock_manage == 1 && stock > min_qty){
+                        // Allow add to cart when available stock meets or exceeds minimum order qty
+                        if(is_stock_manage == 1 && parseInt(stock) >= parseInt(min_qty)){
                             addToCart($(this).attr('data-product-sku'),$(this).attr('data-seller'),min_qty,$(this).attr('data-base-price'),0,'product')
                             $("."+className).prop("disabled", false);
 

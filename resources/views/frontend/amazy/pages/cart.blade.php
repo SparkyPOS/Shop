@@ -51,6 +51,7 @@
         .checkout_v3_area .cart_thumb_div{ gap: 4px !important; }
         .checkout_v3_area .mobile_title_qty_row{ margin-top: 6px !important; }
         .mobile_qty_price_row{ align-items: center !important; }
+        .mobile_qty_price_row{ justify-content: flex-end !important; }
     }
 </style>
 

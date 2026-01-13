@@ -387,12 +387,21 @@
                                                                     </p>
                                                                 </div>
     </a>
+    @php
+        $__sellerAccount = @$cart->seller->SellerAccount;
+        $__storeName = $__sellerAccount ? $__sellerAccount->seller_shop_display_name : '';
+        if($__sellerAccount && !empty($__sellerAccount->parent_seller_id)){
+            $parentUser = \App\Models\User::with('SellerAccount')->find($__sellerAccount->parent_seller_id);
+            if($parentUser && $parentUser->SellerAccount){
+                $__storeName = $parentUser->SellerAccount->seller_shop_display_name;
+            }
+        }
+    @endphp
     <div class="mobile_title_full d-lg-none mt-2 w-100">
         <div class="mobile_full_title">{{ @$cart->product->product->product_name }}</div>
         <div class="font_12 opacity-75 mt-1">
-            <span>{{ __('vendor') }}: {{ @$cart->seller->SellerAccount->vendor_id }}</span>
-            <span class="mx-2">•</span>
-            <span>{{ __('common.store') }}: {{ @$cart->seller->SellerAccount->seller_shop_display_name }}</span>
+            <span>Vendor: {{ @$cart->seller->SellerAccount->vendor_id }}</span>
+            <span class="d-block">{{ __('common.store') }}: {{ $__storeName }}</span>
         </div>
     </div>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-10 mt-2 d-lg-none mobile_qty_price_row">
@@ -413,8 +422,8 @@
                                                                     </div>
         </div>
         <div class="d-inline mobile_price"><h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap">{{single_price($cart->total_price)}}</h4></div>
-        <span class="close_icon style_2 lh-1 cart_item_delete_btn cursor_pointer mobile_delete" data-id="{{$cart->id}}" data-product_id="{{$cart->product_id}}" data-unique_id="#delete_item_{{$cart->id}}">
-                                                                    <svg  width="12.249" height="15.076" viewBox="0 0 12.249 15.076">
+        <span class="close_icon style_2 lh-1 cart_item_delete_btn cursor_pointer mobile_delete ms-2" data-id="{{$cart->id}}" data-product_id="{{$cart->product_id}}" data-unique_id="#delete_item_{{$cart->id}}">
+                                                                        <svg  width="12.249" height="15.076" viewBox="0 0 12.249 15.076">
                                                                         <g  transform="translate(-48)">
                                                                             <path  data-name="Path 1449" d="M59.071,1.884H56.48V1.413A1.415,1.415,0,0,0,55.067,0H53.182a1.415,1.415,0,0,0-1.413,1.413v.471H49.178A1.179,1.179,0,0,0,48,3.062V4.711a.471.471,0,0,0,.471.471h.257l.407,8.547a1.412,1.412,0,0,0,1.412,1.346H57.7a1.412,1.412,0,0,0,1.412-1.346l.407-8.547h.257a.471.471,0,0,0,.471-.471V3.062A1.179,1.179,0,0,0,59.071,1.884Zm-6.36-.471a.472.472,0,0,1,.471-.471h1.884a.472.472,0,0,1,.471.471v.471H52.711ZM48.942,3.062a.236.236,0,0,1,.236-.236h9.893a.236.236,0,0,1,.236.236V4.24H48.942Zm9.23,10.623a.471.471,0,0,1-.471.449H50.547a.471.471,0,0,1-.471-.449l-.4-8.5h8.905Z" fill="#00124e"></path>
                                                                             <path  data-name="Path 1450" d="M240.471,215.067a.471.471,0,0,0,.471-.471v-6.125a.471.471,0,1,0-.942,0V214.6A.471.471,0,0,0,240.471,215.067Z" transform="translate(-186.347 -201.875)" fill="#00124e"></path>
@@ -426,7 +435,7 @@
                                                             </div>
                                                         </div>
                                                         <div class="col order-1 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
-                                                            <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('vendor')}}</span>
+                                                            <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">Vendor</span>
                                                             <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block">
                                                                 {{$cart->seller->sellerAccount->vendor_id}}
                                                             </h4>
@@ -434,7 +443,7 @@
                                                         <div class="col order-1 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
                                                             <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('common.store')}}</span>
                                                             <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block">
-                                                                {{ @$cart->seller->SellerAccount->seller_shop_display_name }}
+                                                                {{ $__storeName }}
                                                             </h4>
                                                         </div>
                                                         <div class="col order-2 order-lg-0 my-3 my-lg-0 d-none d-lg-block">

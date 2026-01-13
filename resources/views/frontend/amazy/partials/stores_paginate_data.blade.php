@@ -25,7 +25,7 @@
             <h5 class="font_16 f_w_500 mr_10 mb-0">{{ __('defaultTheme.showing') }} @if ($show_start == $show_end) {{ getNumberTranslate($show_end) }}
                 @else
                     {{ getNumberTranslate($show_start) }} - {{ getNumberTranslate($show_end) }} @endif {{ __('defaultTheme.out_of_total') }} {{ getNumberTranslate($total_number_of_items) }}
-                {{ $listingLabel ?? __('common.merchants') }}</h5>
+                {{ __('common.stores') }}</h5>
             <div class="box_header_right ">
                 <div class="short_select d-flex align-items-center gap_10 flex-wrap">
 
@@ -86,14 +86,9 @@
                             <div class="product_widget5 vendor_widget mb_30 style5 w-100">
                                 <div class="product_thumb_upper">
                                     @php
-                                        $isShop = isset($product->SellerAccount) && is_null($product->SellerAccount->parent_seller_id);
                                         $shopSlug = $product->slug ?: base64_encode($product->id);
-                                        $cardHref = route('frontend.seller', ['seller_id' => $product->slug ?: base64_encode($product->id), 'vendor_id' => @$product->SellerAccount->vendor_id]);
-                                        if (!empty($linkStoresToVendors) && $isShop) {
-                                            $cardHref = route('frontend.shop.vendors', $shopSlug);
-                                        }
                                     @endphp
-                                    <a href="{{ $cardHref }}" class="thumb">
+                                    <a href="{{ route('frontend.shop.vendors', $shopSlug) }}" class="thumb">
                                         <img data-src="{{$product->SellerAccount->banner?showImage($product->SellerAccount->banner):showImage('frontend/default/img/breadcrumb_bg.png')}}" src="{{$product->SellerAccount->banner?showImage($product->SellerAccount->banner):showImage('frontend/default/img/breadcrumb_bg.png')}}"
                                              alt="{{ @$product->SellerAccount->seller_shop_display_name }}" title="{{ @$product->seller_shop_display_name }}"
                                              class="lazyload">
@@ -114,37 +109,12 @@
                                     <x-rating :rating="$review" />
                                 </div>
                                 <div class="product__meta  text-center">
-{{--                                    <div><img style="height: 50px;--}}
-{{--    width: 50px;--}}
-{{--    border-radius: 50%;--}}
-{{--    border: 1px solid black;--}}
-{{--    padding: 5px;" src="{{$product->photo?showImage($product->photo):showImage('frontend/default/img/avatar.jpg')}}" alt="#"></div>--}}
-                                    @if(isset($shop))
-                                        <div class="mb-1">
-                                            @if(@$product->SellerAccount && @$product->SellerAccount->vendor_id)
-                                                <span class="product_banding">Vendor: {{ @$product->SellerAccount->vendor_id }}</span>
-                                            @endif
-                                            <span class="product_banding">Store: {{ $shop->SellerAccount->seller_shop_display_name ?? ($shop->first_name.' '.$shop->last_name) }}</span>
-                                        </div>
-                                        <a href="{{route('frontend.seller',['seller_id'=> base64_encode($product->id),'vendor_id'=>@$product->SellerAccount->vendor_id])}}">
-                                            <h4 class="m-0">{{ trim(($product->first_name ?? '').' '.($product->last_name ?? '')) ?: textLimit($product->name, 50) }}</h4>
-                                        </a>
-                                    @else
                                         @php
-                                            $sellerParam = (isset($product->SellerAccount) && !is_null($product->SellerAccount->parent_seller_id))
-                                                ? base64_encode($product->id)
-                                                : $product->slug;
+                                            $sellerParam = $product->slug;
                                         @endphp
-                                        @php
-                                            $nameHref = route('frontend.seller', ['seller_id' => $sellerParam, 'vendor_id' => @$product->SellerAccount->vendor_id]);
-                                            if (!empty($linkStoresToVendors) && $isShop) {
-                                                $nameHref = route('frontend.shop.vendors', $shopSlug);
-                                            }
-                                        @endphp
-                                        <a href="{{ $nameHref }}">
+                                        <a href="{{ route('frontend.shop.vendors', $shopSlug) }}">
                                             <h4 class="m-0">@if ($product->SellerAccount->seller_shop_display_name) {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @else {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @endif</h4>
                                         </a>
-                                    @endif
                                     @php
                                         $biz = \Modules\MultiVendor\Entities\SellerBusinessInformation::where('user_id', $product->id)->first();
                                         $addrParts = [];
@@ -155,56 +125,19 @@
                                         $addrLine = implode(', ', $addrParts);
                                         $phone = optional($product->SellerAccount)->seller_phone ?? $product->phone ?? $product->username;
                                     @endphp
-                                    @if(!isset($shop))
-                                        @if(!empty($addrLine))
-                                            <div class="mt-0">
-                                                <small class="product_banding d-block">{{ $addrLine }}</small>
-                                            </div>
-                                        @endif
-                                        @if(!empty($phone))
-                                            <div class="mt-1">
-                                                <span class="product_banding">{{ __('common.phone') }}: {{ $phone }}</span>
-                                            </div>
-                                        @endif
-                                        @php
-                                            $__sellerAccount = $product->SellerAccount ?? null;
-                                            $__storeName = $__sellerAccount ? $__sellerAccount->seller_shop_display_name : null;
-                                            if($__sellerAccount && !is_null($__sellerAccount->parent_seller_id)){
-                                                $parentUser = \App\Models\User::with('SellerAccount')->find($__sellerAccount->parent_seller_id);
-                                                if($parentUser && $parentUser->SellerAccount){
-                                                    $__storeName = $parentUser->SellerAccount->seller_shop_display_name;
-                                                }
-                                            }
-                                        @endphp
-                                        @if(!empty($__storeName))
-                                            <div class="mt-1">
-                                                <span class="product_banding">Store: {{ $__storeName }}</span>
-                                            </div>
-                                        @endif
-                                    @endif
-                                    @if(isset($product->SellerAccount) && is_null($product->SellerAccount->parent_seller_id))
-                                        <div class="mt-1">
-                                            @php
-                                                $shopSlug = $product->slug ?: base64_encode($product->id);
-                                            @endphp
-                                            <a class="theme_btn_small" href="{{  $cardHref}}">Products</a>
+                                    @if(!empty($addrLine))
+                                        <div class="mt-0">
+                                            <small class="product_banding d-block">{{ $addrLine }}</small>
                                         </div>
                                     @endif
-                                    @if(!isset($shop) && !empty(@$product->SellerAccount->about_seller))
+                                    @if(!empty($phone))
                                         <div class="mt-1">
-                                            <span class="product_banding">{{ __('seller.about_seller') }}: {{ textLimit(strip_tags(@$product->SellerAccount->about_seller), 100) }}</span>
+                                            <span class="product_banding">{{ __('common.phone') }}: {{ $phone }}</span>
                                         </div>
                                     @endif
-                                    @if(!isset($shop) && @$product->SellerAccount && @$product->SellerAccount->vendor_id)
-                                        <div class="mt-1">
-                                            <span class="product_banding">Vendor ID: {{ @$product->SellerAccount->vendor_id }}</span>
-                                        </div>
-                                    @endif
-                                    @if(!isset($shop))
-                                        <div class="mt-1">
-                                            <span class="product_banding">Seller: {{ textLimit($product->name, 60) }}</span>
-                                        </div>
-                                    @endif
+                                    <div class="mt-1">
+                                        <a class="theme_btn_small" href="{{ route('frontend.shop.vendors', $shopSlug) }}">Vendors</a>
+                                    </div>
                                 </div>
                             </div>
                         </div>

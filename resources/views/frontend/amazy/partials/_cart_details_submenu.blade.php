@@ -97,7 +97,7 @@
                             <div class="cart_content flex-fill">
                                 <a href="{{singleProductURL($cart->seller->slug, $cart->product->product->slug)}}">
                                     <h5>{{ @$cart->product->product->product_name }}</h5>
-                                    <h6>Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</h6>
+                                    <h6>Vendor: {{ @$cart->seller->SellerAccount->vendor_id }}</h6>
                                 </a>
                                 <div class="cart_content_text d-flex align-items-center gap_10 flex-fill flex-wrap">
                                     <div class="product_number_count style_2" data-target="amountc-1">
