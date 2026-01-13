@@ -239,8 +239,8 @@ class CheckoutController extends Controller
                     }
                 }
             }else{
+                // Do not hard-require shipping_method; fallback will handle if missing
                 $request->validate([
-                    'shipping_method' => 'required',
                     'delivery_type' => 'required',
                     'pickup_location' => 'required_if:delivery_type,==,pickup_location'
                 ]);
@@ -322,7 +322,13 @@ class CheckoutController extends Controller
                 if(isModuleActive('INTShipping') && app('theme')->folder_path == 'amazy'){
                     $selected_shipping_method = $request->get('intshipping_cartItem');
                 }else{
-                    $selected_shipping_method = $this->checkoutService->selectedShippingMethod(decrypt($request->get('shipping_method')));
+                    // Guard against missing or invalid shipping_method in request
+                    if($request->filled('shipping_method')){
+                        $selected_shipping_method = $this->checkoutService->selectedShippingMethod(decrypt($request->get('shipping_method')));
+                    }else{
+                        // Fallback to previously calculated/default shipping method
+                        $selected_shipping_method = $this->checkoutService->totalAmountForPayment($cartData, null, $address)['shipping_method'];
+                    }
                 }
                 $total_amount = $this->checkoutService->totalAmountForPayment($cartData,$selected_shipping_method,$address)['grand_total'];
                 $subtotal_without_discount = $this->checkoutService->totalAmountForPayment($cartData,$selected_shipping_method,$address)['subtotal'];

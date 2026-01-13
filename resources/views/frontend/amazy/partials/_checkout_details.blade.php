@@ -27,7 +27,7 @@
         gap: 10px;
     }
     .checout_shiped_products{ padding: 8px 12px; }
-</style>
+    </style>
 <form action="{{route('frontend.checkout')}}" method="GET" enctype="multipart/form-data" id="mainOrderForm">
     <div class="checkout_v3_area">
         <div class="checkout_v3_left d-flex justify-content-end">

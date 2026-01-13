@@ -46,10 +46,7 @@
         <div class="container">
             <div class="row">
                 <div id="dataWithPaginate" class="col-lg-12 col-xl-12">
-                    @include('frontend.amazy.partials.sellers_paginate_data', [
-                        'listingLabel' => __('common.stores'),
-                        'linkStoresToVendors' => true,
-                    ])
+                    @include('frontend.amazy.partials.stores_paginate_data')
                 </div>
             </div>
         </div>

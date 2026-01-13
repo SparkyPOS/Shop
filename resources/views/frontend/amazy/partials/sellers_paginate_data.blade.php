@@ -172,7 +172,7 @@
                                             @php
                                                 $shopSlug = $product->slug ?: base64_encode($product->id);
                                             @endphp
-                                            <a class="theme_btn_small" href="{{ route('frontend.shop.vendors', $shopSlug) }}">Vendors</a>
+                                            <a class="theme_btn_small" href="{{  $cardHref}}">Products</a>
                                         </div>
                                     @endif
                                     @if(!isset($shop) && !empty(@$product->SellerAccount->about_seller))

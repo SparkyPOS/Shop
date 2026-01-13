@@ -194,10 +194,9 @@ class ProductController extends Controller
         }
 
         $data['products'] = $products->paginate($paginate);
-        $data['listingLabel'] = __('common.vendors');
 
         if ($request->ajax()) {
-            return view(theme('partials.sellers_paginate_data'), $data);
+            return view(theme('partials.vendors_paginate_data'), $data);
         } else {
             $data['products']->appends($request->except('page'));
             return view(theme('pages.vendors'), $data);
@@ -244,7 +243,7 @@ class ProductController extends Controller
         $data['shop'] = $shop;
 
         if ($request->ajax()) {
-            return view('frontend.amazy.partials.sellers_paginate_data', $data);
+            return view('frontend.amazy.partials.vendors_paginate_data', $data);
         } else {
             $data['products']->appends($request->except('page'));
             return view('frontend.amazy.pages.shop_vendors', $data);
@@ -279,11 +278,9 @@ class ProductController extends Controller
         }
 
         $data['products'] = $products->paginate($paginate);
-        $data['listingLabel'] = __('common.stores');
-        $data['linkStoresToVendors'] = true;
 
         if ($request->ajax()) {
-            return view(theme('partials.sellers_paginate_data'), $data);
+            return view(theme('partials.stores_paginate_data'), $data);
         } else {
             $data['products']->appends($request->except('page'));
             return view(theme('pages.stores'), $data);

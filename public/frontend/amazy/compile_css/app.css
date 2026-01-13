@@ -15005,7 +15005,8 @@ footer.home_three_footer .copyright_area .payment_imgs {
 .checkout_v3_area .checkout_v3_left .checkout_v3_inner .checout_head_title {
   border-radius: 3px;
   /*margin-bottom: 20px;*/
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-y: scroll;
   border-radius: 3px;
   border: 1px solid #eef0f4;
   background-color: #fcfdfd;

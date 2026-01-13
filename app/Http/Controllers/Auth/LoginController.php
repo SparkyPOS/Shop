@@ -95,7 +95,7 @@ class LoginController extends Controller
 
         $loginPageInfo = LoginPage::findOrFail(1);
 
-        return view(theme('auth.admin_login'), compact('admin_email', 'loginPageInfo'));
+        return view(theme('auth.admin_login'), compact( 'loginPageInfo'));
     }
 
     public function adminLogin(Request $request){
@@ -534,6 +534,6 @@ class LoginController extends Controller
                 }
             }
     }
-   
-    
+
+
 }

@@ -36,34 +36,42 @@ class StripeController extends Controller
 
     public function stripePost($data)
     {
-        $currency_code = getCurrencyCode();
+        // Stripe expects lowercase ISO currency codes
+        $currency_code = strtolower(getCurrencyCode());
         $credential = $this->getCredential();
         Stripe\Stripe::setApiKey(@$credential->perameter_3);
         try{
             $stripe = Stripe\Charge::create ([
-                "amount" => round($data['amount'] * 100),
+                "amount" => (int) round($data['amount'] * 100),
                 "currency" => $currency_code,
                 "source" => $data['stripeToken'],
                 "description" => "Payment from ". url('/')
             ]);
-            $sellers=$data['seller'];
-//            dd($sellers);
-            foreach ($sellers as $seller) {
-                $total_amount=floatval($seller['price']);
-                $user=\App\Models\User::find($seller['seller_id']);
-                $sellerAccount=$user->SellerAccount;
-                $commission_rate = $sellerAccount->commission_rate;
-                $comission = ($total_amount * $commission_rate) / 100;
 
-                $seller_amount  = $total_amount - $comission;
-//                $user->SellerAccount;
-                Transfer::create([
-                    'amount' => $seller_amount * 100,
-                    'currency' => 'usd',
-                    'destination' => $user->stripe_account_id,
-                    'source_transaction' => $stripe->id, // Charge ID from customer payment
-//                    'application_fee_amount' =>10*100,
-                ]);
+            // Only attempt seller payouts when enabled and data provided
+            $sellers = $data['seller'] ?? [];
+            if (isModuleActive('MultiVendor') && app('general_setting')->seller_wise_payment && is_array($sellers) && count($sellers) > 0) {
+                foreach ($sellers as $seller) {
+                    $total_amount = isset($seller['price']) ? (float) $seller['price'] : 0.0;
+                    $user = isset($seller['seller_id']) ? \App\Models\User::find($seller['seller_id']) : null;
+                    if (!$user) {
+                        continue; // invalid seller entry
+                    }
+                    $sellerAccount = $user->SellerAccount ?? null;
+                    $commission_rate = $sellerAccount && isset($sellerAccount->commission_rate) ? (float) $sellerAccount->commission_rate : 0.0;
+                    $comission = ($total_amount * $commission_rate) / 100.0;
+                    $seller_amount = max($total_amount - $comission, 0);
+
+                    // Require a connected account id to transfer. Skip if not present.
+                    if (!empty($user->stripe_account_id) && $seller_amount > 0) {
+                        Transfer::create([
+                            'amount' => (int) round($seller_amount * 100),
+                            'currency' => $currency_code,
+                            'destination' => $user->stripe_account_id,
+                            'source_transaction' => $stripe->id, // Charge ID from customer payment
+                        ]);
+                    }
+                }
             }
 
 

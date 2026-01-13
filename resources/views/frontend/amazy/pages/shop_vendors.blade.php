@@ -1,6 +1,6 @@
 @extends('frontend.amazy.layouts.app')
 @section('title')
-   Sellers under {{ $shop->SellerAccount->seller_shop_display_name ?? ($shop->first_name.' '.$shop->last_name) }}
+    Vendors under {{ $shop->SellerAccount->seller_shop_display_name ?? ($shop->first_name.' '.$shop->last_name) }}
 @endsection
 @section('content')
     <div class="brand_banner d-flex align-items-center">
@@ -8,7 +8,7 @@
             <div class="row">
                 <div class="col-12">
                     <h3 class="branding_text">
-                        Sellers of
+                        Vendors of
                         {{ $shop->SellerAccount->seller_shop_display_name ?? ($shop->first_name.' '.$shop->last_name) }}
                     </h3>
                 </div>
@@ -19,10 +19,10 @@
         <div class="container">
             <div class="row">
                 <div class="col-12 mb-3">
-                    <a class="menu_btn_1 text-nowrap" href="{{ route('frontend.vendors') }}">← Back to Stores</a>
+                    <a class="menu_btn_1 text-nowrap" href="{{ route('frontend.shops') }}">← Back to Stores</a>
                 </div>
                 <div id="dataWithPaginate" class="col-lg-12 col-xl-12">
-                    @include('frontend.amazy.partials.sellers_paginate_data')
+                    @include('frontend.amazy.partials.vendors_paginate_data')
                 </div>
             </div>
         </div>

@@ -48,7 +48,7 @@
 {{--                @include('frontend.amazy.partials.sellers_sidebar')--}}
                 <div id="dataWithPaginate" class="col-lg-12 col-xl-12">
 
-                    @include('frontend.amazy.partials.sellers_paginate_data', ['listingLabel' => __('common.vendors')])
+                    @include('frontend.amazy.partials.vendors_paginate_data')
                 </div>
             </div>
         </div>
