@@ -942,7 +942,7 @@
                                 <div class="amazcart_delivery_wiz_content">
                                     <h4 class="font_16 f_w_700 mb_6">{{__('amazy.Return Policy')}}</h4>
                                     <p class="delivery_text font_14 f_w_400">
-                                        {{__('amazy.Click The Following Link To View Details On Return Policy.')}} <a class="text-nowrap" href="{{url('/return-exchange')}}">{{__('common.see_more')}}.</a>
+                                        {{__('Click The Following Link To View Details On Return Policy.')}} <a class="text-nowrap" href="{{url('/return-exchange')}}">{{__('common.see_more')}}.</a>
                                     </p>
                                 </div>
                             </div>
