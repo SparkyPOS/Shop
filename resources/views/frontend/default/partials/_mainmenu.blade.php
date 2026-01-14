@@ -76,7 +76,7 @@
                     @endif
                     
                     @guest
-                        <a href="{{url('/login')}}"
+                        <a href="https://app.sparkypos.com/login"
                             class="menu_btn_1 text-nowrap">{{ __('defaultTheme.login') }}/ {{__('defaultTheme.register')}}</a>
                     @else
                         @if (isset($new_user_zone))

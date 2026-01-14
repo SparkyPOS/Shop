@@ -221,7 +221,7 @@
                         </label>
                     </div>
                     <div class="col-12">
-                        <p class="sign_up_text">{{__('auth.Already have an Account?')}}  <a href="{{url('/login')}}">{{__('auth.Sign In')}}</a></p>
+                        <p class="sign_up_text">{{__('auth.Already have an Account?')}}  <a href="https://app.sparkypos.com/login">{{__('auth.Sign In')}}</a></p>
                     </div>
                 </div>
             </form>

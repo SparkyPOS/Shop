@@ -6,7 +6,7 @@
                 @guest
                   <div class="checout_head">
                       <i class="ti-folder"></i>
-                      <p>{{__('defaultTheme.returning_customer')}}? <a href="{{url('/login')}}">{{__('defaultTheme.click_here_to_login')}}</a></p>
+                      <p>{{__('defaultTheme.returning_customer')}}? <a href="https://app.sparkypos.com/login">{{__('defaultTheme.click_here_to_login')}}</a></p>
                   </div>
                 @endguest
 

@@ -168,7 +168,7 @@
                                                 <button type="btn" class="amaz_primary_btn style3 text-uppercase">{{__('amazy.Followed')}}</button>
                                             @endif
                                         @elseif(!auth()->check())
-                                            <a href="{{url('/login')}}" class="amaz_primary_btn style3 text-uppercase">{{__('common.follow')}}</a>
+                                            <a href="https://app.sparkypos.com/login" class="amaz_primary_btn style3 text-uppercase">{{__('common.follow')}}</a>
                                         @endif
                                     </div>
                                 </div>
