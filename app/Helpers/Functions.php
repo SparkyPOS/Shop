@@ -377,6 +377,10 @@ if (!function_exists('singleProductURL')) {
         // Generate a robust product URL that tolerates missing seller slug.
         // For MultiVendor: prefer /product/{seller}/{slug}; fallback to /product/{slug}
         // For single vendor: /product/{slug}
+        if (empty($seller) && empty($product)) {
+            // Nothing to build a route from; avoid UrlGenerationException
+            return url('/');
+        }
         if (isModuleActive('MultiVendor')) {
             if (!empty($seller) && !empty($product)) {
                 return route('frontend.item.show', [$seller, $product]);
@@ -768,5 +772,4 @@ if(!function_exists('getGstName'))
     }
 
 }
-
 

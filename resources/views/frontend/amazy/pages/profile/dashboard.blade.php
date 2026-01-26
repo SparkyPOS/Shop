@@ -225,7 +225,12 @@
                                     <div class="dash_product_lists">
                                         @foreach($recent_order_products as $key => $product)
                                             @if($product->type == 'product')
-                                                <a href="{{singleProductURL(@$product->seller_product_sku->product->seller->slug, @$product->seller_product_sku->product->slug)}}" class="dashboard_order_list d-flex align-items-center flex-wrap  gap_20">
+                                                @php
+                                                    $__sellerSlug = @$product->seller_product_sku->product->seller->slug;
+                                                    $__prodSlug = @$product->seller_product_sku->product->slug;
+                                                    $__prodUrl = (!empty($__sellerSlug) || !empty($__prodSlug)) ? singleProductURL($__sellerSlug, $__prodSlug) : 'javascript:void(0)';
+                                                @endphp
+                                                <a href="{{ $__prodUrl }}" class="dashboard_order_list d-flex align-items-center flex-wrap  gap_20">
                                                     <div class="thumb">
                                                         <img class="img-fluid" src="
                                                         @if(@$product->seller_product_sku->product->product->product_type == 1)
@@ -277,7 +282,12 @@
                                     <div class="dash_product_lists">
                                         @foreach($carts as $key => $cart)
                                             @if($cart->product_type == 'product')
-                                                <a href="{{singleProductURL($cart->seller->slug, $cart->product->product->slug)}}" class="dashboard_order_list d-flex align-items-center flex-wrap  gap_20">
+                                                @php
+                                                    $__sellerSlug = @$cart->seller->slug;
+                                                    $__prodSlug = @$cart->product->product->slug;
+                                                    $__prodUrl = (!empty($__sellerSlug) || !empty($__prodSlug)) ? singleProductURL($__sellerSlug, $__prodSlug) : 'javascript:void(0)';
+                                                @endphp
+                                                <a href="{{ $__prodUrl }}" class="dashboard_order_list d-flex align-items-center flex-wrap  gap_20">
                                                     <div class="thumb">
                                                         <img class="img-fluid" src="
                                                         @if(@$cart->product->product->product->product_type == 1)
