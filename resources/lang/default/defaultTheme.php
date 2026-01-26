@@ -309,6 +309,7 @@ return [
     'processing' => 'Processing',
     'but_it_now' => 'Buy It Now',
     'product_wise_shipping_charge' => 'Product Wise Shipping Charge',
+    'package_wise_shipping_charge' => 'Package Wise Shipping Charge',
     'track_now' => 'Track Now',
     'quick_view' => 'Quick View',
     'enter_your_order_id_in_the_box_below_and_press_the_track_button' => 'Enter Your Order ID In The Box Below And Press The “Track” Button.',
