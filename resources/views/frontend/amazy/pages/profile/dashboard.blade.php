@@ -246,12 +246,14 @@
                                                     </div>
                                                     <div class="dashboard_order_content">
                                                         <h4 class="font_16 f_w_700 mb-1 lh-base theme_hover">{{ textLimit($__productName,22) }}</h4>
-                                                        <p class="font_14 f_w_500 d-flex align-items-center gap-2">
-                                                            @if(getProductwitoutDiscountPrice(@$product->seller_product_sku->product) != single_price(0))
-                                                                <span class="discount_prise text-decoration-line-through">{{getProductwitoutDiscountPrice(@$product->seller_product_sku->product)}} </span>
-                                                            @endif
-                                                            <span class="secondary_text">{{getProductDiscountedPrice(@$product->seller_product_sku->product)}}</span>
-                                                        </p>
+                                                        @if(!empty($__coreProduct))
+                                                            <p class="font_14 f_w_500 d-flex align-items-center gap-2">
+                                                                @if(getProductwitoutDiscountPrice(@$product->seller_product_sku->product) != single_price(0))
+                                                                    <span class="discount_prise text-decoration-line-through">{{getProductwitoutDiscountPrice(@$product->seller_product_sku->product)}} </span>
+                                                                @endif
+                                                                <span class="secondary_text">{{getProductDiscountedPrice(@$product->seller_product_sku->product)}}</span>
+                                                            </p>
+                                                        @endif
                                                     </div>
                                                 </a>
                                             @else
@@ -308,12 +310,14 @@
                                                     </div>
                                                     <div class="dashboard_order_content">
                                                         <h4 class="font_16 f_w_700 mb-1 lh-base theme_hover">{{ textLimit($__productName,28) }}</h4>
-                                                        <p class="font_14 f_w_500 d-flex align-items-center gap-2">
-                                                            @if(getProductwitoutDiscountPrice(@$cart->product->product) != single_price(0))
-                                                                <span class="discount_prise text-decoration-line-through">{{getProductwitoutDiscountPrice(@$cart->product->product)}} </span>
-                                                            @endif
-                                                            <span class="secondary_text">{{ single_price($cart->price) }}</span>
-                                                        </p>
+                                                        @if(!empty($__coreProduct))
+                                                            <p class="font_14 f_w_500 d-flex align-items-center gap-2">
+                                                                @if(getProductwitoutDiscountPrice(@$cart->product->product) != single_price(0))
+                                                                    <span class="discount_prise text-decoration-line-through">{{getProductwitoutDiscountPrice(@$cart->product->product)}} </span>
+                                                                @endif
+                                                                <span class="secondary_text">{{ single_price($cart->price) }}</span>
+                                                            </p>
+                                                        @endif
                                                     </div>
                                                 </a>
                                             @else
