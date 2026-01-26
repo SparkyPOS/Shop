@@ -37,7 +37,8 @@
             processData: false,
             data: formData,
             success: function (response) {
-                if(response.cart_details_submenu == 'out_of_stock'){
+                // Handle both plain string and JSON responses for out-of-stock
+                if (response === 'out_of_stock' || (response && response.cart_details_submenu === 'out_of_stock')) {
                     toastr.error('No more product to buy.');
                     $('#pre-loader').hide();
                     $('#add_to_cart_btn').prop('disabled',false);
@@ -59,9 +60,12 @@
                         }
                         $('#cart_add_modal').modal('show');
                     }
-                    $('#cart_data_show_div').html(response.cart_details_submenu);
+                    if (response && response.cart_details_submenu) {
+                        $('#cart_data_show_div').html(response.cart_details_submenu);
+                    }
                     $('.shoping_cart').addClass('active');
-                    $('.cart_count_bottom').text(numbertrans(response.count_bottom));
+                    var countBottom = (response && typeof response.count_bottom !== 'undefined' && response.count_bottom !== null) ? response.count_bottom : 0;
+                    $('.cart_count_bottom').text(numbertrans(countBottom));
                     if ($(".add-product-to-cart-using-modal").length){
                         $('.add_to_cart_modal').modal('hide');
                     }

@@ -1383,7 +1383,8 @@
                     'name' : "{{ @$product->product_name }}",
                     'url' : "{{singleProductURL(@$product->seller->slug, @$product->slug)}}",
                     'price' : currency_format($('#final_price').val()),
-                    'thumbnail' : $('#thumb_image').val()
+                    'thumbnail' : $('#thumb_image').val(),
+                    'vendor_id' : "{{ @$product->seller->SellerAccount->vendor_id }}"
                 };
                 addToCart($('#product_sku_id').val(),$('#seller_id').val(),$('#qty').data('value'),$('#base_sku_price').val().trim(),$('#shipping_type').val(),'product',showData);
             });
