@@ -224,29 +224,34 @@
                                 <div class="dashboard_white_box_body">
                                     <div class="dash_product_lists">
                                         @foreach($recent_order_products as $key => $product)
-                                            @if($product->type == 'product')
+                                            @if($product->type == 'product' && !empty($product->seller_product_sku) && !empty($product->seller_product_sku->product))
                                                 @php
                                                     $__sellerSlug = @$product->seller_product_sku->product->seller->slug;
                                                     $__prodSlug = @$product->seller_product_sku->product->slug;
                                                     $__prodUrl = (!empty($__sellerSlug) || !empty($__prodSlug)) ? singleProductURL($__sellerSlug, $__prodSlug) : 'javascript:void(0)';
+                                                    $__coreProduct = @$product->seller_product_sku->product->product;
+                                                    $__productName = @$product->seller_product_sku->product->product_name ?: '';
+                                                    $__thumb = '';
+                                                    if (!empty($__coreProduct)) {
+                                                        if ((int)($__coreProduct->product_type ?? 1) === 1) {
+                                                            $__thumb = showImage($__coreProduct->thumbnail_image_source ?? '');
+                                                        } else {
+                                                            $__thumb = showImage(@$product->seller_product_sku->sku->variant_image ?: ($__coreProduct->thumbnail_image_source ?? ''));
+                                                        }
+                                                    }
                                                 @endphp
                                                 <a href="{{ $__prodUrl }}" class="dashboard_order_list d-flex align-items-center flex-wrap  gap_20">
                                                     <div class="thumb">
-                                                        <img class="img-fluid" src="
-                                                        @if(@$product->seller_product_sku->product->product->product_type == 1)
-                                                            {{showImage(@$product->seller_product_sku->product->product->thumbnail_image_source)}}
-                                                        @else
-                                                            {{showImage(@$product->seller_product_sku->sku->variant_image?@$product->seller_product_sku->sku->variant_image:@$product->seller_product_sku->product->product->thumbnail_image_source)}}
-                                                        @endif
-                                                        " alt="{{textLimit($product->seller_product_sku->product->product_name,22)}}" title="{{textLimit($product->seller_product_sku->product->product_name,22)}}">
+                                                        <img class="img-fluid" src="{{ $__thumb }}" alt="{{ textLimit($__productName,22) }}" title="{{ textLimit($__productName,22) }}">
                                                     </div>
                                                     <div class="dashboard_order_content">
-                                                        <h4 class="font_16 f_w_700 mb-1 lh-base theme_hover">{{textLimit($product->seller_product_sku->product->product_name,22)}}</h4>
+                                                        <h4 class="font_16 f_w_700 mb-1 lh-base theme_hover">{{ textLimit($__productName,22) }}</h4>
                                                         <p class="font_14 f_w_500 d-flex align-items-center gap-2">
                                                             @if(getProductwitoutDiscountPrice(@$product->seller_product_sku->product) != single_price(0))
                                                                 <span class="discount_prise text-decoration-line-through">{{getProductwitoutDiscountPrice(@$product->seller_product_sku->product)}} </span>
                                                             @endif
-                                                            <span class="secondary_text">{{getProductDiscountedPrice(@$product->seller_product_sku->product)}}</span>  </p>
+                                                            <span class="secondary_text">{{getProductDiscountedPrice(@$product->seller_product_sku->product)}}</span>
+                                                        </p>
                                                     </div>
                                                 </a>
                                             @else
@@ -281,29 +286,34 @@
                                 <div class="dashboard_white_box_body">
                                     <div class="dash_product_lists">
                                         @foreach($carts as $key => $cart)
-                                            @if($cart->product_type == 'product')
+                                            @if($cart->product_type == 'product' && !empty($cart->product) && !empty($cart->product->product))
                                                 @php
                                                     $__sellerSlug = @$cart->seller->slug;
                                                     $__prodSlug = @$cart->product->product->slug;
                                                     $__prodUrl = (!empty($__sellerSlug) || !empty($__prodSlug)) ? singleProductURL($__sellerSlug, $__prodSlug) : 'javascript:void(0)';
+                                                    $__coreProduct = @$cart->product->product->product;
+                                                    $__productName = @$cart->product->product->product_name ?: '';
+                                                    $__thumb = '';
+                                                    if (!empty($__coreProduct)) {
+                                                        if ((int)($__coreProduct->product_type ?? 1) === 1) {
+                                                            $__thumb = showImage($__coreProduct->thumbnail_image_source ?? '');
+                                                        } else {
+                                                            $__thumb = showImage(@$cart->product->sku->variant_image ?: ($__coreProduct->thumbnail_image_source ?? ''));
+                                                        }
+                                                    }
                                                 @endphp
                                                 <a href="{{ $__prodUrl }}" class="dashboard_order_list d-flex align-items-center flex-wrap  gap_20">
                                                     <div class="thumb">
-                                                        <img class="img-fluid" src="
-                                                        @if(@$cart->product->product->product->product_type == 1)
-                                                            {{showImage(@$cart->product->product->product->thumbnail_image_source)}}
-                                                        @else
-                                                            {{showImage(@$cart->product->sku->variant_image?@$cart->product->sku->variant_image:@$cart->product->product->product->thumbnail_image_source)}}
-                                                        @endif
-                                                        " alt="{{textLimit($cart->product->product->product_name,28)}}" title="{{textLimit($cart->product->product->product_name,28)}}">
+                                                        <img class="img-fluid" src="{{ $__thumb }}" alt="{{ textLimit($__productName,28) }}" title="{{ textLimit($__productName,28) }}">
                                                     </div>
                                                     <div class="dashboard_order_content">
-                                                        <h4 class="font_16 f_w_700 mb-1 lh-base theme_hover">{{textLimit($cart->product->product->product_name,28)}}</h4>
+                                                        <h4 class="font_16 f_w_700 mb-1 lh-base theme_hover">{{ textLimit($__productName,28) }}</h4>
                                                         <p class="font_14 f_w_500 d-flex align-items-center gap-2">
                                                             @if(getProductwitoutDiscountPrice(@$cart->product->product) != single_price(0))
                                                                 <span class="discount_prise text-decoration-line-through">{{getProductwitoutDiscountPrice(@$cart->product->product)}} </span>
                                                             @endif
-                                                            <span class="secondary_text">{{single_price($cart->price)}}</span>  </p>
+                                                            <span class="secondary_text">{{ single_price($cart->price) }}</span>
+                                                        </p>
                                                     </div>
                                                 </a>
                                             @else
