@@ -372,11 +372,20 @@ if (!function_exists('sellerWiseShippingConfig')) {
 }
 
 if (!function_exists('singleProductURL')) {
-    function singleProductURL($seller = null, $product=null){
-        if(isModuleActive('MultiVendor')){
-            return route('frontend.item.show',[$seller,$product]);
-        }else{
-            return route('frontend.item.show',$product);
+    function singleProductURL($seller = null, $product = null)
+    {
+        // Generate a robust product URL that tolerates missing seller slug.
+        // For MultiVendor: prefer /product/{seller}/{slug}; fallback to /product/{slug}
+        // For single vendor: /product/{slug}
+        if (isModuleActive('MultiVendor')) {
+            if (!empty($seller) && !empty($product)) {
+                return route('frontend.item.show', [$seller, $product]);
+            }
+            // Fallback: pass only the product slug if available, otherwise whatever we have
+            $slug = $product ?: $seller;
+            return route('frontend.item.show', $slug);
+        } else {
+            return route('frontend.item.show', $product ?: $seller);
         }
     }
 }
@@ -759,6 +768,5 @@ if(!function_exists('getGstName'))
     }
 
 }
-
 
 
