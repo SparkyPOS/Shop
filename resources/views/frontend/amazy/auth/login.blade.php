@@ -91,7 +91,7 @@
                         <p class="sign_up_text">{{__('amazy.Forgot Password?')}} <a href="{{url('/password/reset')}}">{{__('common.click_here')}}</a></p>
                     </div>
                     <div class="col-12">
-                        <p class="sign_up_text">{{__('amazy.Don’t have an Account?')}} <a href="{{url('/register')}}">{{__('amazy.Sign Up')}}</a></p>
+                        <p class="sign_up_text">{{__('amazy.Don’t have an Account?')}} <a href="https://app.sparkypos.com/register">{{__('amazy.Sign Up')}}</a></p>
                     </div>
                 </div>
             </form>

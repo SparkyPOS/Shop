@@ -516,7 +516,7 @@
                                                             @endauth
                                                             @guest
                                                                 <div class="col-md-6">
-                                                                    <a href="{{url('/login')}}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
+                                                                    <a href="https://app.sparkypos.com/login"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
                                                                 </div>
                                                             @endguest
                                                         @else
@@ -527,7 +527,7 @@
                                                             @endauth
                                                             @guest
                                                                 <div class="col-md-6">
-                                                                    <a href="{{url('/login')}}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
+                                                                    <a href="https://app.sparkypos.com/login"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
                                                                 </div>
                                                             @endguest
                                                         @endif
@@ -943,7 +943,7 @@
                                 <div class="amazcart_delivery_wiz_content">
                                     <h4 class="font_16 f_w_700 mb_6">{{__('amazy.Return Policy')}}</h4>
                                     <p class="delivery_text font_14 f_w_400">
-                                        {{__('amazy.Easy Return, Quick Refund.')}} <a class="text-nowrap" href="{{url('/return-exchange')}}">{{__('common.see_more')}}.</a>
+                                        {{__('Click The Following Link To View Details On Return Policy.')}} <a class="text-nowrap" href="{{url('/return-exchange')}}">{{__('common.see_more')}}.</a>
                                     </p>
                                 </div>
                             </div>
@@ -1009,7 +1009,7 @@
                                                     <button type="btn" class="amaz_primary_btn style3 text-uppercase">{{__('amazy.Followed')}}</button>
                                                 @endif
                                             @elseif(!auth()->check())
-                                                <a href="{{url('/login')}}" class="amaz_primary_btn style3 text-uppercase">{{__('common.follow')}}</a>
+                                                <a href="https://app.sparkypos.com/login" class="amaz_primary_btn style3 text-uppercase">{{__('common.follow')}}</a>
                                             @endif
                                         </div>
                                     </div>

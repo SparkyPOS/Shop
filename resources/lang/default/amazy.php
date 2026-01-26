@@ -53,7 +53,7 @@ return [
     'Pickup Location' => 'Pickup Location',
     'Door Delivery' => 'Door Delivery',
     'Return Policy' => 'Return Policy',
-    'Easy Return, Quick Refund.' => 'Easy Return, Quick Refund.',
+    'Easy Return, Quick Refund.' => 'Click The Following Link To View Details On Return Policy.',
     'Seller Performance' => 'Seller Performance',
     'Order Fulfilment Rate' => 'Order Fulfilment Rate',
     'Verify link send to on you email.' => 'Verify Link Send To On You Email.',

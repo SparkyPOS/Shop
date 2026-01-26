@@ -84,7 +84,7 @@
                                     </div>
 
                                     <span>{{ __('defaultTheme.new_member') }}</span>
-                                    <p> <a href="{{url('/register')}}">{{ __('defaultTheme.create_account') }}</a> {{ __('common.here') }}</p>
+                                    <p> <a href="https://app.sparkypos.com/register">{{ __('defaultTheme.create_account') }}</a> {{ __('common.here') }}</p>
                                 </div>
                             </div>
                         </div>

@@ -259,7 +259,6 @@ return [
     'sorry_you_are_forbidden_from_accessing_this_page' => 'Sorry You Are Forbidden From Accessing This Page',
     'whoops_something_went_wrong_on_our_servers' => 'Whoops, Something Went Wrong On Our Servers.',
     'maximum_image_6_image_can_upload' => 'Maximum Image 6 Image Can Upload ',
-    'package_wise_shipping_charge' => 'Package Wise Shipping Charge',
     'proceed_to_checkout' => 'Proceed To Checkout',
     'name_a_to_z' => 'Name (A To Z)',
     'name_z_to_a' => 'Name (Z To A)',
