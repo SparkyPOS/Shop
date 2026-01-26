@@ -7,18 +7,15 @@
     <button type="submit" id="stribe_submit_btn" class="btn_1 order_submit_btn">{{ __('defaultTheme.process_to_payment') }}</button>
     @csrf
     @php
-        if(app('general_setting')->seller_wise_payment && session()->has('seller_for_checkout')){
-            $credential = getPaymentInfoViaSellerId(session()->get('seller_for_checkout'), 4);
-        }else{
-            $credential = getPaymentInfoViaSellerId(1, 4);
-        }
+        // Use platform publishable key for Stripe Connect (charge on platform)
+        $credential = getPaymentInfoViaSellerId(1, 4);
     @endphp
     <script
         src="https://checkout.stripe.com/checkout.js"
         class="stripe-button"
         data-key="{{ @$credential->perameter_1 }}"
         data-name="Stripe Payment"
-        data-image="{{showImage(app('general_setting')->favicon)}}"
+        data-image="{{ showImage(app('general_setting')->logo) }}"
         data-locale="auto"
         data-currency="{{$currency_code}}">
     </script>

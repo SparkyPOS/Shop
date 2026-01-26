@@ -42,7 +42,7 @@
                                                 class="stripe-button"
                                                 data-key="{{ @$stripe_credential->perameter_1 }}"
                                                 data-name="Stripe Payment"
-                                                data-image="{{showImage(app('general_setting')->favicon)}}"
+                                                data-image="{{ showImage(app('general_setting')->logo) }}"
                                                 data-locale="auto"
                                                 data-currency="{{$currency_code}}">
                                             </script>

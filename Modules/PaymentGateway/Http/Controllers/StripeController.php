@@ -119,18 +119,11 @@ class StripeController extends Controller
     }
 
     private function getCredential(){
-        $url = explode('?',url()->previous());
-        if(isset($url[0]) && $url[0] == url('/checkout')){
-            $is_checkout = true;
-        }else{
-            $is_checkout = false;
-        }
-        if(session()->has('order_payment') && app('general_setting')->seller_wise_payment && session()->has('seller_for_checkout') && $is_checkout){
-            $credential = getPaymentInfoViaSellerId(session()->get('seller_for_checkout'), 'stripe');
-        }else{
-            $credential = getPaymentInfoViaSellerId(1, 'stripe');
-        }
-        return $credential;
+        // Always charge on the platform account for Stripe Connect.
+        // Funds will be transferred to connected accounts after a successful charge
+        // when a seller has a valid stripe_account_id. If a seller is not connected,
+        // funds remain in the platform account by design.
+        return getPaymentInfoViaSellerId(1, 'stripe');
     }
 
 }
