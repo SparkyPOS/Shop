@@ -211,6 +211,7 @@
 
     <input type="hidden" id="isWholeSaleActiveModal" value="{{isModuleActive('WholeSale')}}">
     <input type="hidden" id="owner_modal" value="{{encrypt($product->user_id)}}">
+    <input type="hidden" id="vendor_id_modal" value="{{ @$product->seller->SellerAccount->vendor_id }}">
 </div>
 <!-- Modal::end  -->
 

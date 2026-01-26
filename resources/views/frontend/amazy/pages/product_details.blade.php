@@ -711,7 +711,8 @@
                                                                     'name' => @$recent_viewed_product->product_name,
                                                                     'url' => singleProductURL(@$recent_viewed_product->seller->slug, @$recent_viewed_product->slug),
                                                                     'price' => $price_qty,
-                                                                    'thumbnail' => $thumbnail
+                                                                    'thumbnail' => $thumbnail,
+                                                                    'vendor_id' => @$recent_viewed_product->seller->SellerAccount->vendor_id
                                                                 ];
                                                             @endphp
                                                             <a href="{{singleProductURL($recent_viewed_product->seller->slug, $recent_viewed_product->slug)}}" class="thumb">

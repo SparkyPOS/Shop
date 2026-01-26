@@ -29,7 +29,7 @@
                             </div>
                             <div class="cart_added_content">
                                 <h4 id="cart_suceess_name"></h4>
-                                <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
+                                <span class="product_banding ">Vendor: <span id="cart_success_vendor"></span></span>
                                 <h5 id="cart_suceess_price"></h5>
                             </div>
                         </a>

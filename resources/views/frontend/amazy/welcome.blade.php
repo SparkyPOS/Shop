@@ -66,6 +66,7 @@
                                         'url' => singleProductURL(@$product->seller->slug, @$product->slug),
                                         'price' => $price_qty,
                                         'thumbnail' => $thumbnail,
+                                        'vendor_id' => @$product->seller->SellerAccount->vendor_id,
                                     ];
                                 @endphp
                                 <a href="{{ singleProductURL($product->seller->slug, $product->slug) }}"
@@ -323,6 +324,7 @@
                                                         'url' => singleProductURL(@$product->seller->slug, @$product->slug),
                                                         'price' => $price_qty,
                                                         'thumbnail' => $thumbnail,
+                                                        'vendor_id' => @$product->seller->SellerAccount->vendor_id,
                                                     ];
                                                 @endphp
                                                 <a href="{{ singleProductURL($product->seller->slug, $product->slug) }}"
@@ -492,6 +494,7 @@
                                                     'url' => singleProductURL(@$product->seller->slug, @$product->slug),
                                                     'price' => $price_qty,
                                                     'thumbnail' => $thumbnail,
+                                                    'vendor_id' => @$product->seller->SellerAccount->vendor_id,
                                                 ];
                                             @endphp
                                             <a href="{{ singleProductURL($product->seller->slug, $product->slug) }}"
@@ -704,6 +707,7 @@
                                                         'url' => singleProductURL(@$product->seller->slug, @$product->slug),
                                                         'price' => $price_qty,
                                                         'thumbnail' => $thumbnail,
+                                                        'vendor_id' => @$product->seller->SellerAccount->vendor_id,
                                                     ];
                                                 @endphp
                                                 <a href="{{ singleProductURL($product->seller->slug, $product->slug) }}"
@@ -874,6 +878,7 @@
                                                     'url' => singleProductURL(@$product->seller->slug, @$product->slug),
                                                     'price' => $price_qty,
                                                     'thumbnail' => $thumbnail,
+                                                    'vendor_id' => @$product->seller->SellerAccount->vendor_id,
                                                 ];
                                             @endphp
                                             <a href="{{ singleProductURL($product->seller->slug, $product->slug) }}"
@@ -1086,6 +1091,7 @@
                                                         'url' => singleProductURL(@$product->seller->slug, @$product->slug),
                                                         'price' => $price_qty,
                                                         'thumbnail' => $thumbnail,
+                                                        'vendor_id' => @$product->seller->SellerAccount->vendor_id,
                                                     ];
                                                 @endphp
                                                 <a href="{{ singleProductURL($product->seller->slug, $product->slug) }}"
@@ -1257,6 +1263,7 @@
                                                     'url' => singleProductURL(@$product->seller->slug, @$product->slug),
                                                     'price' => $price_qty,
                                                     'thumbnail' => $thumbnail,
+                                                    'vendor_id' => @$product->seller->SellerAccount->vendor_id,
                                                 ];
                                             @endphp
                                             <a href="{{ singleProductURL($product->seller->slug, $product->slug) }}"
@@ -1469,6 +1476,7 @@
                                             'url' => singleProductURL(@$product->seller->slug, @$product->slug),
                                             'price' => $price_qty,
                                             'thumbnail' => $thumbnail,
+                                            'vendor_id' => @$product->seller->SellerAccount->vendor_id,
                                         ];
                                     @endphp
                                     <a href="{{ singleProductURL($product->seller->slug, $product->slug) }}"
@@ -1638,6 +1646,7 @@
                                             'url' => singleProductURL(@$product->seller->slug, @$product->slug),
                                             'price' => $price_qty,
                                             'thumbnail' => $thumbnail,
+                                            'vendor_id' => @$product->seller->SellerAccount->vendor_id,
                                         ];
                                     @endphp
                                     <a href="{{ singleProductURL($product->seller->slug, $product->slug) }}"
@@ -1810,6 +1819,7 @@
                                                 'url' => singleProductURL(@$product->seller->slug, @$product->slug),
                                                 'price' => $price_qty,
                                                 'thumbnail' => $thumbnail,
+                                                'vendor_id' => @$product->seller->SellerAccount->vendor_id,
                                             ];
                                         @endphp
                                         <a href="{{ singleProductURL($product->seller->slug, $product->slug) }}"
@@ -2021,6 +2031,7 @@
                                         'url' => singleProductURL(@$product->seller->slug, @$product->slug),
                                         'price' => $price_qty,
                                         'thumbnail' => $thumbnail,
+                                        'vendor_id' => @$product->seller->SellerAccount->vendor_id,
                                     ];
                                 @endphp
                                 <a href="{{ singleProductURL($product->seller->slug, $product->slug) }}"

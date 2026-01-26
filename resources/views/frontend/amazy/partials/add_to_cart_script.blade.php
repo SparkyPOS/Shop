@@ -62,7 +62,8 @@
                         'name' : $('#product_name_modal').val(),
                         'url' : $('#product_url_modal').val(),
                         'price' : currency_format($('#final_price_modal').val()),
-                        'thumbnail' : $('#thumb_image_modal').val()
+                        'thumbnail' : $('#thumb_image_modal').val(),
+                        'vendor_id' : $('#vendor_id_modal').val() || ''
                     };
                     addToCart($('#product_sku_id_modal').val(),$('#seller_id_modal').val(),$('#qty_modal').data('value'),$('#base_sku_price_modal').val(),$('#shipping_type').val(),'product', showData);
                 });

@@ -52,6 +52,11 @@
                         $('#cart_suceess_name').text(prod_info.name);
                         $('#cart_suceess_price').text(numbertrans(prod_info.price));
                         $('#cart_suceess_url').attr('href',prod_info.url);
+                        if (typeof prod_info.vendor_id !== 'undefined' && prod_info.vendor_id !== null) {
+                            $('#cart_success_vendor').text(prod_info.vendor_id);
+                        } else {
+                            $('#cart_success_vendor').text('');
+                        }
                         $('#cart_add_modal').modal('show');
                     }
                     $('#cart_data_show_div').html(response.cart_details_submenu);

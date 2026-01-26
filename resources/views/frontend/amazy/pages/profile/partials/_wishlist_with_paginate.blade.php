@@ -69,7 +69,8 @@
                                             'name' => @$product->product->product_name,
                                             'url' => singleProductURL(@$product->product->seller->slug ?? 'ttt', @$product->product->slug?? "ttt"),
                                             'price' => $price_qty,
-                                            'thumbnail' => $thumbnail
+                                            'thumbnail' => $thumbnail,
+                                            'vendor_id' => @$product->product->seller->SellerAccount->vendor_id
                                         ];
                                     @endphp
                                     <a href="{{singleProductURL(@$product->product->seller->slug ?? 't', @$product->product->slug)}}" class="thumb">
