@@ -773,3 +773,34 @@ if(!function_exists('getGstName'))
 
 }
 
+if (!function_exists('parentStoreName')) {
+    function parentStoreName($seller)
+    {
+        static $parentAccountCache = [];
+        if (!$seller) {
+            return '';
+        }
+
+        $account = optional($seller->SellerAccount);
+        $targetAccount = $account;
+
+        if ($account && !empty($account->parent_seller_id)) {
+            $parentId = $account->parent_seller_id;
+            if (!array_key_exists($parentId, $parentAccountCache)) {
+                $parentAccountCache[$parentId] = \Modules\MultiVendor\Entities\SellerAccount::with('user')->where('user_id', $parentId)->first();
+            }
+            if ($parentAccountCache[$parentId]) {
+                $targetAccount = $parentAccountCache[$parentId];
+            }
+        }
+
+        if ($targetAccount && $targetAccount->seller_shop_display_name) {
+            return $targetAccount->seller_shop_display_name;
+        }
+
+        $user = $targetAccount && $targetAccount->user ? $targetAccount->user : $seller;
+        $first = $user->first_name ?? '';
+        $last = $user->last_name ?? '';
+        return trim($first . ' ' . $last);
+    }
+}

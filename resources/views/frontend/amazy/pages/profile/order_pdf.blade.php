@@ -402,7 +402,7 @@ table {
                         <tr>
                             <td style="padding: 10px">
                                 @if(isModuleActive('MultiVendor'))
-                                <p><strong>{{ __('common.shop_name') }}:</strong> @if($order_package->seller->role->type == 'seller'){{ (@$order_package->seller->SellerAccount->seller_shop_display_name) ? @$order_package->seller->SellerAccount->seller_shop_display_name : @$order_package->seller->first_name }} @else {{ app('general_setting')->company_name }} @endif</p>
+                                <p><strong>{{ __('common.shop_name') }}:</strong> @if($order_package->seller->role->type == 'seller'){{ parentStoreName($order_package->seller ?? null) ?: @$order_package->seller->first_name }} @else {{ app('general_setting')->company_name }} @endif</p>
                                 @endif
                             </td>
                             <td style="padding: 10px">

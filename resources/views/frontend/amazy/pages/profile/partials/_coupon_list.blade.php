@@ -27,7 +27,7 @@
                             </span>
                         </td>
                         <td>
-                            <span class="font_14 f_w_500 mute_text"> @if(@$coupon->coupon->user->role->type == 'seller') {{@$coupon->coupon->user->SellerAccount->seller_shop_display_name}} @else {{app('general_setting')->company_name}} @endif</span>
+                            <span class="font_14 f_w_500 mute_text"> @if(@$coupon->coupon->user->role->type == 'seller') {{ parentStoreName($coupon->coupon->user ?? null) }} @else {{app('general_setting')->company_name}} @endif</span>
                         </td>
                         <td>
                             <span class="font_14 f_w_500 mute_text text-nowrap">{{ @$coupon->coupon->coupon_code }}</span>
@@ -99,4 +99,3 @@
 @elseif($coupons->lastPage() > 1)
     <x-pagination-component :items="$coupons" type=""/>
 @endif
-

@@ -187,11 +187,7 @@
                             @if(isModuleActive('MultiVendor'))
                                 <li>
                                     @if($sellerProductSKU->product->seller->role->type == 'seller')
-                                        @if (@$sellerProductSKU->product->seller->SellerAccount->seller_shop_display_name)
-                                            {{ @$sellerProductSKU->product->seller->SellerAccount->seller_shop_display_name }}
-                                        @else
-                                            {{$sellerProductSKU->product->seller->first_name .' '.$sellerProductSKU->product->seller->last_name}}
-                                        @endif
+                                        {{ parentStoreName($sellerProductSKU->product->seller ?? null) }}
                                     @else
                                         {{ app('general_setting')->company_name }}
                                     @endif

@@ -22,44 +22,6 @@
 @endpush
 
 @section('content')
-    @php
-        if (!function_exists('amazyParentStoreName')) {
-            function amazyParentStoreName($seller)
-            {
-                static $parentAccountCache = [];
-                if (!$seller) {
-                    return '';
-                }
-                $account = optional($seller->SellerAccount);
-                if ($account && $account->parent_seller_id) {
-                    $parentId = $account->parent_seller_id;
-                    if (!array_key_exists($parentId, $parentAccountCache)) {
-                        $parentAccountCache[$parentId] = \Modules\MultiVendor\Entities\SellerAccount::with('user')->where('user_id', $parentId)->first();
-                    }
-                    $parentAccount = $parentAccountCache[$parentId];
-                    if ($parentAccount) {
-                        $parentName = $parentAccount->seller_shop_display_name;
-                        if ($parentName) {
-                            return $parentName;
-                        }
-                        $first = $parentAccount->user->first_name ?? '';
-                        $last = $parentAccount->user->last_name ?? '';
-                        $full = trim($first . ' ' . $last);
-                        if ($full) {
-                            return $full;
-                        }
-                    }
-                }
-                $shopName = $account->seller_shop_display_name ?? '';
-                if ($shopName) {
-                    return $shopName;
-                }
-                $first = $seller->first_name ?? '';
-                $last = $seller->last_name ?? '';
-                return trim($first . ' ' . $last);
-            }
-        }
-    @endphp
     <!-- home_banner::start  -->
     @php
         $headers = \Modules\Appearance\Entities\Header::all();
@@ -199,7 +161,7 @@
                                 <x-rating :rating="$rating" />
                             </div>
                             <div class="product__meta text-center">
-                                <span class="product_banding ">Store: {{ amazyParentStoreName($product->seller ?? null) }}</span>
+                                <span class="product_banding ">Store: {{ parentStoreName($product->seller ?? null) }}</span>
                                 <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                 <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                     <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -457,7 +419,7 @@
                                                 <x-rating :rating="$rating" />
                                             </div>
                                             <div class="product__meta text-center">
-                                                <span class="product_banding ">Store: {{ amazyParentStoreName($product->seller ?? null) }}</span>
+                                                <span class="product_banding ">Store: {{ parentStoreName($product->seller ?? null) }}</span>
                                                 <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                                 <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                                     <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -628,7 +590,7 @@
                                             <x-rating :rating="$rating" />
                                         </div>
                                         <div class="product__meta text-center">
-                                            <span class="product_banding ">Store: {{ amazyParentStoreName($product->seller ?? null) }}</span>
+                                            <span class="product_banding ">Store: {{ parentStoreName($product->seller ?? null) }}</span>
                                             <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                             <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                                 <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -841,7 +803,7 @@
                                                 <x-rating :rating="$rating" />
                                             </div>
                                             <div class="product__meta text-center">
-                                                <span class="product_banding ">Store: {{ amazyParentStoreName($product->seller ?? null) }}</span>
+                                                <span class="product_banding ">Store: {{ parentStoreName($product->seller ?? null) }}</span>
                                                 <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                                 <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                                     <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -1014,7 +976,7 @@
                                             <x-rating :rating="$rating" />
                                         </div>
                                         <div class="product__meta text-center">
-                                            <span class="product_banding ">Store: {{ amazyParentStoreName($product->seller ?? null) }}</span>
+                                            <span class="product_banding ">Store: {{ parentStoreName($product->seller ?? null) }}</span>
                                             <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                             <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                                 <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -1224,7 +1186,7 @@
                                                 <x-rating :rating="$rating" />
                                             </div>
                                             <div class="product__meta text-center">
-                                                <span class="product_banding ">Store: {{ amazyParentStoreName($product->seller ?? null) }}</span>
+                                                <span class="product_banding ">Store: {{ parentStoreName($product->seller ?? null) }}</span>
                                                 <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                                 <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                                     <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -1397,7 +1359,7 @@
                                             <x-rating :rating="$rating" />
                                         </div>
                                         <div class="product__meta text-center">
-                                            <span class="product_banding ">Store: {{ amazyParentStoreName($product->seller ?? null) }}</span>
+                                            <span class="product_banding ">Store: {{ parentStoreName($product->seller ?? null) }}</span>
                                             <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                             <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                                 <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -1609,7 +1571,7 @@
                                     <x-rating :rating="$rating" />
                                 </div>
                                 <div class="product__meta px-3 text-center">
-                                    <span class="product_banding ">Store: {{ amazyParentStoreName($product->seller ?? null) }}</span>
+                                    <span class="product_banding ">Store: {{ parentStoreName($product->seller ?? null) }}</span>
                                     <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                     <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                         <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -1782,7 +1744,7 @@
                                     <x-rating :rating="$rating" />
                                 </div>
                                 <div class="product__meta px-3 text-center">
-                                    <span class="product_banding ">Store: {{ amazyParentStoreName($product->seller ?? null) }}</span>
+                                    <span class="product_banding ">Store: {{ parentStoreName($product->seller ?? null) }}</span>
                                     <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                     <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                         <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -1952,7 +1914,7 @@
                                         <x-rating :rating="$rating" />
                                     </div>
                                     <div class="product__meta px-3 text-center">
-                                        <span class="product_banding ">Store: {{ amazyParentStoreName($product->seller ?? null) }}</span>
+                                        <span class="product_banding ">Store: {{ parentStoreName($product->seller ?? null) }}</span>
                                         <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                         <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                             <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
@@ -2163,7 +2125,7 @@
                                 <x-rating :rating="$rating" />
                             </div>
                             <div class="product__meta text-center">
-                                <span class="product_banding ">Store: {{ amazyParentStoreName($product->seller ?? null) }}</span>
+                                <span class="product_banding ">Store: {{ parentStoreName($product->seller ?? null) }}</span>
                                 <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
                                 <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
                                     <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>

@@ -950,6 +950,7 @@
                         </div>
                     </div>
                     @if(isModuleActive('MultiVendor'))
+                        @php $sellerStoreName = parentStoreName($product->seller ?? null); @endphp
                         <div class="amazcart_delivery_wiz mb_30">
                             <div class="amazcart_delivery_wiz_head">
                                 <h4 class="font_18 f_w_700 m-0">{{__('amazy.Seller Information')}}</h4>
@@ -957,11 +958,7 @@
                             <div class="amazcart_delivery_wiz_body">
                                 <h4 class="font_14 f_w_700 mb-0">
                                     @if($product->seller->role->type == 'seller')
-                                        @if (@$product->seller->SellerAccount->seller_shop_display_name)
-                                          {{ @$product->seller->SellerAccount->seller_shop_display_name }}
-                                        @else
-                                            {{$product->seller->first_name .' '.$product->seller->last_name}}
-                                        @endif
+                                        {{ $sellerStoreName }}
                                     @else
                                         {{ app('general_setting')->company_name }}
                                     @endif
@@ -1026,7 +1023,7 @@
                                     @endphp
 
                                         <div class="single_seller_performance d-flex align-items-center gap_10 mb-1">
-                                            <img src="{{showImage('frontend/amazy/img/product_details/star.svg')}}" alt="{{@$product->seller->SellerAccount->seller_shop_display_name}}" title="{{@$product->seller->SellerAccount->seller_shop_display_name}}">
+                                            <img src="{{showImage('frontend/amazy/img/product_details/star.svg')}}" alt="{{ $sellerStoreName }}" title="{{ $sellerStoreName }}">
                                             <p class="font_14 f_w_400 m-0">{{__('amazy.Order Fulfilment Rate')}}:</p>
                                             <h4 class="font_14 f_w_500 m-0">
                                                 @if($review_count < 1)

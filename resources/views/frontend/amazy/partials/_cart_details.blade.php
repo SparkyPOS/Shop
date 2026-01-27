@@ -390,7 +390,7 @@
         <div class="mobile_full_title">{{ @$cart->product->product->product_name }}</div>
         <div class="font_12 opacity-75 mt-1">
             <span>{{ __('Vendor') }}: {{ @$cart->seller->SellerAccount->vendor_id }}</span>
-            <span>{{ __('common.store') }}: {{ @$cart->seller->SellerAccount->seller_shop_display_name }}</span>
+            <span>{{ __('common.store') }}: {{ parentStoreName($cart->seller ?? null) }}</span>
         </div>
     </div>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-10 mt-2 d-lg-none mobile_qty_price_row">
@@ -432,7 +432,7 @@
                                                         <div class="col order-1 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
                                                             <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('common.store')}}</span>
                                                             <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block">
-                                                                {{ @$cart->seller->SellerAccount->seller_shop_display_name }}
+                                                                {{ parentStoreName($cart->seller ?? null) }}
                                                             </h4>
                                                         </div>
                                                         <div class="col order-2 order-lg-0 my-3 my-lg-0 d-none d-lg-block">

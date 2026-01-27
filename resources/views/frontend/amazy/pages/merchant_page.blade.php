@@ -100,11 +100,12 @@
     </style>
 @endpush
 @section('content')
+@php $storeName = parentStoreName($seller ?? null); @endphp
 <div class="flash_deal_banner">
     @if ($seller->role->type == "superadmin")
-        <img src="{{app('general_setting')->shop_link_banner?showImage(app('general_setting')->shop_link_banner):showImage('frontend/default/img/breadcrumb_bg.png')}}" alt="@if(@$seller->role->type == 'seller') {{@$seller->SellerAccount->seller_shop_display_name}} @else {{app('general_setting')->company_name}} @endif" title="@if(@$seller->role->type == 'seller') {{@$seller->SellerAccount->seller_shop_display_name}} @else {{app('general_setting')->company_name}} @endif" class="img-fluid w-100">
+        <img src="{{app('general_setting')->shop_link_banner?showImage(app('general_setting')->shop_link_banner):showImage('frontend/default/img/breadcrumb_bg.png')}}" alt="{{ $seller->role->type == 'seller' ? $storeName : app('general_setting')->company_name }}" title="{{ $seller->role->type == 'seller' ? $storeName : app('general_setting')->company_name }}" class="img-fluid w-100">
     @else
-        <img src="{{$seller->SellerAccount->banner?showImage($seller->SellerAccount->banner):showImage('frontend/default/img/breadcrumb_bg.png')}}" alt="@if(@$seller->role->type == 'seller') {{@$seller->SellerAccount->seller_shop_display_name}} @else {{app('general_setting')->company_name}} @endif" title="@if(@$seller->role->type == 'seller') {{@$seller->SellerAccount->seller_shop_display_name}} @else {{app('general_setting')->company_name}} @endif" class="img-fluid w-100">
+        <img src="{{$seller->SellerAccount->banner?showImage($seller->SellerAccount->banner):showImage('frontend/default/img/breadcrumb_bg.png')}}" alt="{{ $seller->role->type == 'seller' ? $storeName : app('general_setting')->company_name }}" title="{{ $seller->role->type == 'seller' ? $storeName : app('general_setting')->company_name }}" class="img-fluid w-100">
     @endif
 </div>
 <div class="new_user_section section_spacing6 pt-0">
@@ -114,15 +115,15 @@
                 <div class="member_info_iner d-flex align-items-center w-100">
                     <div class="profile_img_div">
                       @if ($seller->role->type == "superadmin")
-                      <img src="{{showImage(app('general_setting')->logo)}}" alt="@if(@$seller->role->type == 'seller') {{@$seller->SellerAccount->seller_shop_display_name}} @else {{app('general_setting')->company_name}} @endif" title="@if(@$seller->role->type == 'seller') {{@$seller->SellerAccount->seller_shop_display_name}} @else {{app('general_setting')->company_name}} @endif">
+                      <img src="{{showImage(app('general_setting')->logo)}}" alt="{{ $seller->role->type == 'seller' ? $storeName : app('general_setting')->company_name }}" title="{{ $seller->role->type == 'seller' ? $storeName : app('general_setting')->company_name }}">
                       @else
-                      <img src="{{$seller->photo?showImage($seller->photo):showImage('frontend/default/img/avatar.jpg')}}" alt="@if(@$seller->role->type == 'seller') {{@$seller->SellerAccount->seller_shop_display_name}} @else {{app('general_setting')->company_name}} @endif" title="@if(@$seller->role->type == 'seller') {{@$seller->SellerAccount->seller_shop_display_name}} @else {{app('general_setting')->company_name}} @endif">
+                      <img src="{{$seller->photo?showImage($seller->photo):showImage('frontend/default/img/avatar.jpg')}}" alt="{{ $seller->role->type == 'seller' ? $storeName : app('general_setting')->company_name }}" title="{{ $seller->role->type == 'seller' ? $storeName : app('general_setting')->company_name }}">
                       @endif
                     </div>
                     <div class="d-block d-md-flex justify-content-between profile_content">
                         <div class="member_info_text">
                             <div class="member_info_details d-flex">
-                                 <h4>@if(@$seller->role->type == 'seller') {{@$seller->SellerAccount->seller_shop_display_name}} @if(@$seller->SellerAccount->vendor_id) | {{@$seller->SellerAccount->vendor_id}} @endif @else {{app('general_setting')->company_name}} @endif</h4> <span>|</span>
+                                 <h4>@if(@$seller->role->type == 'seller') {{ $storeName }} @if(@$seller->SellerAccount->vendor_id) | {{@$seller->SellerAccount->vendor_id}} @endif @else {{app('general_setting')->company_name}} @endif</h4> <span>|</span>
                                  <p>{{__('defaultTheme.member_since')}} {{date('M, Y',strtotime($seller->created_at))}}  </p>
                             </div>
                             <div class="member_info_details d-flex">

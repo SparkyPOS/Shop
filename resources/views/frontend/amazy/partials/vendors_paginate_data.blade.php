@@ -85,6 +85,7 @@
                         <div class="col-xl-3 col-md-6 col-sm-6 col-6 d-flex">
                             <div class="product_widget5 vendor_widget mb_30 style5 w-100">
                                 <div class="product_thumb_upper">
+                                    @php $storeName = parentStoreName($product); @endphp
                                     <a href=" @if ($product->slug)
                                             {{route('frontend.seller',['seller_id'=>$product->slug,'vendor_id'=>@$product->SellerAccount->vendor_id])}}
                                         @else
@@ -92,7 +93,7 @@
                                         @endif"
                                        class="thumb">
                                         <img data-src="{{$product->SellerAccount->banner?showImage($product->SellerAccount->banner):showImage('frontend/default/img/breadcrumb_bg.png')}}" src="{{$product->SellerAccount->banner?showImage($product->SellerAccount->banner):showImage('frontend/default/img/breadcrumb_bg.png')}}"
-                                             alt="{{ @$product->SellerAccount->seller_shop_display_name }}" title="{{ @$product->seller_shop_display_name }}"
+                                             alt="{{ $storeName }}" title="{{ $storeName }}"
                                              class="lazyload">
                                     </a>
 
@@ -116,7 +117,7 @@
                                             @if(@$product->SellerAccount && @$product->SellerAccount->vendor_id)
                                                 <span class="product_banding">Vendor: {{ @$product->SellerAccount->vendor_id }}</span>
                                             @endif
-                                            <span class="product_banding">Store: {{ $shop->SellerAccount->seller_shop_display_name ?? ($shop->first_name.' '.$shop->last_name) }}</span>
+                                            <span class="product_banding">Store: {{ parentStoreName($shop ?? null) }}</span>
                                         </div>
                                         <a href="{{route('frontend.seller',['seller_id'=> base64_encode($product->id),'vendor_id'=>@$product->SellerAccount->vendor_id])}}">
                                             <h4 class="m-0">{{ trim(($product->first_name ?? '').' '.($product->last_name ?? '')) ?: textLimit($product->name, 50) }}</h4>
@@ -128,7 +129,7 @@
                                                 : $product->slug;
                                         @endphp
                                         <a href="{{route('frontend.seller',['seller_id'=>$sellerParam,'vendor_id'=>@$product->SellerAccount->vendor_id])}}">
-                                            <h4 class="m-0">@if ($product->SellerAccount->seller_shop_display_name) {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @else {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @endif</h4>
+                                            <h4 class="m-0">{{ textLimit($storeName, 50) }}</h4>
                                         </a>
                                     @endif
                                     @php
@@ -179,16 +180,7 @@
                                         <div class="mt-1">
                                             <span class="product_banding">Seller: {{ textLimit($product->name, 60) }}</span>
                                         </div>
-                                        @php
-                                            $__sellerAccount = $product->SellerAccount ?? null;
-                                            $__storeName = $__sellerAccount ? $__sellerAccount->seller_shop_display_name : null;
-                                            if($__sellerAccount && !is_null($__sellerAccount->parent_seller_id)){
-                                                $parentUser = \App\Models\User::with('SellerAccount')->find($__sellerAccount->parent_seller_id);
-                                                if($parentUser && $parentUser->SellerAccount){
-                                                    $__storeName = $parentUser->SellerAccount->seller_shop_display_name;
-                                                }
-                                            }
-                                        @endphp
+                                        @php $__storeName = parentStoreName($product); @endphp
                                         @if(!empty($__storeName))
                                             <div class="mt-1">
                                                 <span class="product_banding">Store: {{ $__storeName }}</span>

@@ -87,10 +87,11 @@
                                 <div class="product_thumb_upper">
                                     @php
                                         $shopSlug = $product->slug ?: base64_encode($product->id);
+                                        $storeName = parentStoreName($product);
                                     @endphp
                                     <a href="{{ route('frontend.shop.vendors', $shopSlug) }}" class="thumb">
                                         <img data-src="{{$product->SellerAccount->banner?showImage($product->SellerAccount->banner):showImage('frontend/default/img/breadcrumb_bg.png')}}" src="{{$product->SellerAccount->banner?showImage($product->SellerAccount->banner):showImage('frontend/default/img/breadcrumb_bg.png')}}"
-                                             alt="{{ @$product->SellerAccount->seller_shop_display_name }}" title="{{ @$product->seller_shop_display_name }}"
+                                             alt="{{ $storeName }}" title="{{ $storeName }}"
                                              class="lazyload">
                                     </a>
 
@@ -113,7 +114,7 @@
                                             $sellerParam = $product->slug;
                                         @endphp
                                         <a href="{{ route('frontend.shop.vendors', $shopSlug) }}">
-                                            <h4 class="m-0">@if ($product->SellerAccount->seller_shop_display_name) {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @else {{ textLimit(@$product->SellerAccount->seller_shop_display_name, 50) }} @endif</h4>
+                                            <h4 class="m-0">{{ textLimit($storeName, 50) }}</h4>
                                         </a>
                                     @php
                                         $biz = \Modules\MultiVendor\Entities\SellerBusinessInformation::where('user_id', $product->id)->first();

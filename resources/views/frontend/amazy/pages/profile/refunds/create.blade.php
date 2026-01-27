@@ -20,7 +20,7 @@
                                 </div>
                                 @if(isModuleActive('MultiVendor'))
                                 <div class="d-flex align-items-center flex-wrap gap_5">
-                                    <h4 class="font_14 f_w_500 m-0 lh-base">{{__('common.seller')}} : </h4> <p class="font_14 f_w_400 m-0 lh-base"> {{($package->seller_id != 1)?@$package->seller->sellerAccount->seller_shop_display_name:app('general_setting')->site_title}}</p>
+                                    <h4 class="font_14 f_w_500 m-0 lh-base">{{__('common.seller')}} : </h4> <p class="font_14 f_w_400 m-0 lh-base"> {{($package->seller_id != 1)? parentStoreName($package->seller ?? null) : app('general_setting')->site_title}}</p>
                                 </div>
                                 @endif
                             </div>

@@ -1,6 +1,7 @@
 @extends('frontend.amazy.layouts.app')
 @section('title')
-    Vendors under {{ $shop->SellerAccount->seller_shop_display_name ?? ($shop->first_name.' '.$shop->last_name) }}
+    @php $shopStoreName = parentStoreName($shop ?? null); @endphp
+    Vendors under {{ $shopStoreName }}
 @endsection
 @section('content')
     <div class="brand_banner d-flex align-items-center">
@@ -9,7 +10,7 @@
                 <div class="col-12">
                     <h3 class="branding_text">
                         Vendors of
-                        {{ $shop->SellerAccount->seller_shop_display_name ?? ($shop->first_name.' '.$shop->last_name) }}
+                        {{ $shopStoreName }}
                     </h3>
                 </div>
             </div>

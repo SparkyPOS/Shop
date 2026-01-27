@@ -723,15 +723,12 @@
                                             {{route('frontend.seller',base64_encode($product->seller->id))}}
                                         @endif
                                     ">
-                                        @if($product->seller->role->type == 'seller')
-                                            @if (@$product->seller->SellerAccount->seller_shop_display_name)
-                                                {{ @$product->seller->SellerAccount->seller_shop_display_name }}
-                                            @else
-                                                {{$product->seller->first_name .' '.$product->seller->last_name}}
-                                            @endif
-                                        @else
-                                            {{ app('general_setting')->company_name }}
-                                        @endif
+                                    @php $sellerStoreName = parentStoreName($product->seller ?? null); @endphp
+                                    @if($product->seller->role->type == 'seller')
+                                        {{ $sellerStoreName }}
+                                    @else
+                                        {{ app('general_setting')->company_name }}
+                                    @endif
                                     </a>
                                 </h4>
                                 @php
@@ -766,7 +763,7 @@
                                     <h4 class="font_14 f_w_700 text-uppercase ">{{__('amazy.Seller Performance')}}</h4>
                                     @foreach($product->seller->sellerReviews->where('status',1) as $seller_review)
                                         <div class="single_seller_performance d-flex align-items-center gap_10 mb-1">
-                                            <img src="{{showImage('frontend/amazy/img/product_details/star.svg')}}" alt="{{@$product->seller->SellerAccount->seller_shop_display_name}}" title="{{@$product->seller->SellerAccount->seller_shop_display_name}}">
+                                            <img src="{{showImage('frontend/amazy/img/product_details/star.svg')}}" alt="{{ $sellerStoreName }}" title="{{ $sellerStoreName }}">
                                             <p class="font_14 f_w_400 m-0">{{__('amazy.Order Fulfilment Rate')}}:</p>
                                             <h4 class="font_14 f_w_500 m-0">
                                                 @if($seller_review->rating == 1)
