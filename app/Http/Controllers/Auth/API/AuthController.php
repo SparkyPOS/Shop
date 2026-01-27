@@ -8,6 +8,8 @@ use App\Traits\Notification;
 use Illuminate\Http\Request;
 use App\Services\AuthService;
 use App\Models\SocialProvider;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -93,21 +95,31 @@ class AuthController extends Controller
         }
         
         try {
-            $pasedToken = Crypt::decrypt($token);
-            [$userId, $date, $redirectTo] = $result = explode('|', $pasedToken);
-            $timeDifference = time() - strtotime($date);
-            if ($timeDifference > 0 || $timeDifference < 300) {
+            $encryptedToken = base64_decode($token, true);
+
+            if ($encryptedToken === false) {
+                return redirect($mainapp.'/sign-in');
+            }
+
+            $pasedToken = Crypt::decryptString($encryptedToken);
+            [$userId, $date, $redirectTo] = array_pad(explode('|', $pasedToken), 3, null);
+            $issuedAt = strtotime($date ?? '');
+            $timeDifference = $issuedAt ? time() - $issuedAt : null;
+
+            if ($timeDifference !== null && $timeDifference >= 0 && $timeDifference < 300) {
                 $user = User::where('pos_user_id', $userId)->first();
                 if ($user instanceof User) {
                     Auth::loginUsingId($user->id);
-                    $redirectTo = $redirectTo . '?success=true';
-                    return view('auth.sso')->with(array('redirectTo'=> $redirectTo, 'token'=>null));
+                    $redirectTarget = ($redirectTo ?: url('/')) . '?success=true';
+
+                    return view('auth.sso')->with([
+                        'redirectTo' => $redirectTarget,
+                        'token' => null,
+                    ]);
                 }
             }
             
             return redirect($mainapp.'/sign-in');
-            // return redirect('/conversations');
-            // return redirect($redirectTo);
 
         } catch (Exception $e) {
             return redirect($mainapp.'/sign-in');
