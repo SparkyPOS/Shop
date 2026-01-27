@@ -45,6 +45,7 @@ use Modules\OrderManage\Http\Controllers\OrderManageController;
 
 Route::get('/sso', [AuthController::class, 'ssoLoginView']);
 Route::post('/sso-login', [AuthController::class, 'ssoLogin']);
+Route::get('/sso/redirect', [AuthController::class, 'ssoRedirectToPos'])->name('sso.redirect');
 Route::get('/sso-logout', [AuthController::class, 'ssoLogout']);
 
 Route::post('/locale',[LanguageController::class,'locale'])->name('frontend.locale')->middleware('prohibited_demo_mode');

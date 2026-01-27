@@ -23,6 +23,7 @@ use Modules\GeneralSetting\Entities\NotificationSetting;
 use Modules\GeneralSetting\Entities\UserNotificationSetting;
 use Modules\GeneralSetting\Services\NotificationSettingService;
 use App\Services\CustomerSyncService;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * @group User Management
@@ -107,7 +108,13 @@ class AuthController extends Controller
             $timeDifference = $issuedAt ? time() - $issuedAt : null;
 
             if ($timeDifference !== null && $timeDifference >= 0 && $timeDifference < 300) {
-                $user = User::where('pos_user_id', $userId)->first();
+                $user = null;
+                if (Schema::hasColumn('users', 'app_user_id')) {
+                    $user = User::where('app_user_id', $userId)->first();
+                }
+                if (!$user && Schema::hasColumn('users', 'pos_user_id')) {
+                    $user = User::where('pos_user_id', $userId)->first();
+                }
                 if ($user instanceof User) {
                     Auth::loginUsingId($user->id);
                     $redirectTarget = ($redirectTo ?: url('/')) . '?success=true';
@@ -124,6 +131,52 @@ class AuthController extends Controller
         } catch (Exception $e) {
             return redirect($mainapp.'/sign-in');
         }
+    }
+
+    public function ssoRedirectToPos(Request $request)
+    {
+        $mainapp = rtrim(env('MAIN_APP_URL', 'https://app.sparkypos.com'), '/');
+        $target = $request->query('redirect_to');
+        if ($target && !preg_match('/^https?:/i', $target)) {
+            $target = $mainapp.'/'.ltrim($target, '/');
+        }
+        $target = $target ?: $mainapp;
+
+        if (!Auth::check()) {
+            return redirect()->away($mainapp.'/login');
+        }
+
+        $user = Auth::user();
+        $appUserId = $user->app_user_id ?? null;
+        if (!$appUserId) {
+            return redirect()->away($mainapp.'/login');
+        }
+
+        try {
+            $payload = implode('|', [
+                $appUserId,
+                now()->format('Y-m-d H:i:s'),
+                $target,
+            ]);
+            $token = base64_encode(Crypt::encryptString($payload));
+            return redirect()->away($mainapp.'/sso?t='.urlencode($token));
+        } catch (\Throwable $e) {
+            return redirect()->away($mainapp.'/login');
+        }
+    }
+
+    public function ssoLogout(Request $request)
+    {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        $mainapp = rtrim(env('MAIN_APP_URL', 'https://app.sparkypos.com'), '/');
+        $target = $request->query('redirect_to');
+        if ($target && !preg_match('/^https?:/i', $target)) {
+            $target = $mainapp.'/'.ltrim($target, '/');
+        }
+        return redirect()->away($target ?: $mainapp.'/login');
     }
 
     public function login(Request $request)

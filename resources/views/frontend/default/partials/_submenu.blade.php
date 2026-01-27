@@ -105,7 +105,7 @@
                                             <div class="account_btn">
                                                 <a href="https://app.sparkypos.com" class="sing_up">{{ __('defaultTheme.sign_up')
                                                     }}</a>
-                                                <a href="https://app.sparkypos.com" class="login">{{ __('defaultTheme.login') }}</a>
+                                                <a href="{{ route('sso.redirect') }}" class="login">{{ __('defaultTheme.login') }}</a>
                                             </div>
 
                                             @else
