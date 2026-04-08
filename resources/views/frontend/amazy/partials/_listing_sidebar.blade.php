@@ -77,11 +77,11 @@
             <div class="single_pro_categry">
                 <h4 class="font_18 f_w_700">Filter Stores</h4>
                 <div class="mb_15">
-                    <input type="text" id="store_query" class="primary_input4 w-100" placeholder="Store name, vendor_id or phone" />
+                    <input type="text" id="store_query" class="primary_input4 w-100" placeholder="Store Name, Vendor_ID or Store Name" />
                 </div>
                 <h4 class="font_18 f_w_700">Filter Vendors</h4>
                 <div class="mb_35">
-                    <input type="text" id="vendor_query" class="primary_input4 w-100" placeholder="Vendor name, vendor_id or phone" />
+                    <input type="text" id="vendor_query" class="primary_input4 w-100" placeholder="Vendor Name, Vendor_ID or Store Name" />
                 </div>
             </div>
             <script>
