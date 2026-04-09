@@ -303,7 +303,7 @@
                                 <div class="row gutters-5 m-0 align-items-center">
                                     <div class="col-4 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.products')}}</h4> </div>
                                     <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('Vendor')}}</h4> </div>
-                                    <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.store')}}</h4> </div>
+                                    <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.store')}}</h4> </div>
                                     <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.price')}}</h4> </div>
                                     <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.quantity')}}</h4> </div>
                                     <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.subtotal')}}</h4> </div>
@@ -389,14 +389,14 @@
     </a>
     <div class="mobile_title_full d-lg-none mt-2 w-100">
         <div class="mobile_full_title">{{ @$cart->product->product->product_name }}</div>
-        <div class="font_12 opacity-75 mt-1">
+        <div class="font_12 opacity-75 mt-1 d-flex flex-column">
             <span>{{ __('Vendor') }}: {{ @$cart->seller->SellerAccount->vendor_id }}</span>
             <span>{{ __('common.store') }}: {{ parentStoreName($cart->seller ?? null) }}</span>
         </div>
     </div>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-10 mt-2 d-lg-none mobile_qty_price_row">
         <div class="d-flex align-items-center mobile_title_qty_row w-100">
-            <div class="product_number_count style_4 ms-auto" data-target="amount-3">
+            <div class="product_number_count style_4 ms-auto d-flex justify-content-between" data-target="amount-3">
                                                                         <button class="count_single_item inumber_decrement change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
                                                                             data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="-"> <i class="ti-minus"></i></button>
                                                                             <input name="qty[]" id="qty_{{$cart->id}}" maxlength="12" data-value="{{$cart->qty}}" value="{{getNumberTranslate($cart->qty)}}" class="count_single_item input-number qty" type="text" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
@@ -412,7 +412,7 @@
                                                                     </div>
         </div>
         <div class="d-inline mobile_price"><h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap">{{single_price($cart->total_price)}}</h4></div>
-        <span class="close_icon style_2 lh-1 cart_item_delete_btn cursor_pointer mobile_delete" data-id="{{$cart->id}}" data-product_id="{{$cart->product_id}}" data-unique_id="#delete_item_{{$cart->id}}">
+        <span class="close_icon style_2 lh-1 cart_item_delete_btn cursor_pointer mobile_delete d-flex w-100 flex-1" data-id="{{$cart->id}}" data-product_id="{{$cart->product_id}}" data-unique_id="#delete_item_{{$cart->id}}">
                                                                     <svg  width="12.249" height="15.076" viewBox="0 0 12.249 15.076">
                                                                         <g  transform="translate(-48)">
                                                                             <path  data-name="Path 1449" d="M59.071,1.884H56.48V1.413A1.415,1.415,0,0,0,55.067,0H53.182a1.415,1.415,0,0,0-1.413,1.413v.471H49.178A1.179,1.179,0,0,0,48,3.062V4.711a.471.471,0,0,0,.471.471h.257l.407,8.547a1.412,1.412,0,0,0,1.412,1.346H57.7a1.412,1.412,0,0,0,1.412-1.346l.407-8.547h.257a.471.471,0,0,0,.471-.471V3.062A1.179,1.179,0,0,0,59.071,1.884Zm-6.36-.471a.472.472,0,0,1,.471-.471h1.884a.472.472,0,0,1,.471.471v.471H52.711ZM48.942,3.062a.236.236,0,0,1,.236-.236h9.893a.236.236,0,0,1,.236.236V4.24H48.942Zm9.23,10.623a.471.471,0,0,1-.471.449H50.547a.471.471,0,0,1-.471-.449l-.4-8.5h8.905Z" fill="#00124e"></path>
@@ -430,7 +430,7 @@
                                                                 {{$cart->seller->sellerAccount->vendor_id}}
                                                             </h4>
                                                         </div>
-                                                        <div class="col order-1 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
+                                                        <div class="col-2 order-1 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
                                                             <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('common.store')}}</span>
                                                             <h4 class="font_16 f_w_700 m-0 lh-1 text-center text-nowrap d-none d-lg-block">
                                                                 {{ parentStoreName($cart->seller ?? null) }}
@@ -455,10 +455,10 @@
                                                                     @endif
                                                                 @endif
                                                             @endif
-                                                            <h4 class="font_16 f_w_700 m-0 set_base_price{{$cart->id}}">{{single_price(isset($pro_price)?$pro_price:@$cart->product->sell_price)}}</h4>
+                                                            <h4 class="font_16 f_w_700 text-center m-0 set_base_price{{$cart->id}}">{{single_price(isset($pro_price)?$pro_price:@$cart->product->sell_price)}}</h4>
                                                             <input type="hidden" class="get_base_price{{$cart->id}}" value="{{single_price(isset($pro_price)?$pro_price:@$cart->product->sell_price)}}">
                                                         </div>
-                                                        <div class="col-2 order-4 order-lg-0 d-none d-lg-block">
+                                                        <div class="col-2 order-4 order-lg-0 d-none d-flex justify-content-center align-items-center">
                                                             <div class="product_number_count style_4" data-target="amount-3">
                                                                 <button class="count_single_item inumber_decrement change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
                                                                     data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="-"> <i class="ti-minus"></i></button>
