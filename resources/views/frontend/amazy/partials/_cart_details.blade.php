@@ -361,7 +361,7 @@
                                                 <li class="list-group-item px-0 mb_10">
                                                     <div class="row gutters-5 m-0 align-items-center">
                                                         <div class="col-12 col-lg-4 d-flex p-0">
-                                                            <a href="{{singleProductURL(@$cart->seller->slug, @$cart->product->product->slug)}}" class="d-flex justify-center align-items-center gap_20 cart_thumb_div">
+                                                            <a href="{{singleProductURL(@$cart->seller->slug, @$cart->product->product->slug)}}" class="d-flex justify-content-center align-items-center gap_20 cart_thumb_div">
                                                                 <div class="thumb">
                                                                     <img src="
                                                                         @if(@$cart->product->product->product->product_type == 1)
@@ -396,7 +396,7 @@
     </div>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-10 mt-2 d-lg-none mobile_qty_price_row">
         <div class="d-flex align-items-center mobile_title_qty_row w-100">
-            <div class="product_number_count style_4 ms-auto d-flex justify-content-between" data-target="amount-3">
+            <div class="product_number_count style_4 ms-auto !d-flex justify-content-between" data-target="amount-3">
                 <button class="count_single_item inumber_decrement change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
                     data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="-"> <i class="ti-minus"></i></button>
                     <input name="qty[]" id="qty_{{$cart->id}}" maxlength="12" data-value="{{$cart->qty}}" value="{{getNumberTranslate($cart->qty)}}" class="count_single_item input-number qty" type="text" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
