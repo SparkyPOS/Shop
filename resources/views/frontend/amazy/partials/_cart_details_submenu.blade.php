@@ -81,8 +81,8 @@
                             @endif
                         </div>
                     @else
-                        <div class="d-flex flex-column gap_15">
-                            <div class="single_cart">
+                        <div class="single_cart flex-column">
+                            <div class="d-flex align-items-center gap_10">
                                 <div class="thumb d-flex align-items-center gap_10 mr_15">
                                     <div class="thumb_inner">
     
