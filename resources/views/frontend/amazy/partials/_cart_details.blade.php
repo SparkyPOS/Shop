@@ -301,9 +301,9 @@
                         <div class="amazy_table4">
                             <div class="amazy_table4_head mb_20 d-none d-lg-block px-0">
                                 <div class="row gutters-5 m-0 align-items-center">
-                                    <div class="col-4 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.products')}}</h4> </div>
-                                    <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('Vendor')}}</h4> </div>
-                                    <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.store')}}</h4> </div>
+                                    <div class="col-6 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.products')}}</h4> </div>
+                                    <!-- <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('Vendor')}}</h4> </div>
+                                    <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.store')}}</h4> </div> -->
                                     <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.price')}}</h4> </div>
                                     <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.quantity')}}</h4> </div>
                                     <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.subtotal')}}</h4> </div>
@@ -360,7 +360,7 @@
 
                                                 <li class="list-group-item px-0 mb_10">
                                                     <div class="row gutters-5 m-0 align-items-center">
-                                                        <div class="col-12 col-lg-7 d-flex p-0">
+                                                        <div class="col-12 col-lg-6 d-flex p-0">
                                                             <a href="{{singleProductURL(@$cart->seller->slug, @$cart->product->product->slug)}}" class="d-flex justify-content-center align-items-center gap_20 cart_thumb_div">
                                                                 <div class="thumb">
                                                                     <img src="
@@ -389,14 +389,14 @@
                                                                     </div>
                                                                     <div class="my-3 my-lg-0 d-none d-lg-block">
                                                                         <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('vendor')}}</span>
-                                                                        <h4 class="font_16 f_w_700 m-0 lh-1 text-center text-nowrap d-none d-lg-block">
-                                                                            {{$cart->seller->sellerAccount->vendor_id}}
+                                                                        <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block">
+                                                                            {{__('vendor')}}: {{$cart->seller->sellerAccount->vendor_id}}
                                                                         </h4>
                                                                     </div>
                                                                     <div class="my-3 my-lg-0 d-none d-lg-block">
                                                                         <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('common.store')}}</span>
-                                                                        <h4 class="font_16 f_w_700 m-0 lh-1 text-center text-nowrap d-none d-lg-block">
-                                                                            {{ parentStoreName($cart->seller ?? null) }}
+                                                                        <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block">
+                                                                            {{__('common.store')}}: {{ parentStoreName($cart->seller ?? null) }}
                                                                         </h4>
                                                                     </div>
 
