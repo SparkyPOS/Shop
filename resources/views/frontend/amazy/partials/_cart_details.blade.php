@@ -473,7 +473,7 @@
                                                             <h4 class="font_16 f_w_700 text-center m-0 set_base_price{{$cart->id}}">{{single_price(isset($pro_price)?$pro_price:@$cart->product->sell_price)}}</h4>
                                                             <input type="hidden" class="get_base_price{{$cart->id}}" value="{{single_price(isset($pro_price)?$pro_price:@$cart->product->sell_price)}}">
                                                         </div>
-                                                        <div class="col-2 order-4 order-lg-0 d-flex justify-content-center align-items-center d-none">
+                                                        <div class="col-2 order-4 order-lg-0 d-flex justify-content-center align-items-center d-none d-lg-block">
                                                             <div class="product_number_count style_4" data-target="amount-3">
                                                                 <button class="count_single_item inumber_decrement change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
                                                                     data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="-"> <i class="ti-minus"></i></button>
