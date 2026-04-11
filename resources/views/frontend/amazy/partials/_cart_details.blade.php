@@ -360,7 +360,7 @@
 
                                                 <li class="list-group-item px-0 mb_10">
                                                     <div class="row gutters-5 m-0 align-items-center">
-                                                        <div class="col-12 col-lg-4 d-flex p-0">
+                                                        <div class="col-12 col-lg-7 d-flex p-0">
                                                             <a href="{{singleProductURL(@$cart->seller->slug, @$cart->product->product->slug)}}" class="d-flex justify-content-center align-items-center gap_20 cart_thumb_div">
                                                                 <div class="thumb">
                                                                     <img src="
@@ -371,20 +371,35 @@
                                                                         @endif
                                                                     " alt="{{ textLimit(@$cart->product->product->product_name, 35) }}" title="{{ textLimit(@$cart->product->product->product_name, 35) }}">
                                                                 </div>
-                                                                <div class="summery_pro_content">
-                                                                    <h4 class="font_16 f_w_700 m-0 theme_hover">{{ textLimit(@$cart->product->product->product_name, 35) }}</h4>
-                                                                    <p class="font_14 f_w_400 m-0 ">
-                                                                        @if(@$cart->product->product->product->product_type == 2)
-                                                                            @foreach(@$cart->product->product_variations as $key => $combination)
-                                                                                @if(@$combination->attribute->id == 1)
-                                                                                    {{@$combination->attribute->name}}: {{@$combination->attribute_value->color->name}}
-                                                                                @else
-                                                                                    {{@$combination->attribute->name}}: {{@$combination->attribute_value->value}}
-                                                                                @endif
-                                                                                @if($key < count(@$cart->product->product_variations)-1),@endif
-                                                                            @endforeach
-                                                                        @endif
-                                                                    </p>
+                                                                <div class="summery_pro_content d-flex flex-column gap_5">
+                                                                    <div>
+                                                                        <h4 class="font_16 f_w_700 m-0 theme_hover">{{ textLimit(@$cart->product->product->product_name, 35) }}</h4>
+                                                                        <p class="font_14 f_w_400 m-0 ">
+                                                                            @if(@$cart->product->product->product->product_type == 2)
+                                                                                @foreach(@$cart->product->product_variations as $key => $combination)
+                                                                                    @if(@$combination->attribute->id == 1)
+                                                                                        {{@$combination->attribute->name}}: {{@$combination->attribute_value->color->name}}
+                                                                                    @else
+                                                                                        {{@$combination->attribute->name}}: {{@$combination->attribute_value->value}}
+                                                                                    @endif
+                                                                                    @if($key < count(@$cart->product->product_variations)-1),@endif
+                                                                                @endforeach
+                                                                            @endif
+                                                                        </p>
+                                                                    </div>
+                                                                    <div class="my-3 my-lg-0 d-none d-lg-block">
+                                                                        <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('vendor')}}</span>
+                                                                        <h4 class="font_16 f_w_700 m-0 lh-1 text-center text-nowrap d-none d-lg-block">
+                                                                            {{$cart->seller->sellerAccount->vendor_id}}
+                                                                        </h4>
+                                                                    </div>
+                                                                    <div class="my-3 my-lg-0 d-none d-lg-block">
+                                                                        <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('common.store')}}</span>
+                                                                        <h4 class="font_16 f_w_700 m-0 lh-1 text-center text-nowrap d-none d-lg-block">
+                                                                            {{ parentStoreName($cart->seller ?? null) }}
+                                                                        </h4>
+                                                                    </div>
+
                                                                 </div>
     </a>
     <div class="mobile_title_full d-lg-none mt-2 w-100">
@@ -424,7 +439,7 @@
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                        <div class="col order-1 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
+                                                        <!-- <div class="col order-1 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
                                                             <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('vendor')}}</span>
                                                             <h4 class="font_16 f_w_700 m-0 lh-1 text-center text-nowrap d-none d-lg-block">
                                                                 {{$cart->seller->sellerAccount->vendor_id}}
@@ -435,7 +450,7 @@
                                                             <h4 class="font_16 f_w_700 m-0 lh-1 text-center text-nowrap d-none d-lg-block">
                                                                 {{ parentStoreName($cart->seller ?? null) }}
                                                             </h4>
-                                                        </div>
+                                                        </div> -->
                                                         <div class="col order-2 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
                                                             <span class="opacity-60 font_12 d-block d-lg-none">{{__('common.price')}}</span>
                                                             @if($cart->product->product->hasDeal)
