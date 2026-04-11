@@ -124,7 +124,7 @@
                                     </div>
                                 @endif
                             </div>
-                            <div class="d-flex justify-content-between align-items-center mt-1">
+                            <div class="w-100 d-flex justify-content-between gap_10 align-items-center mt-1 px-10">
                                 <span>{{ __('Vendor') }}: {{ @$cart->seller->SellerAccount->vendor_id }}</span>
                                 <span>{{ __('common.store') }}: {{ parentStoreName($cart->seller ?? null) }}</span>
                             </div>
