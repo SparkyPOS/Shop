@@ -97,7 +97,7 @@
                             <div class="cart_content flex-fill">
                                 <a href="{{singleProductURL($cart->seller->slug, $cart->product->product->slug)}}">
                                     <h5>{{ @$cart->product->product->product_name }}</h5>
-                                    <h6>Vendor: {{ @$cart->seller->SellerAccount->vendor_id }}</h6>
+                                    
                                 </a>
                                 <div class="cart_content_text d-flex align-items-center gap_10 flex-fill flex-wrap">
                                     <div class="product_number_count style_2" data-target="amountc-1">
@@ -106,6 +106,10 @@
                                         <button id="sidebar_cart_plus_{{$cart->id}}" type="button" class="count_single_item number_increment cart_qty_sidebar" value="+" data-value="+" data-id="{{$cart->id}}" data-product-id="{{$cart->product_id}}" data-qty="#sidebar_cart_qty_{{$cart->id}}" data-qty-plus-btn-id="#sidebar_cart_plus_{{$cart->id}}" data-maximum-qty="{{@$cart->product->product->product->max_order_qty}}" data-minimum-qty="{{@$cart->product->product->product->minimum_order_qty}}" data-stock-manage="{{@$cart->product->product->stock_manage}}" data-product-stock="{{@$cart->product->product_stock}}"> <i class="ti-plus"></i></button>
                                     </div>
                                     <p><span class="prise" >{{single_price($cart->total_price)}}</span> </p>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-1">
+                                    <span>{{ __('Vendor') }}: {{ @$cart->seller->SellerAccount->vendor_id }}</span>
+                                    <span>{{ __('common.store') }}: {{ parentStoreName($cart->seller ?? null) }}</span>
                                 </div>
                             </div>
                             @if($just_path != '/checkout')
