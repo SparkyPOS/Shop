@@ -872,11 +872,7 @@
                             </div>
                         </div>
                     @endif
-                        <div class="amazcart_delivery_wiz mb_20">
-                            <div class="amazcart_delivery_wiz_sep d-flex gap_15 mb_10">
-                                <div class="icon d-flex align-items-center justify-content-center ">
-                                    <img src="{{url('/')}}/public/frontend/amazy/img/product_details/details_car.svg" alt="{{__('amazy.Door Delivery')}}" title="{{__('amazy.Door Delivery')}}">
-                                </div>
+                    <div class="amazcart_delivery_wiz mb_20">  
                                 <div class="amazcart_delivery_wiz_content">
                                     <h4 class="font_16 f_w_700 mb_6">{{__('amazy.Door Delivery')}}</h4>
                                     <p class="delivery_text font_14 f_w_400" id="door_delivery"></p>
