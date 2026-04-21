@@ -872,7 +872,52 @@
                             </div>
                         </div>
                     @endif
-                    <div class="amazcart_delivery_wiz mb_20">  
+                    <div class="amazcart_delivery_wiz mb_20">
+                        <div class="amazcart_delivery_wiz_head">
+                            <h4 class="font_18 f_w_700 m-0">{{__('common.choose_your_location')}}</h4>
+                        </div>
+                        <div class="amazcart_delivery_wiz_body">
+                            <div class="loc_city_selectBox d-flex flex-column">
+                                <div class="selectBox_box ">
+                                    @php
+                                        if(@$product->seller->role_id == 1){
+                                            $country_id = app('general_setting')->country_id;
+                                            $city_id = app('general_setting')->city_id;
+                                        }else{
+                                            $country_id = @$product->seller->SellerBusinessInformation->business_country;
+                                            $city_id = @$product->seller->SellerBusinessInformation->business_city;
+                                        }
+                                        $country = Modules\Setup\Entities\Country::find($country_id);
+                                    @endphp
+                                    <select class="amaz_select2 mb_10 w-100" id="select_city" name="select_city">
+                                        <option data-display="Choose City" selected disabled>{{__('common.choose_city')}}</option>
+                                        @if($country)
+                                        @foreach($country->cities as $city)
+                                            <option value="{{$city->id}}" {{($city->id == $city_id)?'selected':''}}>{{$city->name}}</option>
+                                        @endforeach
+                                        @endif
+                                    </select>
+                                </div>
+                                <div class="selectBox_box">
+                                    @php
+                                        $pickup_locations = \Modules\Shipping\Entities\PickupLocation::where('status', 1)
+//                                        ->where('created_by', $product->user_id)
+                                        ->get();
+                                    @endphp
+                                    <select class="amaz_select2 w-100" id="selectPickup">
+                                        <option data-display="Choose pickup location" disabled>{{__('amazy.Choose pickup location')}}</option>
+                                        @if($pickup_locations)
+                                        @foreach($pickup_locations as $pickup_location)
+                                            <option value="{{$pickup_location->id}}" {{$pickup_location->is_default?'selected':''}}>{{$pickup_location->address}}</option>
+                                        @endforeach
+                                        @endif
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="amazcart_delivery_wiz_sep d-flex gap_15 mb_10">
+                                <div class="icon d-flex align-items-center justify-content-center ">
+                                    <img src="{{url('/')}}/public/frontend/amazy/img/product_details/details_car.svg" alt="{{__('amazy.Door Delivery')}}" title="{{__('amazy.Door Delivery')}}">
+                                </div>
                                 <div class="amazcart_delivery_wiz_content">
                                     <h4 class="font_16 f_w_700 mb_6">{{__('amazy.Door Delivery')}}</h4>
                                     <p class="delivery_text font_14 f_w_400" id="door_delivery"></p>
