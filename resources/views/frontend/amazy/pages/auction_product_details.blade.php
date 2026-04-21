@@ -639,6 +639,28 @@
                             <h4 class="font_18 f_w_700 m-0">{{__('common.choose_your_location')}}</h4>
                         </div>
                         <div class="amazcart_delivery_wiz_body">
+                            <div class="loc_city_selectBox d-flex flex-column">
+                                <div class="selectBox_box ">
+                                    @php
+                                        if(@$product->seller->role_id == 1){
+                                            $country_id = app('general_setting')->country_id;
+                                            $city_id = app('general_setting')->city_id;
+                                        }else{
+                                            $country_id = @$product->seller->SellerBusinessInformation->business_country;
+                                            $city_id = @$product->seller->SellerBusinessInformation->business_city;
+                                        }
+                                        $country = Modules\Setup\Entities\Country::find($country_id);
+                                    @endphp
+                                    <select class="amaz_select2 mb_10 w-100" id="select_city" name="select_city">
+                                        <option data-display="Choose City" selected disabled>{{__('common.choose_city')}}</option>
+                                        @if($country)
+                                        @foreach($country->cities as $city)
+                                            <option value="{{$city->id}}" {{($city->id == $city_id)?'selected':''}}>{{$city->name}}</option>
+                                        @endforeach
+                                        @endif
+                                    </select>
+                                </div>
+                                <div class="selectBox_box">
                                     @php
                                         $pickup_locations = \Modules\Shipping\Entities\PickupLocation::where('created_by', $product->user_id)->where('status', 1)->get();
                                     @endphp
