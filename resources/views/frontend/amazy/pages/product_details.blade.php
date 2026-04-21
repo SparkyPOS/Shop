@@ -896,6 +896,7 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                     <div class="amazcart_delivery_wiz mb_20">
                         <div class="amazcart_delivery_wiz_body">
                             <div class="amazcart_delivery_wiz_sep d-flex gap_15 mb_10">
