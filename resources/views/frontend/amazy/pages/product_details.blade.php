@@ -1957,15 +1957,6 @@
                             `);
                         }
                     }
-                    if (response.pickup_location != null) {
-                        $('#pickup_location').text(`
-                            ${response.pickup_location.address}.
-                            ${response.pickup_location.city.name} ${response.pickup_location.state.name} ${response.pickup_location.pin_code}
-                        `);
-                    }
-                    $('#pre-loader').hide();
-                });
-            }
             $(document).on("click", ".buy_now_btn", function(event){
                 event.preventDefault();
                 buyNow($('#product_sku_id').val(),$('#seller_id').val(),$('#qty').data('value'),$('#base_sku_price').val().trim(),$('#shipping_type').val(),'product', $('#owner').val());
