@@ -877,12 +877,6 @@
                             <h4 class="font_18 f_w_700 m-0">{{__('common.choose_your_location')}}</h4>
                         </div>
                         <div class="amazcart_delivery_wiz_body">
-                                <div class="selectBox_box">
-                                    @php
-                                        $pickup_locations = \Modules\Shipping\Entities\PickupLocation::where('status', 1)
-//                                        ->where('created_by', $product->user_id)
-                                        ->get();
-                                    @endphp
                                     <select class="amaz_select2 w-100" id="selectPickup">
                                         <option data-display="Choose pickup location" disabled>{{__('amazy.Choose pickup location')}}</option>
                                         @if($pickup_locations)
