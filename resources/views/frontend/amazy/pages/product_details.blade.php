@@ -877,16 +877,6 @@
                             <h4 class="font_18 f_w_700 m-0">{{__('common.choose_your_location')}}</h4>
                         </div>
                         <div class="amazcart_delivery_wiz_body">
-                                    <select class="amaz_select2 w-100" id="selectPickup">
-                                        <option data-display="Choose pickup location" disabled>{{__('amazy.Choose pickup location')}}</option>
-                                        @if($pickup_locations)
-                                        @foreach($pickup_locations as $pickup_location)
-                                            <option value="{{$pickup_location->id}}" {{$pickup_location->is_default?'selected':''}}>{{$pickup_location->address}}</option>
-                                        @endforeach
-                                        @endif
-                                    </select>
-                                </div>
-                            </div>
                             <div class="amazcart_delivery_wiz_sep d-flex gap_15 mb_10">
                                 <div class="icon d-flex align-items-center justify-content-center ">
                                     <img src="{{url('/')}}/public/frontend/amazy/img/product_details/details_car.svg" alt="{{__('amazy.Door Delivery')}}" title="{{__('amazy.Door Delivery')}}">
