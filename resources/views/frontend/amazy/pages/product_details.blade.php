@@ -929,7 +929,7 @@
                                 </div>
                                 <div class="amazcart_delivery_wiz_content">
                                     <h4 class="font_16 f_w_700 mb_6">{{__('amazy.Pickup Location')}}</h4>
-                                    <p class="delivery_text font_14 f_w_400 mb-0" value="{{$pickup_location->id}}" {{$pickup_location->is_default?'selected':''}}>{{$pickup_location->address}}</p>
+                                    <p class="delivery_text font_14 f_w_400 mb-0" value="{{$pickup_location->id}}" {{$pickup_location->is_default?'selected':''}}>{{$pickup_location->address}}>{{$pickup_location->city}}</p>
                                 </div>
                             </div>
                         </div>
