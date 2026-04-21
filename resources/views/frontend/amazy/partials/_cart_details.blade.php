@@ -390,7 +390,7 @@
                                                                     <div class="my-3 my-lg-0 d-none d-lg-block">
                                                                         <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('vendor')}}</span>
                                                                         <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block">
-                                                                            {{__('vendor')}}: {{$cart->seller->sellerAccount->vendor_id}}
+                                                                            {{__('Vendor')}}: {{$cart->seller->sellerAccount->vendor_id}}
                                                                         </h4>
                                                                     </div>
                                                                     <div class="my-3 my-lg-0 d-none d-lg-block">
