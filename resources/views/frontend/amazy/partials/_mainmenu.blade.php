@@ -80,8 +80,8 @@
                                 </div>
                                 @guest
                                     <span class="d-inline-block lh-1 ">
-                                        <a href="https://app.sparkypos.com/login">{{ __('defaultTheme.login') }}</a>
-                                        <a href="https://app.sparkypos.com/register">{{ __('defaultTheme.register') }}</a>
+                                        <a href="https://app.sparkypos.com/sign-in">{{ __('defaultTheme.login') }}</a>
+                                        <a href="https://app.sparkypos.com/sign-up">{{ __('defaultTheme.register') }}</a>
                                     </span>
                                 @else
                                     <span class="d-inline-block lh-1 ">
