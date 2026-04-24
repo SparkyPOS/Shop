@@ -301,7 +301,7 @@
                                                     @endauth
                                                     @guest
                                                         <div class="col-md-6">
-                                                            <a href="https://app.sparkypos.com/login"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn">{{__('auctionproduct.pay_entry_amount')}}</a>
+                                                            <a href="{{ route('sso.redirect') }}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn">{{__('auctionproduct.pay_entry_amount')}}</a>
                                                         </div>
                                                     @endguest
                                                 @else
@@ -313,7 +313,7 @@
 
                                                     @guest
                                                         <div class="col-md-6">
-                                                            <a href="https://app.sparkypos.com/login"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn">{{__('auctionproduct.pay_entry_amount')}}</a>
+                                                            <a href="{{ route('sso.redirect') }}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn">{{__('auctionproduct.pay_entry_amount')}}</a>
                                                         </div>
                                                     @endguest
 

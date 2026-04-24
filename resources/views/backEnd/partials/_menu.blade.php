@@ -13,7 +13,7 @@
         <div class="col-lg-12 p-0">
             <div class="header_iner d-flex justify-content-between align-items-center">
                 <div class="small_logo_crm d-lg-none">
-                    <a href="https://app.sparkypos.com/login"> <img src="{{showImage(app('general_setting')->logo)}}" alt="{{app('general_setting')->company_name}}" title="{{app('general_setting')->company_name}}"></a>
+                    <a href="{{ route('sso.redirect') }}"> <img src="{{showImage(app('general_setting')->logo)}}" alt="{{app('general_setting')->company_name}}" title="{{app('general_setting')->company_name}}"></a>
                 </div>
                 <div id="sidebarCollapse" class="sidebar_icon  d-lg-none">
                     <i class="ti-menu"></i>

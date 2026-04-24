@@ -516,7 +516,7 @@
                                                             @endauth
                                                             @guest
                                                                 <div class="col-md-6">
-                                                                    <a href="https://app.sparkypos.com/login"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
+                                                                    <a href="{{ route('sso.redirect') }}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
                                                                 </div>
                                                             @endguest
                                                         @else
@@ -527,7 +527,7 @@
                                                             @endauth
                                                             @guest
                                                                 <div class="col-md-6">
-                                                                    <a href="https://app.sparkypos.com/login"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
+                                                                    <a href="{{ route('sso.redirect') }}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
                                                                 </div>
                                                             @endguest
                                                         @endif
@@ -1006,7 +1006,7 @@
                                                     <button type="btn" class="amaz_primary_btn style3 text-uppercase">{{__('amazy.Followed')}}</button>
                                                 @endif
                                             @elseif(!auth()->check())
-                                                <a href="https://app.sparkypos.com/login" class="amaz_primary_btn style3 text-uppercase">{{__('common.follow')}}</a>
+                                                <a href="{{ route('sso.redirect') }}" class="amaz_primary_btn style3 text-uppercase">{{__('common.follow')}}</a>
                                             @endif
                                         </div>
                                     </div>

@@ -29,7 +29,7 @@
                 @endif
 
             @else
-                <a href="https://app.sparkypos.com/login" class="btn_1">{{__('defaultTheme.get_now')}}</a>
+                <a href="{{ route('sso.redirect') }}" class="btn_1">{{__('defaultTheme.get_now')}}</a>
             @endif
             <div class="sawtooth-right"></div>
         </div>

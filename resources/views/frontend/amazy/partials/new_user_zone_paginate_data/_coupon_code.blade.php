@@ -26,6 +26,6 @@
         @endif
 
     @else
-        <a href="https://app.sparkypos.com/login" class="amaz_primary_btn style5">{{__('defaultTheme.get_now')}}</a>
+        <a href="{{ route('sso.redirect') }}" class="amaz_primary_btn style5">{{__('defaultTheme.get_now')}}</a>
     @endif
 </div>

@@ -162,7 +162,7 @@
                                         <button type="submit" id="submitBtn" class="btn_1 cs-pointer">{{ __('defaultTheme.register') }}</button>
                                         <p>
                                             {{ __('defaultTheme.already_a_member_yet') }}
-                                            <a href="https://app.sparkypos.com/login">{{ __('defaultTheme.login_account') }}</a> {{ __('common.here') }}.</p>
+                                            <a href="{{ route('sso.redirect') }}">{{ __('defaultTheme.login_account') }}</a> {{ __('common.here') }}.</p>
                                     </div>
                                 </div>
                             </div>
@@ -253,7 +253,7 @@
                                         </div>
                                         <p>
                                             {{ __('defaultTheme.already_a_member_yet') }}
-                                            <a href="https://app.sparkypos.com/login">{{ __('defaultTheme.login_account') }}</a> {{ __('common.here') }}.</p>
+                                            <a href="{{ route('sso.redirect') }}">{{ __('defaultTheme.login_account') }}</a> {{ __('common.here') }}.</p>
                                     </div>
                                 </div>
                             </div>

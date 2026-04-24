@@ -115,6 +115,9 @@ class AuthController extends Controller
                 if (!$user && Schema::hasColumn('users', 'pos_user_id')) {
                     $user = User::where('pos_user_id', $userId)->first();
                 }
+                if (!$user && Schema::hasColumn('users', 'external_customer_id')) {
+                    $user = User::where('external_customer_id', (string) $userId)->first();
+                }
                 if ($user instanceof User) {
                     Auth::loginUsingId($user->id);
                     $redirectTarget = ($redirectTo ?: url('/')) . '?success=true';
@@ -136,20 +139,42 @@ class AuthController extends Controller
     public function ssoRedirectToPos(Request $request)
     {
         $mainapp = rtrim(env('MAIN_APP_URL', 'https://app.sparkypos.com'), '/');
+        $shopBase = rtrim(url('/'), '/');
         $target = $request->query('redirect_to');
         if ($target && !preg_match('/^https?:/i', $target)) {
             $target = $mainapp.'/'.ltrim($target, '/');
         }
         $target = $target ?: $mainapp;
 
+        $shopReturnTarget = $request->headers->get('referer');
+        if (!is_string($shopReturnTarget) || trim($shopReturnTarget) === '') {
+            $shopReturnTarget = $shopBase;
+        }
+        $shopReturnTarget = trim($shopReturnTarget);
+        if (!preg_match('/^https?:\/\//i', $shopReturnTarget)) {
+            $shopReturnTarget = $shopBase;
+        } else {
+            $returnParts = parse_url($shopReturnTarget);
+            $shopParts = parse_url($shopBase);
+            $sameHost = ($returnParts['host'] ?? null) && ($shopParts['host'] ?? null)
+                && strtolower($returnParts['host']) === strtolower($shopParts['host']);
+            if (!$sameHost) {
+                $shopReturnTarget = $shopBase;
+            }
+        }
+
         if (!Auth::check()) {
-            return redirect()->away($mainapp.'/login');
+            return redirect()->away(
+                $mainapp.'/sign-in?origin=shop&redirect_to='.urlencode($shopReturnTarget)
+            );
         }
 
         $user = Auth::user();
         $appUserId = $user->app_user_id ?? null;
         if (!$appUserId) {
-            return redirect()->away($mainapp.'/login');
+            return redirect()->away(
+                $mainapp.'/sign-in?origin=shop&redirect_to='.urlencode($shopReturnTarget)
+            );
         }
 
         try {
@@ -161,7 +186,7 @@ class AuthController extends Controller
             $token = base64_encode(Crypt::encryptString($payload));
             return redirect()->away($mainapp.'/sso?t='.urlencode($token));
         } catch (\Throwable $e) {
-            return redirect()->away($mainapp.'/login');
+            return redirect()->away($mainapp.'/sign-in');
         }
     }
 
@@ -176,7 +201,7 @@ class AuthController extends Controller
         if ($target && !preg_match('/^https?:/i', $target)) {
             $target = $mainapp.'/'.ltrim($target, '/');
         }
-        return redirect()->away($target ?: $mainapp.'/login');
+        return redirect()->away($target ?: $mainapp.'/sign-in');
     }
 
     public function login(Request $request)
