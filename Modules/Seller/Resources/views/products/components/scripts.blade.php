@@ -2,6 +2,12 @@
 <script type="text/javascript">
     (function($){
         "use strict";
+        let syncPollTimer = null;
+        const syncRoutes = {
+            start: "{{ route('seller.product.sync.start') }}",
+            status: "{{ route('seller.product.sync.status') }}",
+            cancel: "{{ route('seller.product.sync.cancel') }}"
+        };
         $(document).ready(function(){
             productDatatable();
             mainProductList();
@@ -633,13 +639,6 @@
                     responsive: true,
                 });
             }
-
-            let syncPollTimer = null;
-            const syncRoutes = {
-                start: "{{ route('seller.product.sync.start') }}",
-                status: "{{ route('seller.product.sync.status') }}",
-                cancel: "{{ route('seller.product.sync.cancel') }}"
-            };
 
             function initBulkProductSync() {
                 if (!$('#shop_product_sync_btn').length) {

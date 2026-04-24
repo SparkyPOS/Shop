@@ -7,6 +7,9 @@ Route::prefix('products')->as('product.')->group(function() {
 
     Route::middleware(['auth','admin'])->group(function() {
         Route::get('/', 'ProductController@index')->name('index')->middleware(['permission']);
+        Route::post('/sync/start', 'ProductController@startBulkSync')->name('sync.start')->middleware(['permission','prohibited_demo_mode']);
+        Route::get('/sync/status', 'ProductController@bulkSyncStatus')->name('sync.status')->middleware(['permission']);
+        Route::post('/sync/cancel', 'ProductController@cancelBulkSync')->name('sync.cancel')->middleware(['permission','prohibited_demo_mode']);
         Route::get('/{id}/edit', 'ProductController@edit')->name('edit')->middleware(['permission']);
         Route::get('/{id}/clone', 'ProductController@clone')->name('clone')->middleware(['permission']);
         Route::get('bulk-product-upload', 'ProductController@bulk_product_upload_page')->name('bulk_product_upload_page')->middleware(['permission']);

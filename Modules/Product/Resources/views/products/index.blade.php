@@ -1,6 +1,43 @@
 @extends('backEnd.master')
 @section('styles')
     <link rel="stylesheet" href="{{asset(asset_path('modules/product/css/product_index.css'))}}">
+    <style>
+        .sync-products-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .sync-products-status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.24);
+            color: #fff;
+            font-size: 11px;
+            line-height: 1.2;
+        }
+        .sync-products-cancel {
+            opacity: 0;
+            max-width: 0;
+            overflow: hidden;
+            pointer-events: none;
+            white-space: nowrap;
+            transition: opacity .2s ease, max-width .2s ease;
+        }
+        .sync-products-control.is-running:hover .sync-products-cancel {
+            opacity: 1;
+            max-width: 180px;
+            pointer-events: auto;
+        }
+        .sync-products-control.is-cancelling .sync-products-cancel {
+            opacity: 0;
+            max-width: 0;
+            pointer-events: none;
+        }
+    </style>
 @endsection
 @section('mainContent')
     <section class="admin-visitor-area up_st_admin_visitor">
@@ -68,6 +105,18 @@
                                             <h3 class="mb-0 mr-30 mb_xs_15px mb_sm_20px">{{ __('product.product_list') }}</h3>
                                             @if (permissionCheck('product.create'))
                                                 <ul class="d-flex">
+                                                    <li class="mr-10">
+                                                        <div class="sync-products-control" id="shop_admin_product_sync_control">
+                                                            <button type="button" class="primary-btn radius_30px fix-gr-bg" id="shop_admin_product_sync_btn">
+                                                                <i class="ti-reload"></i>
+                                                                <span id="shop_admin_product_sync_btn_text">Sync Products</span>
+                                                                <span class="sync-products-status-badge d-none" id="shop_admin_product_sync_badge"></span>
+                                                            </button>
+                                                            <button type="button" class="primary-btn radius_30px sync-products-cancel" id="shop_admin_product_sync_cancel_btn">
+                                                                Cancel
+                                                            </button>
+                                                        </div>
+                                                    </li>
                                                     <li><a class="primary-btn radius_30px mr-10 fix-gr-bg" href="{{route("product.create")}}"><i class="ti-plus"></i>{{__('product.add_new_product')}}</a></li>
                                                 </ul>
                                             @endif
@@ -275,6 +324,12 @@
     (function($){
         "use strict";
         let module_check = $('#module_check').val();
+        let syncPollTimer = null;
+        const syncRoutes = {
+            start: "{{ route('product.sync.start') }}",
+            status: "{{ route('product.sync.status') }}",
+            cancel: "{{ route('product.sync.cancel') }}"
+        };
         $(document).ready(function(){
             if(module_check == 'false'){
             var columnData = [
@@ -310,6 +365,7 @@
         stockoutProductDataTable();
         draftedProductTable();
         reportedProducts();
+        initBulkProductSync();
         $(document).on('submit', '#sku_delete_form', function(event) {
             event.preventDefault();
             $('#sku_delete_modal').modal('hide');
@@ -1419,6 +1475,189 @@
                 }],
                 responsive: true,
             });
+        }
+
+        function initBulkProductSync() {
+            if (!$('#shop_admin_product_sync_btn').length) {
+                return;
+            }
+
+            $(document).on('click', '#shop_admin_product_sync_btn', function (event) {
+                event.preventDefault();
+                startBulkProductSync();
+            });
+
+            $(document).on('click', '#shop_admin_product_sync_cancel_btn', function (event) {
+                event.preventDefault();
+                cancelBulkProductSync();
+            });
+
+            fetchBulkSyncStatus(false);
+        }
+
+        function startBulkProductSync() {
+            const state = ($('#shop_admin_product_sync_btn').data('state') || 'idle').toString();
+            if (state === 'running' || state === 'cancelling') {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('_token', "{{ csrf_token() }}");
+
+            $('#shop_admin_product_sync_btn').prop('disabled', true);
+            $.ajax({
+                url: syncRoutes.start,
+                type: 'POST',
+                cache: false,
+                contentType: false,
+                processData: false,
+                data: formData,
+                success: function (response) {
+                    if (!response || response.success === false) {
+                        toastr.error((response && response.message) ? response.message : "{{ __('common.error_message') }}", "{{ __('common.error') }}");
+                        $('#shop_admin_product_sync_btn').prop('disabled', false);
+                        return;
+                    }
+
+                    renderBulkSyncState(response.data || null);
+                    if (response.message) {
+                        toastr.success(response.message, "{{ __('common.success') }}");
+                    }
+                    ensureBulkSyncPolling();
+                },
+                error: function (response) {
+                    const message = (response && response.responseJSON && response.responseJSON.message)
+                        ? response.responseJSON.message
+                        : "{{ __('common.error_message') }}";
+                    toastr.error(message, "{{ __('common.error') }}");
+                    $('#shop_admin_product_sync_btn').prop('disabled', false);
+                }
+            });
+        }
+
+        function cancelBulkProductSync() {
+            const formData = new FormData();
+            formData.append('_token', "{{ csrf_token() }}");
+
+            $('#shop_admin_product_sync_cancel_btn').prop('disabled', true).text('Cancelling...');
+            $.ajax({
+                url: syncRoutes.cancel,
+                type: 'POST',
+                cache: false,
+                contentType: false,
+                processData: false,
+                data: formData,
+                success: function (response) {
+                    if (!response || response.success === false) {
+                        toastr.error((response && response.message) ? response.message : "{{ __('common.error_message') }}", "{{ __('common.error') }}");
+                    } else {
+                        renderBulkSyncState(response.data || null);
+                        toastr.success(response.message || 'Sync cancelled.', "{{ __('common.success') }}");
+                    }
+
+                    ensureBulkSyncPolling();
+                },
+                error: function (response) {
+                    const message = (response && response.responseJSON && response.responseJSON.message)
+                        ? response.responseJSON.message
+                        : "{{ __('common.error_message') }}";
+                    toastr.error(message, "{{ __('common.error') }}");
+                    $('#shop_admin_product_sync_cancel_btn').prop('disabled', false).text('Cancel');
+                }
+            });
+        }
+
+        function fetchBulkSyncStatus(withLoader) {
+            $.ajax({
+                url: syncRoutes.status,
+                type: 'GET',
+                dataType: 'json',
+                success: function (response) {
+                    if (!response || response.success === false) {
+                        if (withLoader) {
+                            stopBulkSyncPolling();
+                        }
+                        return;
+                    }
+
+                    renderBulkSyncState(response.data || null);
+                    const currentState = response && response.data ? response.data.state : null;
+                    if (isSyncActive(currentState)) {
+                        ensureBulkSyncPolling();
+                    } else {
+                        stopBulkSyncPolling();
+                    }
+                },
+                error: function () {
+                    if (withLoader) {
+                        stopBulkSyncPolling();
+                    }
+                }
+            });
+        }
+
+        function ensureBulkSyncPolling() {
+            if (syncPollTimer) {
+                return;
+            }
+
+            syncPollTimer = setInterval(function () {
+                fetchBulkSyncStatus(true);
+            }, 2000);
+        }
+
+        function stopBulkSyncPolling() {
+            if (!syncPollTimer) {
+                return;
+            }
+            clearInterval(syncPollTimer);
+            syncPollTimer = null;
+        }
+
+        function isSyncActive(state) {
+            return state === 'running' || state === 'cancelling';
+        }
+
+        function renderBulkSyncState(state) {
+            const syncState = state && state.state ? state : { state: 'idle', total: 0, succeeded: 0, remaining: 0 };
+            const stateName = (syncState.state || 'idle').toString();
+            const total = Number(syncState.total || 0);
+            const succeeded = Number(syncState.succeeded || 0);
+            const failed = Number(syncState.failed || 0);
+            const remaining = Number(syncState.remaining || Math.max(0, total - (syncState.processed || 0)));
+            const processed = Number(syncState.processed || 0);
+
+            const $control = $('#shop_admin_product_sync_control');
+            const $btn = $('#shop_admin_product_sync_btn');
+            const $btnText = $('#shop_admin_product_sync_btn_text');
+            const $badge = $('#shop_admin_product_sync_badge');
+            const $cancel = $('#shop_admin_product_sync_cancel_btn');
+
+            $btn.data('state', stateName);
+
+            if (stateName === 'running') {
+                $btnText.text('Syncing Products...');
+                $btn.prop('disabled', true);
+                $control.addClass('is-running').removeClass('is-cancelling');
+                $cancel.prop('disabled', false).text('Cancel');
+            } else if (stateName === 'cancelling') {
+                $btnText.text('Cancelling...');
+                $btn.prop('disabled', true);
+                $control.addClass('is-running is-cancelling');
+                $cancel.prop('disabled', true).text('Cancelling...');
+            } else {
+                $btnText.text('Sync Products');
+                $btn.prop('disabled', false);
+                $control.removeClass('is-running is-cancelling');
+                $cancel.prop('disabled', false).text('Cancel');
+            }
+
+            if (total > 0 || processed > 0 || stateName === 'completed' || stateName === 'cancelled' || stateName === 'failed') {
+                const badgeText = 'Synced ' + succeeded + ' | Remaining ' + remaining + ' / ' + total + (failed > 0 ? (' | Failed ' + failed) : '');
+                $badge.text(badgeText).removeClass('d-none');
+            } else {
+                $badge.addClass('d-none').text('');
+            }
         }
 
         function resetAfterChange(response) {

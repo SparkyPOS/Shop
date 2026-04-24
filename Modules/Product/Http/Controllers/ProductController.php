@@ -19,6 +19,7 @@ use \Modules\Product\Services\CategoryService;
 use Modules\Product\Services\AttributeService;
 use Modules\Shipping\Services\ShippingService;
 use Modules\UserActivityLog\Traits\LogActivity;
+use App\Services\SparkyPosProductBulkSyncService;
 use Modules\GST\Repositories\GstConfigureRepository;
 use Modules\Product\Repositories\CategoryRepository;
 use Modules\WholeSale\Services\WholesalePriceService;
@@ -44,6 +45,72 @@ class ProductController extends Controller
     public function index()
     {
         return view('product::products.index');
+    }
+
+    public function startBulkSync(Request $request, SparkyPosProductBulkSyncService $syncService)
+    {
+        try {
+            $validated = $request->validate([
+                'ids' => 'nullable|array',
+                'ids.*' => 'integer|min:1',
+                'chunk' => 'nullable|integer|min:1|max:500',
+                'limit' => 'nullable|integer|min:1|max:50000',
+            ]);
+
+            $result = $syncService->start($validated);
+            $status = (int) ($result['http_status'] ?? 200);
+            unset($result['http_status']);
+
+            return response()->json($result, $status > 0 ? $status : 200);
+        } catch (\Exception $e) {
+            LogActivity::errorLog($e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => __('common.error_message'),
+            ], 500);
+        }
+    }
+
+    public function bulkSyncStatus(Request $request, SparkyPosProductBulkSyncService $syncService)
+    {
+        try {
+            $syncId = $request->query('sync_id');
+            $result = $syncService->status(is_string($syncId) ? $syncId : null);
+            $status = (int) ($result['http_status'] ?? 200);
+            unset($result['http_status']);
+
+            return response()->json($result, $status > 0 ? $status : 200);
+        } catch (\Exception $e) {
+            LogActivity::errorLog($e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => __('common.error_message'),
+            ], 500);
+        }
+    }
+
+    public function cancelBulkSync(Request $request, SparkyPosProductBulkSyncService $syncService)
+    {
+        try {
+            $validated = $request->validate([
+                'sync_id' => 'nullable|string',
+            ]);
+
+            $result = $syncService->cancel($validated['sync_id'] ?? null);
+            $status = (int) ($result['http_status'] ?? 200);
+            unset($result['http_status']);
+
+            return response()->json($result, $status > 0 ? $status : 200);
+        } catch (\Exception $e) {
+            LogActivity::errorLog($e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => __('common.error_message'),
+            ], 500);
+        }
     }
 
     public function bulk_product_upload_page()
