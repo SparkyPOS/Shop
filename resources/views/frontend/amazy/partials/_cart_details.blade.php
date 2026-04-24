@@ -301,12 +301,13 @@
                         <div class="amazy_table4">
                             <div class="amazy_table4_head mb_20 d-none d-lg-block px-0">
                                 <div class="row gutters-5 m-0 align-items-center">
-                                    <div class="col-4 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">{{__('common.products')}}</h4> </div>
-                                    <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">{{__('Vendor')}}</h4> </div>
-                                    <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">{{__('common.store')}}</h4> </div>
-                                    <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">{{__('common.price')}}</h4> </div>
-                                    <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">{{__('common.quantity')}}</h4> </div>
-                                    <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">{{__('common.subtotal')}}</h4> </div>
+                                    <div class="col-5 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.products')}}</h4> </div>
+                                    <!-- <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('Vendor')}}</h4> </div>
+                                    <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.store')}}</h4> </div> -->
+                                    <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.price')}}</h4> </div>
+                                    <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.quantity')}}</h4> </div>
+                                    <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.subtotal')}}</h4> </div>
+                                    <div class="col fw-600"> </div>
                                 </div>
                             </div>
                             @foreach($cartData as $seller_id => $cartItems)
@@ -357,10 +358,10 @@
                                                     @endphp
                                                 @endif
 
-                                                <li class="list-group-item px-0 px-lg-3 mb_10">
+                                                <li class="list-group-item px-0 mb_10">
                                                     <div class="row gutters-5 m-0 align-items-center">
-                                                        <div class="col-12 col-lg-4 d-flex p-0">
-                                                            <a href="{{singleProductURL(@$cart->seller->slug, @$cart->product->product->slug)}}" class="d-flex align-items-center gap_20 cart_thumb_div">
+                                                        <div class="col-12 col-lg-5 d-flex p-0">
+                                                            <a href="{{singleProductURL(@$cart->seller->slug, @$cart->product->product->slug)}}" class="d-flex justify-content-center align-items-center gap_20 cart_thumb_div">
                                                                 <div class="thumb">
                                                                     <img src="
                                                                         @if(@$cart->product->product->product->product_type == 1)
@@ -370,48 +371,63 @@
                                                                         @endif
                                                                     " alt="{{ textLimit(@$cart->product->product->product_name, 35) }}" title="{{ textLimit(@$cart->product->product->product_name, 35) }}">
                                                                 </div>
-                                                                <div class="summery_pro_content">
-                                                                    <h4 class="font_16 f_w_700 m-0 theme_hover">{{ textLimit(@$cart->product->product->product_name, 35) }}</h4>
-                                                                    <p class="font_14 f_w_400 m-0 ">
-                                                                        @if(@$cart->product->product->product->product_type == 2)
-                                                                            @foreach(@$cart->product->product_variations as $key => $combination)
-                                                                                @if(@$combination->attribute->id == 1)
-                                                                                    {{@$combination->attribute->name}}: {{@$combination->attribute_value->color->name}}
-                                                                                @else
-                                                                                    {{@$combination->attribute->name}}: {{@$combination->attribute_value->value}}
-                                                                                @endif
-                                                                                @if($key < count(@$cart->product->product_variations)-1),@endif
-                                                                            @endforeach
-                                                                        @endif
-                                                                    </p>
+                                                                <div class="summery_pro_content d-flex flex-column gap_5">
+                                                                    <div>
+                                                                        <h4 class="font_16 f_w_700 m-0 theme_hover">{{ textLimit(@$cart->product->product->product_name, 35) }}</h4>
+                                                                        <p class="font_14 f_w_400 m-0 ">
+                                                                            @if(@$cart->product->product->product->product_type == 2)
+                                                                                @foreach(@$cart->product->product_variations as $key => $combination)
+                                                                                    @if(@$combination->attribute->id == 1)
+                                                                                        {{@$combination->attribute->name}}: {{@$combination->attribute_value->color->name}}
+                                                                                    @else
+                                                                                        {{@$combination->attribute->name}}: {{@$combination->attribute_value->value}}
+                                                                                    @endif
+                                                                                    @if($key < count(@$cart->product->product_variations)-1),@endif
+                                                                                @endforeach
+                                                                            @endif
+                                                                        </p>
+                                                                    </div>
+                                                                    <div class="my-3 my-lg-0 d-none d-lg-block">
+                                                                        <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('vendor')}}</span>
+                                                                        <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block">
+                                                                            {{__('Vendor')}}: {{$cart->seller->sellerAccount->vendor_id}}
+                                                                        </h4>
+                                                                    </div>
+                                                                    <div class="my-3 my-lg-0 d-none d-lg-block">
+                                                                        <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('common.store')}}</span>
+                                                                        <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block">
+                                                                            {{__('common.store')}}: {{ parentStoreName($cart->seller ?? null) }}
+                                                                        </h4>
+                                                                    </div>
+
                                                                 </div>
     </a>
     <div class="mobile_title_full d-lg-none mt-2 w-100">
         <div class="mobile_full_title">{{ @$cart->product->product->product_name }}</div>
-        <div class="font_12 opacity-75 mt-1">
+        <div class="font_14 opacity-75 mt-1 d-flex flex-column">
             <span>{{ __('Vendor') }}: {{ @$cart->seller->SellerAccount->vendor_id }}</span>
             <span>{{ __('common.store') }}: {{ parentStoreName($cart->seller ?? null) }}</span>
         </div>
     </div>
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-10 mt-2 d-lg-none mobile_qty_price_row">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-10 d-lg-none mobile_qty_price_row">
         <div class="d-flex align-items-center mobile_title_qty_row w-100">
-            <div class="product_number_count style_4 ms-auto" data-target="amount-3">
-                                                                        <button class="count_single_item inumber_decrement change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
-                                                                            data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="-"> <i class="ti-minus"></i></button>
-                                                                            <input name="qty[]" id="qty_{{$cart->id}}" maxlength="12" data-value="{{$cart->qty}}" value="{{getNumberTranslate($cart->qty)}}" class="count_single_item input-number qty" type="text" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
-                                                                            data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}">
-                                                                            <input type="hidden" value="{{$cart->id}}" name="cart_id[]">
-                                                                            <input type="hidden" id="maximum_qty_{{$cart->id}}" value="{{$cart->product->product->product->max_order_qty}}">
-                                                                            <input type="hidden" id="minimum_qty_{{$cart->id}}" value="{{$cart->product->product->product->minimum_order_qty}}">
-                                                                            <button class="count_single_item number_increment change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
-                                                                                data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="+"> <i class="ti-plus"></i></button>
-                                                                            @if(isModuleActive('WholeSale'))
-                                                                                <input type="hidden" id="getWholesalePrice_{{$cart->id}}" value="@if(@$cart->product->wholeSalePrices->count()){{ json_encode(@$cart->product->wholeSalePrices) }} @else 0 @endif">
-                                                                            @endif
-                                                                    </div>
+            <div class="product_number_count style_4 ms-auto !d-flex justify-content-end" data-target="amount-3">
+                <button class="count_single_item inumber_decrement change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
+                    data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="-"> <i class="ti-minus"></i></button>
+                    <input name="qty[]" id="qty_{{$cart->id}}" maxlength="12" data-value="{{$cart->qty}}" value="{{getNumberTranslate($cart->qty)}}" class="count_single_item input-number qty" type="text" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
+                    data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}">
+                    <input type="hidden" value="{{$cart->id}}" name="cart_id[]">
+                    <input type="hidden" id="maximum_qty_{{$cart->id}}" value="{{$cart->product->product->product->max_order_qty}}">
+                    <input type="hidden" id="minimum_qty_{{$cart->id}}" value="{{$cart->product->product->product->minimum_order_qty}}">
+                    <button class="count_single_item number_increment change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
+                        data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="+"> <i class="ti-plus"></i></button>
+                    @if(isModuleActive('WholeSale'))
+                        <input type="hidden" id="getWholesalePrice_{{$cart->id}}" value="@if(@$cart->product->wholeSalePrices->count()){{ json_encode(@$cart->product->wholeSalePrices) }} @else 0 @endif">
+                    @endif
+            </div>
         </div>
-        <div class="d-inline mobile_price"><h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap">{{single_price($cart->total_price)}}</h4></div>
-        <span class="close_icon style_2 lh-1 cart_item_delete_btn cursor_pointer mobile_delete" data-id="{{$cart->id}}" data-product_id="{{$cart->product_id}}" data-unique_id="#delete_item_{{$cart->id}}">
+        <div class="d-inline mobile_price"><h4 class="font_16 f_w_700 m-0 lh-1 text-right text-nowrap">{{single_price($cart->total_price)}}</h4></div>
+        <span class="close_icon style_2 lh-1 cart_item_delete_btn cursor_pointer mobile_delete d-flex w-100 flex-1 justify-content-end" data-id="{{$cart->id}}" data-product_id="{{$cart->product_id}}" data-unique_id="#delete_item_{{$cart->id}}">
                                                                     <svg  width="12.249" height="15.076" viewBox="0 0 12.249 15.076">
                                                                         <g  transform="translate(-48)">
                                                                             <path  data-name="Path 1449" d="M59.071,1.884H56.48V1.413A1.415,1.415,0,0,0,55.067,0H53.182a1.415,1.415,0,0,0-1.413,1.413v.471H49.178A1.179,1.179,0,0,0,48,3.062V4.711a.471.471,0,0,0,.471.471h.257l.407,8.547a1.412,1.412,0,0,0,1.412,1.346H57.7a1.412,1.412,0,0,0,1.412-1.346l.407-8.547h.257a.471.471,0,0,0,.471-.471V3.062A1.179,1.179,0,0,0,59.071,1.884Zm-6.36-.471a.472.472,0,0,1,.471-.471h1.884a.472.472,0,0,1,.471.471v.471H52.711ZM48.942,3.062a.236.236,0,0,1,.236-.236h9.893a.236.236,0,0,1,.236.236V4.24H48.942Zm9.23,10.623a.471.471,0,0,1-.471.449H50.547a.471.471,0,0,1-.471-.449l-.4-8.5h8.905Z" fill="#00124e"></path>
@@ -423,19 +439,19 @@
                                                                 </span>
                                                             </div>
                                                         </div>
-                                                        <div class="col order-1 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
+                                                        <!-- <div class="col order-1 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
                                                             <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('vendor')}}</span>
-                                                            <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block">
+                                                            <h4 class="font_16 f_w_700 m-0 lh-1 text-center text-nowrap d-none d-lg-block">
                                                                 {{$cart->seller->sellerAccount->vendor_id}}
                                                             </h4>
                                                         </div>
-                                                        <div class="col order-1 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
+                                                        <div class="col-2 order-1 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
                                                             <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('common.store')}}</span>
-                                                            <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block">
+                                                            <h4 class="font_16 f_w_700 m-0 lh-1 text-center text-nowrap d-none d-lg-block">
                                                                 {{ parentStoreName($cart->seller ?? null) }}
                                                             </h4>
-                                                        </div>
-                                                        <div class="col order-2 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
+                                                        </div> -->
+                                                        <div class="col-2 order-2 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
                                                             <span class="opacity-60 font_12 d-block d-lg-none">{{__('common.price')}}</span>
                                                             @if($cart->product->product->hasDeal)
                                                                 @if($cart->product->product->hasDeal->discount > 0)
@@ -454,10 +470,10 @@
                                                                     @endif
                                                                 @endif
                                                             @endif
-                                                            <h4 class="font_16 f_w_700 m-0 set_base_price{{$cart->id}}">{{single_price(isset($pro_price)?$pro_price:@$cart->product->sell_price)}}</h4>
+                                                            <h4 class="font_16 f_w_700 text-center m-0 set_base_price{{$cart->id}}">{{single_price(isset($pro_price)?$pro_price:@$cart->product->sell_price)}}</h4>
                                                             <input type="hidden" class="get_base_price{{$cart->id}}" value="{{single_price(isset($pro_price)?$pro_price:@$cart->product->sell_price)}}">
                                                         </div>
-                                                        <div class="col-2 order-4 order-lg-0 d-none d-lg-block">
+                                                        <div class="col-2 order-4 order-lg-0 d-flex justify-content-center align-items-center d-none d-lg-block">
                                                             <div class="product_number_count style_4" data-target="amount-3">
                                                                 <button class="count_single_item inumber_decrement change_qty" data-qty_id="#qty_{{$cart->id}}" data-change_amount="1" data-maximum_qty="#maximum_qty_{{$cart->id}}"
                                                                     data-minimum_qty="#minimum_qty_{{$cart->id}}" data-product_stock="{{$cart->product->product_stock}}" data-stock_manage="{{$cart->product->product->stock_manage}}" data-wholesale="#getWholesalePrice_{{$cart->id}}" data-cart_id="{{$cart->id}}" type="button" value="-"> <i class="ti-minus"></i></button>
@@ -477,7 +493,7 @@
                                                         </div>
                                                         <div class="col order-3 order-lg-0 my-3 my-lg-0 d-none d-lg-block">
                                                             <span class="opacity-60 font_12 d-none d-sm-block d-lg-none">{{__('common.total')}}</span>
-                                                            <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap d-none d-lg-block" style="margin-left: 0.5rem !important;">
+                                                            <h4 class="font_16 f_w_700 m-0 lh-1 text-center text-nowrap d-none d-lg-block" style="margin-left: 0.5rem !important;">
                                                                 {{single_price($cart->total_price)}}
                                                             </h4>
                                                         </div>
@@ -534,7 +550,7 @@
 
                                                         <div class="col-lg col-4 order-1 order-lg-0 my-3 my-lg-0">
                                                             <span class="opacity-60 font_12 d-block d-lg-none">{{__('common.price')}}</span>
-                                                            <h4 class="font_16 f_w_700 m-0 text-nowrap">{{single_price($cart->price)}}</h4>
+                                                            <h4 class="font_16 f_w_700 m-0 text-center text-nowrap">{{single_price($cart->price)}}</h4>
                                                         </div>
                                                         <div class="col-lg col-6 order-4 order-lg-0">
                                                             <div class="product_number_count style_4" data-target="amount-1">
@@ -556,7 +572,7 @@
                                                         </div>
                                                         <div class="col-lg col-4 order-3 order-lg-0 my-3 my-lg-0">
                                                             <span class="opacity-60 font_12 d-block d-lg-none">{{__('common.total')}}</span>
-                                                            <h4 class="font_16 f_w_700 m-0 lh-1 text-nowrap">
+                                                            <h4 class="font_16 f_w_700 m-0 lh-1 text-center text-nowrap">
                                                                 {{single_price($cart->total_price)}}
                                                             </h4>
                                                         </div>

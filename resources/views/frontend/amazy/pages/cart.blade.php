@@ -16,7 +16,9 @@
     /* Fix cart item layout so product name shows */
     .cart_thumb_div{width: 100% !important;}
     .cart_thumb_div .thumb{flex: 0 0 var(--thum-width) !important;}
-    .cart_thumb_div .summery_pro_content {flex: 1 1 calc(100% - var(--thum-width)) !important; max-width: 100% !important; min-width: 0;}
+    .cart_thumb_div .summery_pro_content {
+        /* flex: 1 1 calc(100% - var(--thum-width)) !important;  */
+        max-width: 100% !important; min-width: 0;}
     @media (max-width: 767.98px){
         /* Stack name above image on mobile; keep a small thumbnail */
         .cart_thumb_div{width: 100% !important; flex-direction: column; align-items: flex-start; gap: 6px !important;}
@@ -33,7 +35,7 @@
         .mobile_cart_title{ display:none; }
         .mobile_title_full{ width:100%; }
         .mobile_full_title{
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 700;
             white-space: normal;
             overflow: visible;
@@ -42,14 +44,14 @@
         .mobile_title_qty_row{ width: 100%; display:flex; align-items:center; }
         .mobile_title_qty_row .product_number_count{ flex: 0 0 110px; }
         .mobile_price{ flex: 0 0 110px; text-align: right; }
-        .mobile_delete{ flex: 0 0 24px; text-align: right; }
+        .mobile_delete{ text-align: right; }
 
         /* Tighten paddings/margins on cart rows */
         .checkout_v3_area .amazy_table4 .list-group-item{ padding: 8px 10px !important; }
         .checkout_v3_area .amazy_table4 .list-group-item.mb_10{ margin-bottom: 6px !important; }
         .checkout_v3_area .amazy_table4_body{ padding-left: 0 !important; margin: 0 !important; }
         .checkout_v3_area .cart_thumb_div{ gap: 4px !important; }
-        .checkout_v3_area .mobile_title_qty_row{ margin-top: 6px !important; }
+        /* .checkout_v3_area .mobile_title_qty_row{ margin-top: 6px !important; } */
         .mobile_qty_price_row{ align-items: center !important; }
         .mobile_qty_price_row{ justify-content: flex-end !important; }
     }

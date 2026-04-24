@@ -81,47 +81,53 @@
                             @endif
                         </div>
                     @else
-                        <div class="single_cart">
-                            <div class="thumb d-flex align-items-center gap_10 mr_15">
-                                <div class="thumb_inner">
-
-                                    <img src="
-                                    @if(@$cart->product->product->product->product_type == 1)
-                                        {{showImage(@$cart->product->product->product->thumbnail_image_source)}}
-                                    @else
-                                        {{showImage(@$cart->product->sku->variant_image?@$cart->product->sku->variant_image:@$cart->product->product->product->thumbnail_image_source)}}
-                                    @endif
-                                    " alt="{{ @$cart->product->product->product_name }}" title="{{ $cart->product->product->product_name }}">
-                                </div>
-                            </div>
-                            <div class="cart_content flex-fill">
-                                <a href="{{singleProductURL($cart->seller->slug, $cart->product->product->slug)}}">
-                                    <h5>{{ @$cart->product->product->product_name }}</h5>
-                                    <h6>Vendor: {{ @$cart->seller->SellerAccount->vendor_id }}</h6>
-                                </a>
-                                <div class="cart_content_text d-flex align-items-center gap_10 flex-fill flex-wrap">
-                                    <div class="product_number_count style_2" data-target="amountc-1">
-                                        <button id="sidebar_cart_minus_{{$cart->id}}" type="button" class="count_single_item inumber_decrement cart_qty_sidebar" value="-" data-value="-" data-id="{{$cart->id}}" data-product-id="{{$cart->product_id}}" data-qty="#sidebar_cart_qty_{{$cart->id}}" data-qty-minus-btn-id="#sidebar_cart_plus_{{$cart->id}}" data-maximum-qty="{{@$cart->product->product->product->max_order_qty}}" data-minimum-qty="{{@$cart->product->product->product->minimum_order_qty}}" data-stock-manage="{{@$cart->product->product->stock_manage}}" data-product-stock="{{@$cart->product->product_stock}}"> <i class="ti-minus"></i></button>
-                                        <input id="sidebar_cart_qty_{{$cart->id}}" class="count_single_item input-number" type="text" data-value="{{$cart->qty}}" value="{{getNumberTranslate($cart->qty)}}" readonly>
-                                        <button id="sidebar_cart_plus_{{$cart->id}}" type="button" class="count_single_item number_increment cart_qty_sidebar" value="+" data-value="+" data-id="{{$cart->id}}" data-product-id="{{$cart->product_id}}" data-qty="#sidebar_cart_qty_{{$cart->id}}" data-qty-plus-btn-id="#sidebar_cart_plus_{{$cart->id}}" data-maximum-qty="{{@$cart->product->product->product->max_order_qty}}" data-minimum-qty="{{@$cart->product->product->product->minimum_order_qty}}" data-stock-manage="{{@$cart->product->product->stock_manage}}" data-product-stock="{{@$cart->product->product_stock}}"> <i class="ti-plus"></i></button>
+                        <div class="single_cart flex-column">
+                            <div class="d-flex align-items-center gap_10">
+                                <div class="thumb d-flex align-items-center gap_10 mr_15">
+                                    <div class="thumb_inner">
+    
+                                        <img src="
+                                        @if(@$cart->product->product->product->product_type == 1)
+                                            {{showImage(@$cart->product->product->product->thumbnail_image_source)}}
+                                        @else
+                                            {{showImage(@$cart->product->sku->variant_image?@$cart->product->sku->variant_image:@$cart->product->product->product->thumbnail_image_source)}}
+                                        @endif
+                                        " alt="{{ @$cart->product->product->product_name }}" title="{{ $cart->product->product->product_name }}">
                                     </div>
-                                    <p><span class="prise" >{{single_price($cart->total_price)}}</span> </p>
                                 </div>
+                                <div class="cart_content flex-fill">
+                                    <a href="{{singleProductURL($cart->seller->slug, $cart->product->product->slug)}}">
+                                        <h5>{{ @$cart->product->product->product_name }}</h5>
+                                        
+                                    </a>
+                                    <div class="cart_content_text d-flex align-items-center gap_10 flex-fill flex-wrap">
+                                        <div class="product_number_count style_2" data-target="amountc-1">
+                                            <button id="sidebar_cart_minus_{{$cart->id}}" type="button" class="count_single_item inumber_decrement cart_qty_sidebar" value="-" data-value="-" data-id="{{$cart->id}}" data-product-id="{{$cart->product_id}}" data-qty="#sidebar_cart_qty_{{$cart->id}}" data-qty-minus-btn-id="#sidebar_cart_plus_{{$cart->id}}" data-maximum-qty="{{@$cart->product->product->product->max_order_qty}}" data-minimum-qty="{{@$cart->product->product->product->minimum_order_qty}}" data-stock-manage="{{@$cart->product->product->stock_manage}}" data-product-stock="{{@$cart->product->product_stock}}"> <i class="ti-minus"></i></button>
+                                            <input id="sidebar_cart_qty_{{$cart->id}}" class="count_single_item input-number" type="text" data-value="{{$cart->qty}}" value="{{getNumberTranslate($cart->qty)}}" readonly>
+                                            <button id="sidebar_cart_plus_{{$cart->id}}" type="button" class="count_single_item number_increment cart_qty_sidebar" value="+" data-value="+" data-id="{{$cart->id}}" data-product-id="{{$cart->product_id}}" data-qty="#sidebar_cart_qty_{{$cart->id}}" data-qty-plus-btn-id="#sidebar_cart_plus_{{$cart->id}}" data-maximum-qty="{{@$cart->product->product->product->max_order_qty}}" data-minimum-qty="{{@$cart->product->product->product->minimum_order_qty}}" data-stock-manage="{{@$cart->product->product->stock_manage}}" data-product-stock="{{@$cart->product->product_stock}}"> <i class="ti-plus"></i></button>
+                                        </div>
+                                        <p><span class="prise" >{{single_price($cart->total_price)}}</span> </p>
+                                    </div>
+                                </div>
+                                @if($just_path != '/checkout')
+                                    <div class="cart_trash_icon d-flex align-items-center  justify-content-end cursor_pointer" id="submenu_cart_btn_{{$cart->id}}">
+                                        <span class="remove_from_submenu_btn" data-id="{{$cart->id}}" data-product_id="{{$cart->product_id}}" data-btn="#submenu_cart_btn_{{$cart->id}}">
+                                            <svg  width="12.249" height="15.076" viewBox="0 0 12.249 15.076">
+                                                <g id="trash" transform="translate(-48)">
+                                                  <path id="Path_1449" data-name="Path 1449" d="M59.071,1.884H56.48V1.413A1.415,1.415,0,0,0,55.067,0H53.182a1.415,1.415,0,0,0-1.413,1.413v.471H49.178A1.179,1.179,0,0,0,48,3.062V4.711a.471.471,0,0,0,.471.471h.257l.407,8.547a1.412,1.412,0,0,0,1.412,1.346H57.7a1.412,1.412,0,0,0,1.412-1.346l.407-8.547h.257a.471.471,0,0,0,.471-.471V3.062A1.179,1.179,0,0,0,59.071,1.884Zm-6.36-.471a.472.472,0,0,1,.471-.471h1.884a.472.472,0,0,1,.471.471v.471H52.711ZM48.942,3.062a.236.236,0,0,1,.236-.236h9.893a.236.236,0,0,1,.236.236V4.24H48.942Zm9.23,10.623a.471.471,0,0,1-.471.449H50.547a.471.471,0,0,1-.471-.449l-.4-8.5h8.905Z" fill="#777"/>
+                                                  <path id="Path_1450" data-name="Path 1450" d="M240.471,215.067a.471.471,0,0,0,.471-.471v-6.125a.471.471,0,1,0-.942,0V214.6A.471.471,0,0,0,240.471,215.067Z" transform="translate(-186.347 -201.875)" fill="#777"/>
+                                                  <path id="Path_1451" data-name="Path 1451" d="M320.471,215.067a.471.471,0,0,0,.471-.471v-6.125a.471.471,0,1,0-.942,0V214.6A.471.471,0,0,0,320.471,215.067Z" transform="translate(-263.991 -201.875)" fill="#777"/>
+                                                  <path id="Path_1452" data-name="Path 1452" d="M160.471,215.067a.471.471,0,0,0,.471-.471v-6.125a.471.471,0,0,0-.942,0V214.6A.471.471,0,0,0,160.471,215.067Z" transform="translate(-108.702 -201.875)" fill="#777"/>
+                                                </g>
+                                              </svg>
+                                        </span>
+                                    </div>
+                                @endif
                             </div>
-                            @if($just_path != '/checkout')
-                                <div class="cart_trash_icon d-flex align-items-center  justify-content-end cursor_pointer" id="submenu_cart_btn_{{$cart->id}}">
-                                    <span class="remove_from_submenu_btn" data-id="{{$cart->id}}" data-product_id="{{$cart->product_id}}" data-btn="#submenu_cart_btn_{{$cart->id}}">
-                                        <svg  width="12.249" height="15.076" viewBox="0 0 12.249 15.076">
-                                            <g id="trash" transform="translate(-48)">
-                                              <path id="Path_1449" data-name="Path 1449" d="M59.071,1.884H56.48V1.413A1.415,1.415,0,0,0,55.067,0H53.182a1.415,1.415,0,0,0-1.413,1.413v.471H49.178A1.179,1.179,0,0,0,48,3.062V4.711a.471.471,0,0,0,.471.471h.257l.407,8.547a1.412,1.412,0,0,0,1.412,1.346H57.7a1.412,1.412,0,0,0,1.412-1.346l.407-8.547h.257a.471.471,0,0,0,.471-.471V3.062A1.179,1.179,0,0,0,59.071,1.884Zm-6.36-.471a.472.472,0,0,1,.471-.471h1.884a.472.472,0,0,1,.471.471v.471H52.711ZM48.942,3.062a.236.236,0,0,1,.236-.236h9.893a.236.236,0,0,1,.236.236V4.24H48.942Zm9.23,10.623a.471.471,0,0,1-.471.449H50.547a.471.471,0,0,1-.471-.449l-.4-8.5h8.905Z" fill="#777"/>
-                                              <path id="Path_1450" data-name="Path 1450" d="M240.471,215.067a.471.471,0,0,0,.471-.471v-6.125a.471.471,0,1,0-.942,0V214.6A.471.471,0,0,0,240.471,215.067Z" transform="translate(-186.347 -201.875)" fill="#777"/>
-                                              <path id="Path_1451" data-name="Path 1451" d="M320.471,215.067a.471.471,0,0,0,.471-.471v-6.125a.471.471,0,1,0-.942,0V214.6A.471.471,0,0,0,320.471,215.067Z" transform="translate(-263.991 -201.875)" fill="#777"/>
-                                              <path id="Path_1452" data-name="Path 1452" d="M160.471,215.067a.471.471,0,0,0,.471-.471v-6.125a.471.471,0,0,0-.942,0V214.6A.471.471,0,0,0,160.471,215.067Z" transform="translate(-108.702 -201.875)" fill="#777"/>
-                                            </g>
-                                          </svg>
-                                    </span>
-                                </div>
-                            @endif
+                            <div class="w-100 d-flex justify-content-between gap_10 align-items-center mt-1 px-10">
+                                <span>{{ __('Vendor') }}: {{ @$cart->seller->SellerAccount->vendor_id }}</span>
+                                <span>{{ __('common.store') }}: {{ parentStoreName($cart->seller ?? null) }}</span>
+                            </div>
                         </div>
                     @endif
                 @endforeach

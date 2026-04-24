@@ -80,8 +80,13 @@
                                 </div>
                                 @guest
                                     <span class="d-inline-block lh-1 ">
+<<<<<<< HEAD
                                         <a href="{{ route('sso.redirect') }}">{{ __('defaultTheme.login') }}</a>
                                         <a href="https://app.sparkypos.com/register">{{ __('defaultTheme.register') }}</a>
+=======
+                                        <a href="https://app.sparkypos.com/sign-in">{{ __('defaultTheme.login') }}</a>
+                                        <a href="https://app.sparkypos.com/sign-up">{{ __('defaultTheme.register') }}</a>
+>>>>>>> 2067b9e8ff75e9ac028ad99ca335d68481bc2cf9
                                     </span>
                                 @else
                                     <span class="d-inline-block lh-1 ">
