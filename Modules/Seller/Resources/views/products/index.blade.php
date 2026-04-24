@@ -1,6 +1,43 @@
 @extends('backEnd.master')
 @section('styles')
 <link rel="stylesheet" href="{{asset(asset_path('modules/seller/css/index.css'))}}" />
+<style>
+    .sync-products-control {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .sync-products-status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 8px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.24);
+        color: #fff;
+        font-size: 11px;
+        line-height: 1.2;
+    }
+    .sync-products-cancel {
+        opacity: 0;
+        max-width: 0;
+        overflow: hidden;
+        pointer-events: none;
+        white-space: nowrap;
+        transition: opacity .2s ease, max-width .2s ease;
+    }
+    .sync-products-control.is-running:hover .sync-products-cancel {
+        opacity: 1;
+        max-width: 180px;
+        pointer-events: auto;
+    }
+    .sync-products-control.is-cancelling .sync-products-cancel {
+        opacity: 0;
+        max-width: 0;
+        pointer-events: none;
+    }
+</style>
 @endsection
 @section('mainContent')
     <section class="admin-visitor-area up_st_admin_visitor">
@@ -37,6 +74,18 @@
                                     </li>
                                 @endif
                                 @if (auth()->user()->role->type == "seller")
+                                    <li class="nav-item mr-10">
+                                        <div class="sync-products-control" id="shop_product_sync_control">
+                                            <button type="button" class="primary-btn radius_30px fix-gr-bg" id="shop_product_sync_btn">
+                                                <i class="ti-reload"></i>
+                                                <span id="shop_product_sync_btn_text">Sync Products</span>
+                                                <span class="sync-products-status-badge d-none" id="shop_product_sync_badge"></span>
+                                            </button>
+                                            <button type="button" class="primary-btn radius_30px sync-products-cancel" id="shop_product_sync_cancel_btn">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </li>
                                     @if (permissionCheck('seller.product.create'))
                                         <li class="nav-item">
                                             <a class="primary-btn radius_30px mr-10 fix-gr-bg add_new_product" href="{{ route('seller.product.create') }}"><i class="ti-plus"></i>{{ __('product.add_new_product') }}</a>

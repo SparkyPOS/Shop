@@ -40,6 +40,9 @@ Route::middleware(['auth','seller'])->prefix('seller')->as('seller.')->group(fun
     Route::post('/product/variant','ProductController@variant')->name('product.variant');
     Route::post('/product/variant/edit','ProductController@variantEdit')->name('product.variant-edit');
     Route::post('/product/variant/delete','ProductController@variantDelete')->name('product.variant.delete')->middleware('prohibited_demo_mode');
+    Route::post('/product/sync/start', 'ProductController@startBulkSync')->name('product.sync.start')->middleware('prohibited_demo_mode');
+    Route::get('/product/sync/status', 'ProductController@bulkSyncStatus')->name('product.sync.status');
+    Route::post('/product/sync/cancel', 'ProductController@cancelBulkSync')->name('product.sync.cancel')->middleware('prohibited_demo_mode');
     //my product
     Route::get('/products/create','ProductController@create')->name('product.create')->middleware(['permission']);
     Route::get('/product/{id}/edit','ProductController@myProductEdit')->name('my-product.edit');
