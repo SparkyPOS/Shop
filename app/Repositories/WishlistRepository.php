@@ -17,7 +17,7 @@ class WishlistRepository
     use GoogleAnalytics4;
     public function myWishlist($user_id)
     {
-        if (auth()->user()->role->type != 'customer')
+        if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true))
         {
             return Wishlist::with('user', 'seller', 'product', 'product.product')->whereHas('product', function($query){
                 $query->where('status', 1)->whereHas('product', function($query){
@@ -47,7 +47,7 @@ class WishlistRepository
         if($data['paginate']){
             $paginate = $data['paginate'];
         }else{
-            $paginate = (auth()->user()->role->type != 'customer') ? 12 : 6;
+            $paginate = in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true) ? 12 : 6;
         }
         if($data['sort_by'] == 'new'){
             return Wishlist::with('user', 'seller', 'product', 'product.product','giftcard')->where('user_id',auth()->id())->where('type','product')->whereHas('product', function($query){

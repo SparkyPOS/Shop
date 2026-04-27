@@ -172,6 +172,9 @@
                                                                             @endforeach
                                                                         @endif
                                                                     </p>
+                                                                    @if(!empty(@$item->product->product->product->processing_time))
+                                                                        <p class="font_12 f_w_500 m-0 text-nowrap">Processing Time: {{ @$item->product->product->product->processing_time }}</p>
+                                                                    @endif
                                                                 </div>
                                                             </a>
                                                         </td>
@@ -418,6 +421,9 @@
                                                                             @endforeach
                                                                         @endif
                                                                     </p>
+                                                                    @if(!empty(@$item->product->product->product->processing_time))
+                                                                        <p class="font_12 f_w_500 m-0 text-nowrap">Processing Time: {{ @$item->product->product->product->processing_time }}</p>
+                                                                    @endif
                                                                 </div>
                                                             </a>
                                                         </td>
@@ -845,6 +851,9 @@
                                                 @endif
                                             @endforeach
                                             </p>
+                                        @endif
+                                        @if(!empty(@$cart->product->product->product->processing_time))
+                                            <p class="font_12 f_w_500 m-0 text-nowrap">Processing Time: {{ @$cart->product->product->product->processing_time }}</p>
                                         @endif
                                         <h5 class="d-flex align-items-center"><span class="product_count_text">{{getNumberTranslate($cart->qty)}}<span>x</span></span>{{single_price($cart->price)}}</h5>
                                     </div>

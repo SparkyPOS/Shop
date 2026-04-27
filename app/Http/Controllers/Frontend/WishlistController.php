@@ -21,7 +21,7 @@ class WishlistController extends Controller
     {
         try{
             $data['products'] = $this->wishlistService->myWishlist(auth()->user()->id);
-            if (auth()->user()->role->type != 'customer') {
+            if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
                 return view('backEnd.pages.customer_data.wishlist', $data);
             }
             else {
@@ -50,7 +50,7 @@ class WishlistController extends Controller
                 $data['sort_by'] = $_GET['sort_by'];
             }
             $data['products'] = $this->wishlistService->myWishlistWithPaginate(['page' => $page, 'sort_by' => $sort_by, 'paginate' => $paginate]);
-            if (auth()->user()->role->type != 'customer') {
+            if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
                 return view('backEnd.pages.customer_data._wishlist_with_paginate', $data);
             }
             else {
@@ -93,7 +93,7 @@ class WishlistController extends Controller
                 $data['sort_by'] = $request->sort_by;
             }
             $data['products'] = $this->wishlistService->myWishlistWithPaginate(['page' => $page, 'sort_by' => $sort_by, 'paginate' => $paginate]);
-            if (auth()->user()->role->type != 'customer') {
+            if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
                 return view('backEnd.pages.customer_data._wishlist_with_paginate', $data);
             }
             else {

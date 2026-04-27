@@ -21,7 +21,7 @@ class CouponController extends Controller
     public function index(){
         try{
             $coupons = $this->couponService->getAll(auth()->user()->id);
-            if (auth()->user()->role->type != 'customer') {
+            if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
                 return view('backEnd.pages.customer_data.coupons',compact('coupons'));
             }else {
                 return view(theme('pages.profile.coupons'),compact('coupons'));
@@ -36,7 +36,7 @@ class CouponController extends Controller
             $page = $_GET['page'];
         }
         $coupons = $this->couponService->getAll(auth()->user()->id,$page);
-        if (!auth()->user()->role->type == 'customer') {
+        if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
             return view('backEnd.pages.customer_data.coupons',compact('coupons'));
         }else {
             return view(theme('pages.profile.partials._coupon_list'),compact('coupons'));
@@ -81,7 +81,7 @@ class CouponController extends Controller
     private function reloadWithData(){
 
         $coupons = $this->couponService->getAll(auth()->user()->id);
-        if (auth()->user()->role->type != 'customer') {
+        if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
             return response()->json([
                 'CouponList' =>  (string)view('backEnd.pages.customer_data._coupon_list',compact('coupons'))
             ]);

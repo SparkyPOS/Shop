@@ -42,7 +42,7 @@ class NotificationController extends Controller
     public function notifications()
     {
         try {
-            if (auth()->user()->role->type == "superadmin" || auth()->user()->role->type == "admin" || auth()->user()->role->type == "staff" || auth()->user()->role->type == "seller") {
+            if (in_array(auth()->user()->role->type, ["superadmin", "admin", "staff"], true)) {
                 return view('backEnd.pages.customer_data.all_notification');
             } else {
                 $notifications = CustomerNotification::Where('customer_id', Auth::id())->latest()->paginate(10);
@@ -57,12 +57,11 @@ class NotificationController extends Controller
 
     public function notificationsData()
     {
-        if (auth()->user()->role->type == "superadmin" || auth()->user()->role->type == "admin" || auth()->user()->role->type == "staff") {
+        if (in_array(auth()->user()->role->type, ["superadmin", "admin", "staff"], true)) {
             $data = CustomerNotification::whereNotNull('seller_id')
                 ->orWhere('customer_id', Auth::id())->latest();
-        } elseif (auth()->user()->role->type == "seller") {
-            $data = CustomerNotification::where('seller_id', Auth::id())
-                ->orWhere('customer_id', Auth::id())->latest();
+        } else {
+            $data = CustomerNotification::where('customer_id', Auth::id())->latest();
         }
 
         return DataTables::of($data)
@@ -85,7 +84,7 @@ class NotificationController extends Controller
     public function notification_setting()
     {
         try {
-            if (auth()->user()->role->type == "customer") {
+            if (in_array(auth()->user()->role->type, ["customer", "seller"], true)) {
                 $userNotificationSettings = $this->userNotificationSettingService->getByAuthUser(auth()->user()->id);
                 return view(theme('pages.profile.notification_setting'), compact('userNotificationSettings'));
             } else {

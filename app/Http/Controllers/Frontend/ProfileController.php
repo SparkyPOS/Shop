@@ -51,7 +51,7 @@ class ProfileController extends Controller
             $data['countries'] = Country::where('status', 1)->orderBy('name')->get();
             $data['states'] = (new StateRepository())->getByCountryId(app('general_setting')->default_country)->where('status', 1);
             $data['cities'] = (new CityRepository())->getByStateId(app('general_setting')->default_state)->where('status', 1);
-            if (auth()->user()->role->type != 'customer') {
+            if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
                 return view('backEnd.pages.customer_data.profile',$data);
             }
             else {

@@ -70,7 +70,7 @@ class OrderController extends Controller
         $data['to_shippeds'] = $this->orderService->myPurchaseOrderPackageListShipped();
         $data['to_recieves'] = $this->orderService->myPurchaseOrderPackageListRecieved();
 
-        if (auth()->user()->role->type != 'customer') {
+        if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
             return view('backEnd.pages.customer_data.order', $data);
         } else {
             return view(theme('pages.profile.order'), $data);
@@ -370,7 +370,7 @@ class OrderController extends Controller
             $data['processes'] = $orderDeliveryRepo->getAll();
             $cancelReasonRepo = new CancelReasonRepository;
             $data['cancel_reasons'] = $cancelReasonRepo->getAll();
-            if (auth()->check() && auth()->user()->role->type != 'customer') {
+            if (auth()->check() && in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
                 return view('backEnd.pages.customer_data.order_details',$data);
             }else {
                 if (auth()->check() && $data['order']->customer_id != null) {
@@ -582,7 +582,7 @@ class OrderController extends Controller
     public function digital_product_index()
     {
         $data['digital_products'] = DigitalFileDownload::where('customer_id', auth()->user()->id)->latest()->paginate(10);
-        if (auth()->user()->role->type != 'customer') {
+        if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
             return view('backEnd.pages.customer_data.digital_purchased', $data);
         } else {
             return view(theme('pages.profile.digital_purchased'), $data);

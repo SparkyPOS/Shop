@@ -425,7 +425,7 @@ class CustomerController extends Controller
         try {
             $address=CustomerAddress::findOrFail($c_id);
             $countries = Country::where('status', 1)->orderBy('name')->get();
-            if (auth()->user()->role->type != 'customer') {
+            if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
                 return view('backEnd.pages.customer_data._edit_address_form',compact('address', 'countries'));
             }
             else {
@@ -476,10 +476,11 @@ class CustomerController extends Controller
     {
         try {
             $addressList=CustomerAddress::where('customer_id',auth()->user()->id)->get();
+            $useBackendViews = in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true);
             return response()->json([
-                'addressList' =>  (auth()->user()->role->type != 'customer') ?(string)view('backEnd.pages.customer_data._table',compact('addressList')) : (string)view(theme('pages.profile.partials._table'),compact('addressList')),
-                'addressListForShipping' =>  (auth()->user()->role->type != 'customer') ?(string)view('backEnd.pages.customer_data._shipping_address',compact('addressList')) : (string)view(theme('pages.profile.partials._shipping'), compact('addressList')),
-                'addressListForBilling' =>  (auth()->user()->role->type != 'customer') ?(string)view('backEnd.pages.customer_data._billing_address',compact('addressList')) : (string)view(theme('pages.profile.partials._billing'), compact('addressList')),
+                'addressList' =>  $useBackendViews ? (string)view('backEnd.pages.customer_data._table',compact('addressList')) : (string)view(theme('pages.profile.partials._table'),compact('addressList')),
+                'addressListForShipping' =>  $useBackendViews ? (string)view('backEnd.pages.customer_data._shipping_address',compact('addressList')) : (string)view(theme('pages.profile.partials._shipping'), compact('addressList')),
+                'addressListForBilling' =>  $useBackendViews ? (string)view('backEnd.pages.customer_data._billing_address',compact('addressList')) : (string)view(theme('pages.profile.partials._billing'), compact('addressList')),
             ]);
 
         } catch (\Exception $e) {

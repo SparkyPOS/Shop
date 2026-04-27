@@ -121,7 +121,7 @@ class RefundController extends Controller
     public function my_refund_index()
     {
         $data['my_refund_items'] = $this->refundService->getRequestForCustomer();
-        if (auth()->user()->role->type != 'customer') {
+        if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
             return view('backEnd.pages.customer_data.refund', $data);
         } else {
             return view(theme('pages.profile.refunds.refund'), $data);

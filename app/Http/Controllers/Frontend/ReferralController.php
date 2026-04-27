@@ -17,7 +17,7 @@ class ReferralController extends Controller
     
     public function referral(){
         $myCode = ReferralCode::where('user_id',auth()->user()->id)->first();
-        if (auth()->user()->role->type != 'customer') {
+        if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
             if(isset($myCode)){
                 $referList = ReferralUse::where('referral_code',$myCode->referral_code)->latest()->get();
                 return view('backEnd.pages.customer_data.referral',compact('myCode','referList'));

@@ -127,7 +127,7 @@ class GiftCardController extends Controller
 
     public function purchased_gift_card()
     {
-        if (auth()->user()->role->type != 'customer') {
+        if (in_array(auth()->user()->role->type, ['superadmin', 'admin', 'staff'], true)) {
             $gift_card_infos = $this->giftCardService->myPurchasedGiftCardAll(auth()->user());
             LogActivity::successLog('all purchased gift card successful.');
             return view('backEnd.pages.customer_data.purchased_gift_card', compact('gift_card_infos'));

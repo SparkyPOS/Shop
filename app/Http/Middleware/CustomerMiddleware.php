@@ -2,10 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use Brian2694\Toastr\Facades\Toastr;
 use Closure;
 use Illuminate\Http\Request;
-use Session;
 
 class CustomerMiddleware
 {
@@ -18,9 +16,17 @@ class CustomerMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if(auth()->check() && auth()->user()->role->type == 'customer' &&
-         app('business_settings')->where('type', 'email_verification')->first()->status == 1 && auth()->user()->is_verified == 0 && auth()->user()->email != null){
-            return redirect('/user-email-verify');
+        if (auth()->check()) {
+            $roleType = auth()->user()->role->type ?? null;
+            if (!in_array($roleType, ['customer', 'seller'], true)) {
+                abort(404);
+            }
+            if ($roleType === 'customer' &&
+                app('business_settings')->where('type', 'email_verification')->first()->status == 1 &&
+                auth()->user()->is_verified == 0 &&
+                auth()->user()->email != null) {
+                return redirect('/user-email-verify');
+            }
         }
         return $next($request);
     }
