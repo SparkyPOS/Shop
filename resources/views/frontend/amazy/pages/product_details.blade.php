@@ -874,10 +874,10 @@
                     @endif
                     <div class="amazcart_delivery_wiz mb_20">
                         <div class="amazcart_delivery_wiz_head">
-                            <h4 class="font_18 f_w_700 m-0">{{__('common.choose_your_location')}}</h4>
+                            <h4 class="font_18 f_w_700 m-0">{{__('amazy.Delivery Info')}}</h4>
                         </div>
                         <div class="amazcart_delivery_wiz_body">
-                            <div class="loc_city_selectBox d-flex flex-column">
+                            <div class="loc_city_selectBox d-flex flex-column d-none">
                                 <div class="selectBox_box ">
                                     @php
                                         if(@$product->seller->role_id == 1){
@@ -914,6 +914,17 @@
                                     </select>
                                 </div>
                             </div>
+                            @if(!empty($product->processing_time))
+                                <div class="amazcart_delivery_wiz_sep d-flex gap_15 mb_10">
+                                    <div class="icon d-flex align-items-center justify-content-center ">
+                                        <img src="{{url('/')}}/public/frontend/amazy/img/product_details/details_car.svg" alt="Processing Time" title="Processing Time">
+                                    </div>
+                                    <div class="amazcart_delivery_wiz_content">
+                                        <h4 class="font_16 f_w_700 mb_6">Processing Time</h4>
+                                        <p class="delivery_text font_14 f_w_400">{{ $product->processing_time }}</p>
+                                    </div>
+                                </div>
+                            @endif
                             <div class="amazcart_delivery_wiz_sep d-flex gap_15 mb_10">
                                 <div class="icon d-flex align-items-center justify-content-center ">
                                     <img src="{{url('/')}}/public/frontend/amazy/img/product_details/details_car.svg" alt="{{__('amazy.Door Delivery')}}" title="{{__('amazy.Door Delivery')}}">

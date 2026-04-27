@@ -715,6 +715,9 @@ class SyncSparkyController extends Controller
                 }
                 if (isset($product['shipping_type'])) $newProduct->shipping_type = (int) $product['shipping_type'];
                 if (isset($product['shipping_cost'])) $newProduct->shipping_cost = (float) $product['shipping_cost'];
+                if (array_key_exists('processing_time', $product) || array_key_exists('shippingpt', $product)) {
+                    $newProduct->processing_time = (string) ($product['processing_time'] ?? $product['shippingpt'] ?? '');
+                }
                 // Ensure name is up to date as well
                 if (!empty($product['name'])) $newProduct->product_name = $product['name'];
                 $newProduct->save();

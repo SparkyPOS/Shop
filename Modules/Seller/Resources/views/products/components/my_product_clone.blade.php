@@ -427,16 +427,23 @@ $LanguageList = getLanguageList();
 
                         <div id="phisical_shipping_div" class="col-lg-12" style="display: {{$product->is_physical == 0?'none':'block'}}">
                             <div class="row">
-                                <div class="col-lg-12">
-                                    <div class="primary_input mb-15">
-                                        <label class="primary_input_label" for="additional_shipping">{{ __('product.additional_shipping_charge') }}
-                                        </label>
-                                        <input class="primary_input_field" name="additional_shipping" placeholder="{{ __('product.tax') }}" type="number" min="0" step="{{step_decimal()}}" value="{{ $product->skus->first()->additional_shipping }}">
-                                        <span class="text-danger">{{ $errors->first('additional_shipping') }}</span>
+                                    <div class="col-lg-12">
+                                        <div class="primary_input mb-15">
+                                            <label class="primary_input_label" for="additional_shipping">{{ __('product.additional_shipping_charge') }}
+                                            </label>
+                                            <input class="primary_input_field" name="additional_shipping" placeholder="{{ __('product.tax') }}" type="number" min="0" step="{{step_decimal()}}" value="{{ $product->skus->first()->additional_shipping }}">
+                                            <span class="text-danger">{{ $errors->first('additional_shipping') }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-12">
+                                        <div class="primary_input mb-15">
+                                            <label class="primary_input_label" for="processing_time">Processing Time</label>
+                                            <input class="primary_input_field" name="processing_time" id="processing_time" type="text" value="{{ old('processing_time', $product->processing_time) }}" placeholder="e.g. 3-7 days">
+                                            <span class="text-danger">{{ $errors->first('processing_time') }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         <div class="col-lg-6 selling_price_div">
                             <div class="primary_input mb-15">
                                 <label class="primary_input_label" for=""> {{__("product.selling_price")}} <span

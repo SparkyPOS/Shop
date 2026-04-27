@@ -56,6 +56,8 @@ class ProductSyncService
             // Shipping (product-level)
             'shipping_type' => $product->shipping_type,
             'shipping_cost' => (float) ($product->shipping_cost ?? 0),
+            // POS keeps this field as shippingpt; use product-level processing time from Shop.
+            'shippingpt' => $product->processing_time,
         ];
 
         // Build variants if the product has variations

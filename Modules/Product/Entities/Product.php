@@ -38,6 +38,7 @@ class Product extends Model
         'model_number' => 'string',
         'shipping_type' => 'integer',
         'shipping_cost' => 'double',
+        'processing_time' => 'string',
         "discount_type" => "integer",
         "discount" => 'double',
         "tax_type" => "string",

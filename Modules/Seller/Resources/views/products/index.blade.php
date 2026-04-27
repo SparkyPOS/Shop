@@ -2,10 +2,27 @@
 @section('styles')
 <link rel="stylesheet" href="{{asset(asset_path('modules/seller/css/index.css'))}}" />
 <style>
+    .sync-products-bottom-bar {
+        margin-top: 12px;
+        display: flex;
+        justify-content: flex-end;
+    }
     .sync-products-control {
         display: inline-flex;
         align-items: center;
         gap: 8px;
+    }
+    .sync-products-control .sync-products-main-btn {
+        min-width: auto !important;
+        width: auto !important;
+        height: 38px;
+        padding: 0 14px;
+        font-size: 14px;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
     }
     .sync-products-status-badge {
         display: inline-flex;
@@ -20,6 +37,11 @@
         line-height: 1.2;
     }
     .sync-products-cancel {
+        min-width: auto !important;
+        width: auto !important;
+        height: 38px;
+        padding: 0 12px;
+        font-size: 13px;
         opacity: 0;
         max-width: 0;
         overflow: hidden;
@@ -74,18 +96,6 @@
                                     </li>
                                 @endif
                                 @if (auth()->user()->role->type == "seller")
-                                    <li class="nav-item mr-10">
-                                        <div class="sync-products-control" id="shop_product_sync_control">
-                                            <button type="button" class="primary-btn radius_30px fix-gr-bg" id="shop_product_sync_btn">
-                                                <i class="ti-reload"></i>
-                                                <span id="shop_product_sync_btn_text">Sync Products</span>
-                                                <span class="sync-products-status-badge d-none" id="shop_product_sync_badge"></span>
-                                            </button>
-                                            <button type="button" class="primary-btn radius_30px sync-products-cancel" id="shop_product_sync_cancel_btn">
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </li>
                                     @if (permissionCheck('seller.product.create'))
                                         <li class="nav-item">
                                             <a class="primary-btn radius_30px mr-10 fix-gr-bg add_new_product" href="{{ route('seller.product.create') }}"><i class="ti-plus"></i>{{ __('product.add_new_product') }}</a>
@@ -120,6 +130,20 @@
                                             </div>
                                         </div>
                                     </div>
+                                    @if (auth()->user()->role->type == "seller")
+                                        <div class="sync-products-bottom-bar">
+                                            <div class="sync-products-control" id="shop_product_sync_control">
+                                                <button type="button" class="primary-btn radius_30px fix-gr-bg sync-products-main-btn" id="shop_product_sync_btn">
+                                                    <i class="ti-reload"></i>
+                                                    <span id="shop_product_sync_btn_text">Sync Products</span>
+                                                    <span class="sync-products-status-badge d-none" id="shop_product_sync_badge"></span>
+                                                </button>
+                                                <button type="button" class="primary-btn radius_30px sync-products-cancel" id="shop_product_sync_cancel_btn">
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    @endif
                                 </div>
                             @endif
                             @if (permissionCheck('seller_own_product') && auth()->user()->role->type != 'superadmin')
