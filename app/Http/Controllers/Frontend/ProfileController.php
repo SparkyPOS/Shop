@@ -41,7 +41,10 @@ class ProfileController extends Controller
 
     public function __construct()
     {
-        $this->middleware(['maintenance_mode','auth','customer']);
+        $this->middleware(['maintenance_mode','auth']);
+        // `dashboard` and `dashboardCards` are also used by admin routes (`/admin-dashboard`),
+        // so keep customer middleware off those methods to avoid blocking admin/staff users.
+        $this->middleware('customer')->except(['dashboard', 'dashboardCards']);
     }
 
     public function index(){
