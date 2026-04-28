@@ -18,7 +18,8 @@ class CustomerMiddleware
     {
         if (auth()->check()) {
             $roleType = auth()->user()->role->type ?? null;
-            if (!in_array($roleType, ['customer', 'seller'], true)) {
+            // Allow backend roles to use storefront cart/checkout without a separate customer login.
+            if (!in_array($roleType, ['customer', 'seller', 'superadmin', 'admin', 'staff'], true)) {
                 abort(404);
             }
             if ($roleType === 'customer' &&
