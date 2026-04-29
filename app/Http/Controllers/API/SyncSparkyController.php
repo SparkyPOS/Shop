@@ -713,8 +713,25 @@ class SyncSparkyController extends Controller
                 if (!empty($product['type'])) {
                     $newProduct->is_physical = strtolower($product['type']) === 'tangible' ? 1 : 0;
                 }
-                if (isset($product['shipping_type'])) $newProduct->shipping_type = (int) $product['shipping_type'];
-                if (isset($product['shipping_cost'])) $newProduct->shipping_cost = (float) $product['shipping_cost'];
+                $pickupEnabled = null;
+                if (array_key_exists('shipping_pickup', $product)) {
+                    $pickupRaw = strtolower(trim((string) $product['shipping_pickup']));
+                    $pickupEnabled = in_array($pickupRaw, ['yes', 'y', 'true', '1', 'enabled', 'enable', 'on'], true);
+                }
+
+                if (isset($product['shipping_cost'])) {
+                    $newProduct->shipping_cost = (float) $product['shipping_cost'];
+                }
+
+                if (isset($product['shipping_type'])) {
+                    $newProduct->shipping_type = (int) $product['shipping_type'];
+                } elseif ($pickupEnabled !== null) {
+                    // Shop shipping_type: 1 => free_shipping, 2 => flat_rate
+                    $newProduct->shipping_type = $pickupEnabled ? 1 : (((float) ($product['shipping_cost'] ?? 0)) > 0 ? 2 : 1);
+                } elseif (isset($product['shipping_cost'])) {
+                    $newProduct->shipping_type = ((float) $product['shipping_cost']) > 0 ? 2 : 1;
+                }
+
                 if (array_key_exists('processing_time', $product) || array_key_exists('shippingpt', $product)) {
                     $newProduct->processing_time = (string) ($product['processing_time'] ?? $product['shippingpt'] ?? '');
                 }
