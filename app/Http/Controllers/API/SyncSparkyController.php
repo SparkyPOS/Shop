@@ -139,6 +139,7 @@ class SyncSparkyController extends Controller
                 // Avoid mass-deleting categories; only upsert from payload
             }
 
+            $attributeSetMap = [];
             if (!empty($productAttributeSet) && is_array($productAttributeSet)) {
                 $attributeSetIds = [];
                 foreach ($productAttributeSet as $attributeSet) {
@@ -157,43 +158,61 @@ class SyncSparkyController extends Controller
                     );
 
                     $attributeSetIds[] = $attribute->id;
+                    if ($externalSetId !== null) {
+                        $attributeSetMap[(string) $externalSetId] = $attribute;
+                    }
                 }
             }
 
 
             if (!empty($productAttribute) && is_array($productAttribute)) {
                 $attributeValueIds = [];
-                $colors = [];
                 foreach ($productAttribute as $attribute) {
                     $externalValueId = $attribute['id'] ?? null;
                     $externalSetId = $attribute['attribute_set_id'] ?? null;
 
                     $localAttributeId = Attribute::where('external_attribute_set_id', $externalSetId)->value('id');
+                    $localAttribute = null;
+                    if (isset($attributeSetMap[(string) $externalSetId])) {
+                        $localAttribute = $attributeSetMap[(string) $externalSetId];
+                    } elseif ($localAttributeId) {
+                        $localAttribute = Attribute::find($localAttributeId);
+                    }
+
+                    $displayType = strtolower((string) ($localAttribute->display_type ?? ''));
+                    $attributeName = strtolower((string) ($localAttribute->name ?? ''));
+                    $isColorAttribute = str_contains($displayType, 'color') || str_contains($attributeName, 'color');
+
+                    $incomingTitle = isset($attribute['title']) ? trim((string) $attribute['title']) : null;
+                    $incomingColor = isset($attribute['color']) ? trim((string) $attribute['color']) : null;
+                    $incomingValue = isset($attribute['value']) ? trim((string) $attribute['value']) : null;
+
+                    $attributeValueText = $incomingTitle;
+                    if ($isColorAttribute) {
+                        // For color attributes, Shop uses attribute_values.value as swatch code.
+                        $attributeValueText = $incomingColor ?: ($incomingValue ?: $incomingTitle);
+                    } elseif (empty($attributeValueText)) {
+                        $attributeValueText = $incomingValue ?: $incomingColor;
+                    }
 
                     $attributeValue = AttributeValue::updateOrCreate(
                         ['external_attribute_id' => $externalValueId],
                         [
-                            'value' => $externalSetId == 1 ? ($attribute['color'] ?? $attribute['title'] ?? null) : ($attribute['title'] ?? null),
+                            'value' => $attributeValueText,
                             'attribute_id' => $localAttributeId
                         ]
                     );
 
                     $attributeValueIds[] = $attributeValue->id;
 
-                    if ($externalSetId == 1) {
-                        $colors[] = [
-                            'name' => $attribute['title'] ?? '',
-                            'attribute_value_id' => $attributeValue->id
-                        ];
-                    }
-                }
-
-                if (!empty($colors)) {
-                    foreach ($colors as $color) {
+                    if ($isColorAttribute) {
                         Color::updateOrCreate(
-                            ['attribute_value_id' => $color['attribute_value_id']],
-                            ['name' => $color['name']]
+                            ['attribute_value_id' => $attributeValue->id],
+                            ['name' => $incomingTitle ?: ($incomingColor ?: $attributeValueText)]
                         );
+                    } else {
+                        // Guard against legacy wrong mapping (non-color attribute accidentally linked as color).
+                        Color::where('attribute_value_id', $attributeValue->id)->delete();
                     }
                 }
 
