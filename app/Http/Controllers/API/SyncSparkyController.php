@@ -408,9 +408,11 @@ class SyncSparkyController extends Controller
                     }
                     $attrValsMap = [];
                     foreach ((array) $request->input('product_attribute', []) as $av) {
+                        $title = isset($av['title']) ? trim((string) $av['title']) : null;
+                        $value = isset($av['value']) ? trim((string) $av['value']) : null;
                         $attrValsMap[$av['id'] ?? null] = [
-                            'title' => $av['title'] ?? ($av['value'] ?? null),
-                            'value' => $av['value'] ?? ($av['title'] ?? null),
+                            'title' => !empty($title) ? $title : (!empty($value) ? $value : null),
+                            'value' => !empty($value) ? $value : (!empty($title) ? $title : null),
                             'slug'  => $av['slug'] ?? \Illuminate\Support\Str::slug((string)($av['title'] ?? ($av['value'] ?? '')), '_'),
                             'color' => $av['color'] ?? null,
                             'attribute_set_id' => $av['attribute_set_id'] ?? null,
@@ -473,10 +475,14 @@ class SyncSparkyController extends Controller
                                     $val = new AttributeValue();
                                     $val->attribute_id = $localAttrId;
                                     $val->value = $valStr;
-                                    // Store color code if attribute name suggests color
-                                    if (mb_strtolower($attName) === 'color') { $val->color = $valStr; }
                                     $val->save();
                                     $valId = $val->id;
+                                    if (str_contains(mb_strtolower($attName), 'color')) {
+                                        Color::updateOrCreate(
+                                            ['attribute_value_id' => $valId],
+                                            ['name' => $valStr]
+                                        );
+                                    }
                                     Log::info('shop.sync.variants.attrval.created.byname', ['id'=>$valId,'value'=>$valStr,'attribute'=>$attName]);
                                 }
                                 $localPairs[] = [$localAttrId, $valId];
@@ -487,11 +493,13 @@ class SyncSparkyController extends Controller
                                 $itemValue = \Modules\Product\Entities\AttributeValue::where('external_attribute_id', $item['attribute_id'])->first();
                                 $appendSku = null;
                                 if ($itemValue) {
-                                    $appendSku = $itemValue->attribute_id == 1 ? ($itemValue->color->name ?? $itemValue->value ?? $itemValue->title) : ($itemValue->value ?? $itemValue->title);
+                                    $appendSku = $itemValue->color
+                                        ? ($itemValue->color->name ?? $itemValue->value ?? $itemValue->title)
+                                        : ($itemValue->value ?? $itemValue->title);
                                 } else {
                                     // Fallback using name/title map from product_attribute
                                     $mapped = $attrValsMap[$item['attribute_id'] ?? null] ?? null;
-                                    $appendSku = $mapped['value'] ?? $mapped['title'] ?? null;
+                                    $appendSku = $item['title'] ?? ($mapped['title'] ?? ($mapped['value'] ?? null));
                                 }
                                 if ($appendSku) {
                                     $sku .= '-' . str_replace(' ', '', (string) $appendSku);
@@ -599,10 +607,18 @@ class SyncSparkyController extends Controller
                             }
                         } else {
                         foreach ($variant['items'] as $item) {
+                            $needle = null;
                             // Resolve local attribute id (by external id or by set title)
                             $localAttrId = Attribute::where('external_attribute_set_id', $item['attribute_set_id'])->value('id');
+                            $valMeta = $attrValsMap[$item['attribute_id'] ?? null] ?? null;
+                            if (!$localAttrId && !empty($valMeta['attribute_set_id'])) {
+                                $localAttrId = Attribute::where('external_attribute_set_id', $valMeta['attribute_set_id'])->value('id');
+                            }
                             if (!$localAttrId) {
                                 $setMeta = $attrSetsMap[$item['attribute_set_id'] ?? null] ?? null;
+                                if (!$setMeta && !empty($valMeta['attribute_set_id'])) {
+                                    $setMeta = $attrSetsMap[$valMeta['attribute_set_id']] ?? null;
+                                }
                                 if ($setMeta) {
                                     $localAttrId = Attribute::whereRaw('LOWER(name) = ?', [mb_strtolower($setMeta['title'])])->value('id')
                                         ?: Attribute::whereRaw('LOWER(name) = ?', [mb_strtolower($setMeta['slug'])])->value('id');
@@ -622,8 +638,14 @@ class SyncSparkyController extends Controller
                             // Resolve local attribute value id (by external id or by title/value)
                             $localAttrValueId = AttributeValue::where('external_attribute_id', $item['attribute_id'])->value('id');
                             if (!$localAttrValueId && $localAttrId) {
-                                $valMeta = $attrValsMap[$item['attribute_id'] ?? null] ?? null;
-                                $needle = $valMeta['value'] ?? $valMeta['title'] ?? null;
+                                $setName = (string) optional(Attribute::find($localAttrId))->name;
+                                $isColorAttribute = str_contains(mb_strtolower($setName), 'color');
+                                $needle = null;
+                                if ($isColorAttribute) {
+                                    $needle = $item['color'] ?? ($valMeta['color'] ?? ($item['title'] ?? ($valMeta['title'] ?? null)));
+                                } else {
+                                    $needle = $item['title'] ?? ($valMeta['title'] ?? ($valMeta['value'] ?? null));
+                                }
                                 if ($needle) {
                                     $low = mb_strtolower($needle);
                                     $localAttrValueId = AttributeValue::where('attribute_id', $localAttrId)
