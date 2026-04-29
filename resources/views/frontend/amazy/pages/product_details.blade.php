@@ -914,14 +914,17 @@
                                     </select>
                                 </div>
                             </div>
-                            @if(!empty($product->processing_time))
+                            @php
+                                $processingTime = trim((string)($product->product->processing_time ?? $product->processing_time ?? ''));
+                            @endphp
+                            @if($processingTime !== '')
                                 <div class="amazcart_delivery_wiz_sep d-flex gap_15 mb_10">
                                     <div class="icon d-flex align-items-center justify-content-center ">
                                         <img src="{{url('/')}}/public/frontend/amazy/img/product_details/details_car.svg" alt="Processing Time" title="Processing Time">
                                     </div>
                                     <div class="amazcart_delivery_wiz_content">
                                         <h4 class="font_16 f_w_700 mb_6">Processing Time</h4>
-                                        <p class="delivery_text font_14 f_w_400">{{ $product->processing_time }}</p>
+                                        <p class="delivery_text font_14 f_w_400">{{ $processingTime }}</p>
                                     </div>
                                 </div>
                             @endif
