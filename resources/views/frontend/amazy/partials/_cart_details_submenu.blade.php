@@ -98,8 +98,29 @@
                                 <div class="cart_content flex-fill">
                                     <a href="{{singleProductURL($cart->seller->slug, $cart->product->product->slug)}}">
                                         <h5>{{ @$cart->product->product->product_name }}</h5>
-                                        
                                     </a>
+                                    @if(@$cart->product->product->product->product_type == 2)
+                                        <p class="font_12 f_w_400 m-0">
+                                            @foreach(@$cart->product->product_variations as $key => $combination)
+                                                @php
+                                                    $attrName = (string) (@$combination->attribute->name ?? '');
+                                                    $attrNameLower = strtolower($attrName);
+                                                    $rawValue = trim((string) (@$combination->attribute_value->value ?? ''));
+                                                    $rawTitle = trim((string) (@$combination->attribute_value->title ?? ''));
+                                                    $colorName = trim((string) (@$combination->attribute_value->color->name ?? ''));
+                                                    $displayValue = $rawValue;
+                                                    if (str_contains($attrNameLower, 'color')) {
+                                                        $displayValue = $colorName !== '' ? $colorName : ($rawTitle !== '' ? $rawTitle : $rawValue);
+                                                    } else {
+                                                        $displayValue = (preg_match('/^\d+$/', $rawValue) && $rawTitle !== '' && !preg_match('/^\d+$/', $rawTitle))
+                                                            ? $rawTitle
+                                                            : ($rawValue !== '' ? $rawValue : $rawTitle);
+                                                    }
+                                                @endphp
+                                                {{ @$combination->attribute->name }}: {{ $displayValue }}@if($key < count(@$cart->product->product_variations)-1), @endif
+                                            @endforeach
+                                        </p>
+                                    @endif
                                     <div class="cart_content_text d-flex align-items-center gap_10 flex-fill flex-wrap">
                                         <div class="product_number_count style_2" data-target="amountc-1">
                                             <button id="sidebar_cart_minus_{{$cart->id}}" type="button" class="count_single_item inumber_decrement cart_qty_sidebar" value="-" data-value="-" data-id="{{$cart->id}}" data-product-id="{{$cart->product_id}}" data-qty="#sidebar_cart_qty_{{$cart->id}}" data-qty-minus-btn-id="#sidebar_cart_plus_{{$cart->id}}" data-maximum-qty="{{@$cart->product->product->product->max_order_qty}}" data-minimum-qty="{{@$cart->product->product->product->minimum_order_qty}}" data-stock-manage="{{@$cart->product->product->stock_manage}}" data-product-stock="{{@$cart->product->product_stock}}"> <i class="ti-minus"></i></button>

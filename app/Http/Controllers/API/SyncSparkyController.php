@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\MediaManager;
 use App\Repositories\MediaManagerRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Modules\Product\Entities\Category;
 use Illuminate\Support\Str;
@@ -77,6 +78,95 @@ class SyncSparkyController extends Controller
         $decoded = preg_replace('/\s+/u', ' ', $decoded ?? '');
         return mb_strtolower(trim($decoded));
     }
+
+    /**
+     * Find the canonical category matching external_id/slug/name and merge duplicates into it.
+     */
+    private function findCanonicalCategoryAndMergeDuplicates(int $externalId, string $slug, string $name): ?Category
+    {
+        $slug = trim((string) $slug);
+        $normalizedName = $this->normalizeCategoryString((string) $name);
+
+        $candidates = Category::query()
+            ->where(function ($query) use ($externalId, $slug) {
+                $query->where('external_category_id', $externalId);
+                if ($slug !== '') {
+                    $query->orWhere('slug', $slug);
+                }
+            })
+            ->get(['id', 'name', 'slug', 'external_category_id']);
+
+        if ($normalizedName !== '') {
+            $nameMatches = Category::query()
+                ->get(['id', 'name', 'slug', 'external_category_id'])
+                ->filter(function ($row) use ($normalizedName) {
+                    return $this->normalizeCategoryString((string) $row->name) === $normalizedName;
+                });
+            $candidates = $candidates->merge($nameMatches)->unique('id')->values();
+        }
+
+        if ($candidates->isEmpty()) {
+            return null;
+        }
+
+        $primary = $candidates->firstWhere('external_category_id', $externalId)
+            ?: ($slug !== '' ? $candidates->firstWhere('slug', $slug) : null)
+            ?: $candidates->sortBy('id')->first();
+
+        if (!$primary instanceof Category) {
+            return null;
+        }
+
+        $duplicates = $candidates->filter(function ($row) use ($primary) {
+            return (int) $row->id !== (int) $primary->id;
+        })->values();
+
+        if ($duplicates->isNotEmpty()) {
+            foreach ($duplicates as $duplicate) {
+                $this->repointCategoryReferencesAndDelete((int) $duplicate->id, (int) $primary->id);
+            }
+        }
+
+        return Category::find($primary->id);
+    }
+
+    /**
+     * Move all FK references from $fromCategoryId to $toCategoryId, then delete the duplicate category.
+     */
+    private function repointCategoryReferencesAndDelete(int $fromCategoryId, int $toCategoryId): void
+    {
+        if ($fromCategoryId <= 0 || $toCategoryId <= 0 || $fromCategoryId === $toCategoryId) {
+            return;
+        }
+
+        // Ensure hierarchy references are moved even when DB FK is not declared.
+        Category::where('parent_id', $fromCategoryId)->update(['parent_id' => $toCategoryId]);
+
+        $database = DB::getDatabaseName();
+        $foreignKeys = DB::select(
+            'SELECT TABLE_NAME, COLUMN_NAME
+             FROM information_schema.KEY_COLUMN_USAGE
+             WHERE TABLE_SCHEMA = ?
+               AND REFERENCED_TABLE_NAME = ?
+               AND REFERENCED_COLUMN_NAME = ?',
+            [$database, 'categories', 'id']
+        );
+
+        foreach ($foreignKeys as $fk) {
+            $table = (string) ($fk->TABLE_NAME ?? '');
+            $column = (string) ($fk->COLUMN_NAME ?? '');
+            if ($table === '' || $column === '') {
+                continue;
+            }
+            if ($table === 'categories' && $column === 'id') {
+                continue;
+            }
+            DB::table($table)->where($column, $fromCategoryId)->update([$column => $toCategoryId]);
+        }
+
+        Category::where('id', $fromCategoryId)->delete();
+    }
+
     public function sync(Request $request)
     {
         try {
@@ -94,49 +184,128 @@ class SyncSparkyController extends Controller
             $productAttribute = $payload['product_attribute'] ?? $request->post('product_attribute');
             $product = $payload['product'] ?? $request->post('product');
             $action = $payload['action'] ?? $request->post('action');
+            $categorySyncScope = $payload['product_category_sync_scope'] ?? $request->post('product_category_sync_scope');
 
 
             // Handle delete action
-            if ($action === 'delete' && !empty($product['id'])) {
-                $local = Product::where('external_product_id', $product['id'])->first();
+            if ($action === 'delete') {
+                $externalId = $product['id'] ?? null;
+                $externalSku = trim((string) ($product['sku'] ?? ''));
+
+                $local = null;
+                if (!empty($externalId)) {
+                    $local = Product::where('external_product_id', $externalId)->first();
+                }
+
+                // Fallback for legacy rows where external_product_id may be missing.
+                if (!($local instanceof Product) && $externalSku !== '') {
+                    $productIdBySku = ProductSku::where('sku', $externalSku)->value('product_id');
+                    if (!empty($productIdBySku)) {
+                        $local = Product::find($productIdBySku);
+                    }
+                }
+
                 if ($local instanceof Product) {
+                    $sellerProductIds = SellerProduct::where('product_id', $local->id)->pluck('id');
+                    if ($sellerProductIds->isNotEmpty()) {
+                        SellerProductSKU::whereIn('product_id', $sellerProductIds)->delete();
+                        Auction::whereIn('seller_product_id', $sellerProductIds)->delete();
+                        SellerProduct::whereIn('id', $sellerProductIds)->delete();
+                    }
+
                     // cascade delete skus/variations via DB constraints or manual cleanup
                     foreach ($local->skus as $sku) { $sku->delete(); }
                     foreach ($local->variations as $var) { $var->delete(); }
+                    Auction::where('product_id', $local->id)->delete();
                     $local->delete();
                 }
-                return ['success' => true, 'action' => 'deleted'];
+
+                return ['success' => true, 'action' => 'deleted', 'found' => (bool) ($local instanceof Product)];
             }
 
             if (!empty($productCategories) && is_array($productCategories)) {
-                $ids = [];
+                $incomingExternalIds = [];
+                $externalToParentExternal = [];
+
+                // Pass 1: upsert categories without parent dependency.
                 foreach ($productCategories as $category) {
-                    $externalId = $category['id'] ?? null;
-                    $parentLocalId = null;
-                    if (!empty($category['parent_id'])) {
-                        $parentLocalId = Category::where('external_category_id', $category['parent_id'])->value('id');
+                    $externalId = isset($category['id']) ? (int) $category['id'] : null;
+                    if (!$externalId) {
+                        continue;
                     }
 
-                    $categoryModel = Category::updateOrCreate(
-                        ['external_category_id' => $externalId],
-                        [
-                            'name' => html_entity_decode($category['name']),
-                            'slug' => $category['product_key'] ? $category['product_key'] : Str::slug($category['name']),
-                            'parent_id' => $parentLocalId,
-                            'depth_level' => $parentLocalId ? 2 : 1,
-                            'icon' => $category['preview_url'] ?? null,
-                            'searchable' => 1,
-                            'status' => 1,
-                            'total_sale' => $category['total_items'] ?? 0,
-                            'avg_rating' => 0,
-                            'commission_rate' => 0
-                        ]
-                    );
+                    $incomingExternalIds[] = $externalId;
+                    $externalToParentExternal[$externalId] = !empty($category['parent_id']) ? (int) $category['parent_id'] : null;
+                    $name = html_entity_decode((string) ($category['name'] ?? ''));
+                    $slug = Str::slug((string) (!empty($category['product_key']) ? $category['product_key'] : $name));
+                    if ($slug === '') {
+                        $slug = 'category-' . $externalId;
+                    }
 
-                    $ids[] = $categoryModel->id;
+                    $categoryPayload = [
+                        'name' => $name,
+                        'slug' => $slug,
+                        'parent_id' => 0,
+                        'depth_level' => 1,
+                        'icon' => $category['preview_url'] ?? null,
+                        'searchable' => 1,
+                        'status' => 1,
+                        'total_sale' => $category['total_items'] ?? 0,
+                        'avg_rating' => 0,
+                        'commission_rate' => 0,
+                        'external_category_id' => $externalId,
+                    ];
+
+                    // Match by external id, slug, and name, and merge duplicates into one canonical row.
+                    $existingCategory = $this->findCanonicalCategoryAndMergeDuplicates($externalId, $slug, $name);
+
+                    if ($existingCategory) {
+                        $existingCategory->fill($categoryPayload);
+                        $existingCategory->save();
+                    } else {
+                        Category::create($categoryPayload);
+                    }
                 }
 
-                // Avoid mass-deleting categories; only upsert from payload
+                // Pass 2: resolve parent relation after all categories exist locally.
+                if (!empty($externalToParentExternal)) {
+                    $localIdsByExternal = Category::whereIn('external_category_id', array_keys($externalToParentExternal))
+                        ->pluck('id', 'external_category_id')
+                        ->toArray();
+
+                    $parentExternalIds = array_values(array_filter($externalToParentExternal));
+                    $parentLocalIdsByExternal = [];
+                    if (!empty($parentExternalIds)) {
+                        $parentLocalIdsByExternal = Category::whereIn('external_category_id', $parentExternalIds)
+                            ->pluck('id', 'external_category_id')
+                            ->toArray();
+                    }
+
+                    foreach ($externalToParentExternal as $externalId => $parentExternalId) {
+                        $localId = $localIdsByExternal[$externalId] ?? null;
+                        if (!$localId) {
+                            continue;
+                        }
+
+                        $parentLocalId = 0;
+                        if ($parentExternalId) {
+                            $parentLocalId = (int) ($parentLocalIdsByExternal[$parentExternalId] ?? 0);
+                        }
+
+                        Category::where('id', $localId)->update([
+                            'parent_id' => $parentLocalId,
+                            'depth_level' => $parentLocalId > 0 ? 2 : 1,
+                            'status' => 1,
+                        ]);
+                    }
+                }
+
+                // When syncing a full category snapshot, disable stale external categories not present anymore.
+                if (($categorySyncScope === 'full' || $categorySyncScope === null) && !empty($incomingExternalIds)) {
+                    Category::whereNotNull('external_category_id')
+                        ->whereNotIn('external_category_id', $incomingExternalIds)
+                        ->update(['status' => 0]);
+                }
             }
 
             $attributeSetMap = [];
@@ -191,8 +360,31 @@ class SyncSparkyController extends Controller
                     if ($isColorAttribute) {
                         // For color attributes, Shop uses attribute_values.value as swatch code.
                         $attributeValueText = $incomingColor ?: ($incomingValue ?: $incomingTitle);
-                    } elseif (empty($attributeValueText)) {
-                        $attributeValueText = $incomingValue ?: $incomingColor;
+                    } else {
+                        $titleIsNumeric = !empty($incomingTitle) && preg_match('/^\d+$/', $incomingTitle);
+                        $valueIsReadable = !empty($incomingValue) && !preg_match('/^\d+$/', $incomingValue);
+                        // Prefer readable label from "value" when "title" looks id-like.
+                        if ($titleIsNumeric && $valueIsReadable) {
+                            $attributeValueText = $incomingValue;
+                        } elseif (empty($attributeValueText)) {
+                            $attributeValueText = $incomingValue ?: $incomingColor;
+                        }
+                    }
+
+                    $existingValue = null;
+                    if (!empty($externalValueId)) {
+                        $existingValue = AttributeValue::where('external_attribute_id', $externalValueId)->first();
+                    }
+                    // Keep readable labels for non-color attributes: don't replace text labels with numeric ids/codes.
+                    if (!$isColorAttribute && $existingValue instanceof AttributeValue) {
+                        $currentValueText = trim((string) ($existingValue->value ?? ''));
+                        if (
+                            preg_match('/^\d+$/', (string) $attributeValueText)
+                            && $currentValueText !== ''
+                            && !preg_match('/^\d+$/', $currentValueText)
+                        ) {
+                            $attributeValueText = $currentValueText;
+                        }
                     }
 
                     $attributeValue = AttributeValue::updateOrCreate(
@@ -206,9 +398,17 @@ class SyncSparkyController extends Controller
                     $attributeValueIds[] = $attributeValue->id;
 
                     if ($isColorAttribute) {
+                        $colorName = $incomingTitle;
+                        if (
+                            (empty($colorName) || preg_match('/^[a-z0-9]{2,6}$/i', (string) $colorName))
+                            && !empty($incomingValue)
+                            && !preg_match('/^#?[0-9a-f]{3,8}$/i', (string) $incomingValue)
+                        ) {
+                            $colorName = $incomingValue;
+                        }
                         Color::updateOrCreate(
                             ['attribute_value_id' => $attributeValue->id],
-                            ['name' => $incomingTitle ?: ($incomingColor ?: $attributeValueText)]
+                            ['name' => $colorName ?: ($incomingColor ?: $attributeValueText)]
                         );
                     } else {
                         // Guard against legacy wrong mapping (non-color attribute accidentally linked as color).
@@ -468,10 +668,10 @@ class SyncSparkyController extends Controller
                                     $localAttrId = $attr->id;
                                     Log::info('shop.sync.variants.attrset.created.byname', ['id'=>$localAttrId,'title'=>$attName]);
                                 }
-                                // Resolve or create AttributeValue by value/title
+                                // Resolve or create AttributeValue by value
                                 $low = mb_strtolower($valStr);
                                 $valId = AttributeValue::where('attribute_id', $localAttrId)
-                                    ->where(function($q) use ($low){ $q->whereRaw('LOWER(value)=?',[$low])->orWhereRaw('LOWER(title)=?',[$low]); })
+                                    ->whereRaw('LOWER(value)=?',[$low])
                                     ->value('id');
                                 if (!$valId) {
                                     $val = new AttributeValue();
@@ -496,8 +696,8 @@ class SyncSparkyController extends Controller
                                 $appendSku = null;
                                 if ($itemValue) {
                                     $appendSku = $itemValue->color
-                                        ? ($itemValue->color->name ?? $itemValue->value ?? $itemValue->title)
-                                        : ($itemValue->value ?? $itemValue->title);
+                                        ? ($itemValue->color->name ?? $itemValue->value)
+                                        : $itemValue->value;
                                 } else {
                                     // Fallback using name/title map from product_attribute
                                     $mapped = $attrValsMap[$item['attribute_id'] ?? null] ?? null;
@@ -651,9 +851,8 @@ class SyncSparkyController extends Controller
                                 if ($needle) {
                                     $low = mb_strtolower($needle);
                                     $localAttrValueId = AttributeValue::where('attribute_id', $localAttrId)
-                                        ->where(function($q) use ($low) {
-                                            $q->whereRaw('LOWER(value) = ?', [$low])->orWhereRaw('LOWER(title) = ?', [$low]);
-                                        })->value('id');
+                                        ->whereRaw('LOWER(value) = ?', [$low])
+                                        ->value('id');
                                 }
                             }
                             // Create attribute value if still missing and we have a name
@@ -666,12 +865,10 @@ class SyncSparkyController extends Controller
                                 $localAttrValueId = $val->id;
                                 Log::info('shop.sync.variants.attrval.created', ['id'=>$localAttrValueId,'value'=>$needle]);
                             }
-                            // As a robust fallback, try exact match on AttributeValue.value/title within all values when set id couldn't be resolved
+                            // As a robust fallback, try exact match on AttributeValue.value within all values when set id couldn't be resolved
                             if (!$localAttrValueId && !empty($needle)) {
                                 $low = mb_strtolower($needle);
-                                $localAttrValueId = AttributeValue::where(function($q) use ($low) {
-                                    $q->whereRaw('LOWER(value) = ?', [$low])->orWhereRaw('LOWER(title) = ?', [$low]);
-                                })->value('id');
+                                $localAttrValueId = AttributeValue::whereRaw('LOWER(value) = ?', [$low])->value('id');
                                 // If we got a value match but no set id, try to pick the corresponding attribute id
                                 if ($localAttrValueId && !$localAttrId) {
                                     $localAttrId = AttributeValue::where('id', $localAttrValueId)->value('attribute_id');
@@ -687,6 +884,44 @@ class SyncSparkyController extends Controller
                                 ]);
                                 continue;
                             }
+
+                            // Normalize attribute value labels using variation item payload to avoid id-like labels in UI.
+                            $linkedAttr = Attribute::find($localAttrId);
+                            $linkedValue = AttributeValue::find($localAttrValueId);
+                            if ($linkedValue instanceof AttributeValue) {
+                                $linkedAttrName = strtolower((string) ($linkedAttr->name ?? ''));
+                                $linkedIsColor = str_contains($linkedAttrName, 'color');
+                                $preferredTitle = trim((string) ($item['title'] ?? ($valMeta['title'] ?? '')));
+                                $preferredValue = trim((string) ($valMeta['value'] ?? ''));
+                                $currentValueText = trim((string) ($linkedValue->value ?? ''));
+
+                                if ($linkedIsColor) {
+                                    $colorName = $preferredTitle;
+                                    if (
+                                        (empty($colorName) || preg_match('/^[a-z0-9]{2,6}$/i', (string) $colorName))
+                                        && !empty($preferredValue)
+                                        && !preg_match('/^#?[0-9a-f]{3,8}$/i', (string) $preferredValue)
+                                    ) {
+                                        $colorName = $preferredValue;
+                                    }
+                                    if ($colorName !== '') {
+                                        Color::updateOrCreate(
+                                            ['attribute_value_id' => $linkedValue->id],
+                                            ['name' => $colorName]
+                                        );
+                                    }
+                                } else {
+                                    if (
+                                        $preferredTitle !== ''
+                                        && !preg_match('/^\d+$/', $preferredTitle)
+                                        && ($currentValueText === '' || preg_match('/^\d+$/', $currentValueText))
+                                    ) {
+                                        $linkedValue->value = $preferredTitle;
+                                        $linkedValue->save();
+                                    }
+                                }
+                            }
+
                             $productVariation = ProductVariations::where('product_id', $newProduct->id)
                             ->where('product_sku_id',  $newProductSku->id)
                             ->where('attribute_id', $localAttrId)

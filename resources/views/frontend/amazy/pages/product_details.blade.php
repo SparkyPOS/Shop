@@ -291,7 +291,7 @@
                                     @foreach (session()->get('item_details') as $key => $item)
                                         @if ($item['attr_id'] === 1)
                                             <div class="product_color_varient mb_20">
-                                                <h5 class="font_14 f_w_500 theme_text3  text-capitalize d-block mb_10" id="color_name">{{ $item['name'] }}: {{$item['value'][0]}} </h5>
+                                                <h5 class="font_14 f_w_500 theme_text3 text-capitalize d-block mb_10 variant-attr-title" id="color_name" data-attr-id="{{ $item['attr_id'] }}">{{ $item['name'] }}: {{$item['value'][0]}} </h5>
                                                 <div class="color_List d-flex gap_5 flex-wrap">
                                                     <input type="hidden" class="attr_value_name" name="attr_val_name[]" value="{{$item['value'][0]}}">
                                                     <input type="hidden" class="attr_value_id" name="attr_val_id[]" value="{{$item['id'][0]}}-{{$item['attr_id']}}">
@@ -308,7 +308,7 @@
                                         @endif
                                         @if ($item['attr_id'] != 1)
                                             <div class="product_color_varient mb_20">
-                                                <h5 class="font_14 f_w_500 theme_text3  text-capitalize d-block mb_10" id="size_name{{$key}}">{{$item['name']}}: {{$item['value'][0]}}</h5>
+                                                <h5 class="font_14 f_w_500 theme_text3 text-capitalize d-block mb_10 variant-attr-title" id="size_name{{$key}}" data-attr-id="{{ $item['attr_id'] }}">{{$item['name']}}: {{$item['value'][0]}}</h5>
                                                 <div class="color_List d-flex gap_5 flex-wrap">
                                                     <input type="hidden" class="attr_value_name" data-name="{{ $item['name'] }}" name="attr_val_name[]" value="{{$item['value'][0]}}">
                                                     <input type="hidden" class="attr_value_id" name="attr_val_id[]" value="{{$item['id'][0]}}-{{$item['attr_id']}}">
@@ -1362,9 +1362,35 @@
                     '@endforeach'+
                 '@endif'
             }
+            function resolveVariantAttrName(rawName, attrId) {
+                let normalized = '';
+                if (typeof rawName === 'string') {
+                    normalized = rawName;
+                } else if (rawName && typeof rawName === 'object') {
+                    normalized = rawName.en
+                        || rawName.default
+                        || Object.values(rawName).find(function(v){ return typeof v === 'string' && v.trim() !== ''; })
+                        || '';
+                }
+                normalized = String(normalized || '').trim();
+                if (!normalized || normalized === '[object Object]') {
+                    const headingText = String($('.variant-attr-title[data-attr-id="' + String(attrId || '') + '"]').first().text() || '');
+                    normalized = headingText.split(':')[0].trim();
+                }
+                return normalized;
+            }
+
             $(document).on('click', '.attr_val_name', function(){
                 $(this).parent().parent().find('.attr_value_name').val($(this).attr('data-value')+'-'+$(this).attr('data-value-key'));
                 $(this).parent().parent().find('.attr_value_id').val($(this).attr('data-value')+'-'+$(this).attr('data-value-key'));
+                const selectedAttrId = String($(this).data('value-key') || '');
+                const selectedAttrName = resolveVariantAttrName($(this).data('name'), selectedAttrId);
+                const selectedAttrLabel = $(this).attr('color') === 'color'
+                    ? String($(this).val() || '').trim()
+                    : String($(this).text() || '').trim();
+                if (selectedAttrId && selectedAttrLabel && selectedAttrName) {
+                    $('.variant-attr-title[data-attr-id="' + selectedAttrId + '"]').text(selectedAttrName + ': ' + selectedAttrLabel);
+                }
                 if ($(this).attr('color') == "color") {
                     $(this).closest('.color_List').find('.attr_clr').removeClass('selected_btn');
                 }
@@ -1724,6 +1750,50 @@
                 both_buy_price(base_sku_price);
                 $('#final_price').val(value);
             }
+            function getVariantValueLabel(variationItem) {
+                if (!variationItem) return null;
+                const attr = variationItem.attribute || {};
+                const attrValue = variationItem.attribute_value || {};
+                const attrName = String(resolveVariantAttrName(attr.name, attr.id) || '').toLowerCase();
+                const isColor = attrName.includes('color');
+
+                if (isColor) {
+                    return (attrValue.color && attrValue.color.name)
+                        ? attrValue.color.name
+                        : (attrValue.title || attrValue.value || null);
+                }
+
+                const title = attrValue.title || null;
+                const value = attrValue.value || null;
+                if (title && (!/^\d+$/.test(title) || !value)) return title;
+                if (value) return value;
+                return title;
+            }
+
+            function refreshVariantTitles(response) {
+                const productSkus = response?.data?.product?.skus || [];
+                const targetSkuId = response?.data?.product_sku_id || response?.data?.id;
+                const matchedSku = productSkus.find((skuRow) => String(skuRow.product_sku_id) === String(targetSkuId));
+                if (!matchedSku || !Array.isArray(matchedSku.product_variations)) return;
+
+                const labelsByAttrId = {};
+                matchedSku.product_variations.forEach(function (variationItem) {
+                    const attr = variationItem.attribute || {};
+                    const attrId = attr.id;
+                    const attrName = resolveVariantAttrName(attr.name, attrId);
+                    const label = getVariantValueLabel(variationItem);
+                    if (attrId && attrName && label) {
+                        labelsByAttrId[String(attrId)] = { name: attrName, label: label };
+                    }
+                });
+
+                $('.variant-attr-title').each(function () {
+                    const attrId = String($(this).data('attr-id') || '');
+                    if (!attrId || !labelsByAttrId[attrId]) return;
+                    $(this).text(labelsByAttrId[attrId].name + ': ' + labelsByAttrId[attrId].label);
+                });
+            }
+
             function get_price_accordint_to_sku(){
                 var value = $("input[name='attr_val_name[]']").map(function(){return $(this).val();}).get();
                 var id = $("input[name='attr_val_id[]']").map(function(){return $(this).val();}).get();
@@ -1748,7 +1818,6 @@
                         }
                         calculatePrice(response.data.selling_price, discount, discount_type, qty);
                         $('#sku_id_li').text(response.data.sku.sku);
-                        var color = response.data.sku.sku.split('-');
                         $(".sku_img_div").removeClass('active');
                         $("#"+response.data.sku.sku).addClass('active');
                         var variant_img = response.data.sku.variant_image;
@@ -1784,29 +1853,10 @@
                             changeTabbyAmount();
                         @endif
                     }
-                    $(response.data.product.variantDetails).each(function( key,index ) {
-                        if(response.data.product.variantDetails.length > 1){
-                            $.each(color, function(i, v) {
-                                var isLastElement = i == color.length -1;
-                                if (isLastElement) {
-                                    $('#color_name').text(index.name +': ' + v);
-                                }else{
-                                    $('#size_name'+key).text(index.name +': ' + color[key+1]);
-                                }
-                            });
-                            @if(!empty($public_code))
-                                changeTabbyAmount();
-                            @endif
-                        }else{
-                            if (index.attr_id == 1) {
-                                $('#color_name').text(index.name +': ' + color[1]);
-                            }else if (index.attr_id == 2) {
-                                $('#size_name').text(index.name +': ' + color[1] + '-'+ color[2]);
-                            }else{
-                                $('#size_name').text(index.name +': ' + color[1]);
-                            }
-                        }
-                    });
+                    refreshVariantTitles(response);
+                    @if(!empty($public_code))
+                        changeTabbyAmount();
+                    @endif
                         $('#product_sku_id').val(response.data.id);
                         if (response.data.product_stock == 0) {
                             $('#availability').html("{{__('defaultTheme.unlimited')}}");
@@ -2154,7 +2204,6 @@
                         }
                         calculateVariantProductPrice(response.data.selling_price, discount, discount_type, qty);
                         $('#sku_id_li').text(response.data.sku.sku);
-                        var color = response.data.sku.sku.split('-');
                         $("#"+response.data.sku.sku).addClass('active');
                         var variant_img = response.data.sku.variant_image;
                         var variant_img = variant_img;
@@ -2224,26 +2273,7 @@
                         }
                     });
 
-                    $(response.data.product.variantDetails).each(function( key,index ) {
-                        if(response.data.product.variantDetails.length == 1){
-                            $.each(color, function(i, v) {
-                                var isLastElement = i == color.length -1;
-                                if (isLastElement) {
-                                    $('#color_name').text(index.name +': ' + v);
-                                }else{
-                                    $('#size_name'+key).text(index.name +': ' + color[key+1]);
-                                }
-                            });
-                        }else{
-                            if (index.attr_id == 1) {
-                                $('#color_name').text(index.name +': ' + color[2]);
-                            }else if (index.attr_id == 2) {
-                                $('#size_name').text(index.name +': ' + color[1] + '-'+ color[2]);
-                            }else{
-                                $('#size_name').text(index.name +': ' + color[1]);
-                            }
-                        }
-                    });
+                    refreshVariantTitles(response);
                         $('#product_sku_id').val(response.data.id);
                         if (response.data.product_stock == 0) {
                             $('#availability').html("{{__('defaultTheme.unlimited')}}");

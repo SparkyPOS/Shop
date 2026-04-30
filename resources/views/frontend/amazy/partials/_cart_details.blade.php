@@ -104,11 +104,22 @@
                                                                 <p class="font_14 f_w_400 m-0 ">
                                                                     @if(@$cart->product->product->product->product_type == 2)
                                                                         @foreach(@$cart->product->product_variations as $key => $combination)
-                                                                            @if(@$combination->attribute->id == 1)
-                                                                                {{@$combination->attribute->name}}: {{@$combination->attribute_value->color->name}}
-                                                                            @else
-                                                                                {{@$combination->attribute->name}}: {{@$combination->attribute_value->value}}
-                                                                            @endif
+                                                                            @php
+                                                                                $attrName = (string) (@$combination->attribute->name ?? '');
+                                                                                $attrNameLower = strtolower($attrName);
+                                                                                $rawValue = trim((string) (@$combination->attribute_value->value ?? ''));
+                                                                                $rawTitle = trim((string) (@$combination->attribute_value->title ?? ''));
+                                                                                $colorName = trim((string) (@$combination->attribute_value->color->name ?? ''));
+                                                                                $displayValue = $rawValue;
+                                                                                if (str_contains($attrNameLower, 'color')) {
+                                                                                    $displayValue = $colorName !== '' ? $colorName : ($rawTitle !== '' ? $rawTitle : $rawValue);
+                                                                                } else {
+                                                                                    $displayValue = (preg_match('/^\d+$/', $rawValue) && $rawTitle !== '' && !preg_match('/^\d+$/', $rawTitle))
+                                                                                        ? $rawTitle
+                                                                                        : ($rawValue !== '' ? $rawValue : $rawTitle);
+                                                                                }
+                                                                            @endphp
+                                                                            {{ @$combination->attribute->name }}: {{ $displayValue }}
                                                                             @if($key < count(@$cart->product->product_variations)-1),@endif
 
                                                                         @endforeach
@@ -377,11 +388,22 @@
                                                                         <p class="font_14 f_w_400 m-0 ">
                                                                             @if(@$cart->product->product->product->product_type == 2)
                                                                                 @foreach(@$cart->product->product_variations as $key => $combination)
-                                                                                    @if(@$combination->attribute->id == 1)
-                                                                                        {{@$combination->attribute->name}}: {{@$combination->attribute_value->color->name}}
-                                                                                    @else
-                                                                                        {{@$combination->attribute->name}}: {{@$combination->attribute_value->value}}
-                                                                                    @endif
+                                                                                    @php
+                                                                                        $attrName = (string) (@$combination->attribute->name ?? '');
+                                                                                        $attrNameLower = strtolower($attrName);
+                                                                                        $rawValue = trim((string) (@$combination->attribute_value->value ?? ''));
+                                                                                        $rawTitle = trim((string) (@$combination->attribute_value->title ?? ''));
+                                                                                        $colorName = trim((string) (@$combination->attribute_value->color->name ?? ''));
+                                                                                        $displayValue = $rawValue;
+                                                                                        if (str_contains($attrNameLower, 'color')) {
+                                                                                            $displayValue = $colorName !== '' ? $colorName : ($rawTitle !== '' ? $rawTitle : $rawValue);
+                                                                                        } else {
+                                                                                            $displayValue = (preg_match('/^\d+$/', $rawValue) && $rawTitle !== '' && !preg_match('/^\d+$/', $rawTitle))
+                                                                                                ? $rawTitle
+                                                                                                : ($rawValue !== '' ? $rawValue : $rawTitle);
+                                                                                        }
+                                                                                    @endphp
+                                                                                    {{ @$combination->attribute->name }}: {{ $displayValue }}
                                                                                     @if($key < count(@$cart->product->product_variations)-1),@endif
                                                                                 @endforeach
                                                                             @endif
