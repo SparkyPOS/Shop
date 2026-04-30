@@ -139,6 +139,7 @@ class SyncSparkyController extends Controller
                 // Avoid mass-deleting categories; only upsert from payload
             }
 
+            $attributeSetMap = [];
             if (!empty($productAttributeSet) && is_array($productAttributeSet)) {
                 $attributeSetIds = [];
                 foreach ($productAttributeSet as $attributeSet) {
@@ -157,43 +158,61 @@ class SyncSparkyController extends Controller
                     );
 
                     $attributeSetIds[] = $attribute->id;
+                    if ($externalSetId !== null) {
+                        $attributeSetMap[(string) $externalSetId] = $attribute;
+                    }
                 }
             }
 
 
             if (!empty($productAttribute) && is_array($productAttribute)) {
                 $attributeValueIds = [];
-                $colors = [];
                 foreach ($productAttribute as $attribute) {
                     $externalValueId = $attribute['id'] ?? null;
                     $externalSetId = $attribute['attribute_set_id'] ?? null;
 
                     $localAttributeId = Attribute::where('external_attribute_set_id', $externalSetId)->value('id');
+                    $localAttribute = null;
+                    if (isset($attributeSetMap[(string) $externalSetId])) {
+                        $localAttribute = $attributeSetMap[(string) $externalSetId];
+                    } elseif ($localAttributeId) {
+                        $localAttribute = Attribute::find($localAttributeId);
+                    }
+
+                    $displayType = strtolower((string) ($localAttribute->display_type ?? ''));
+                    $attributeName = strtolower((string) ($localAttribute->name ?? ''));
+                    $isColorAttribute = str_contains($displayType, 'color') || str_contains($attributeName, 'color');
+
+                    $incomingTitle = isset($attribute['title']) ? trim((string) $attribute['title']) : null;
+                    $incomingColor = isset($attribute['color']) ? trim((string) $attribute['color']) : null;
+                    $incomingValue = isset($attribute['value']) ? trim((string) $attribute['value']) : null;
+
+                    $attributeValueText = $incomingTitle;
+                    if ($isColorAttribute) {
+                        // For color attributes, Shop uses attribute_values.value as swatch code.
+                        $attributeValueText = $incomingColor ?: ($incomingValue ?: $incomingTitle);
+                    } elseif (empty($attributeValueText)) {
+                        $attributeValueText = $incomingValue ?: $incomingColor;
+                    }
 
                     $attributeValue = AttributeValue::updateOrCreate(
                         ['external_attribute_id' => $externalValueId],
                         [
-                            'value' => $externalSetId == 1 ? ($attribute['color'] ?? $attribute['title'] ?? null) : ($attribute['title'] ?? null),
+                            'value' => $attributeValueText,
                             'attribute_id' => $localAttributeId
                         ]
                     );
 
                     $attributeValueIds[] = $attributeValue->id;
 
-                    if ($externalSetId == 1) {
-                        $colors[] = [
-                            'name' => $attribute['title'] ?? '',
-                            'attribute_value_id' => $attributeValue->id
-                        ];
-                    }
-                }
-
-                if (!empty($colors)) {
-                    foreach ($colors as $color) {
+                    if ($isColorAttribute) {
                         Color::updateOrCreate(
-                            ['attribute_value_id' => $color['attribute_value_id']],
-                            ['name' => $color['name']]
+                            ['attribute_value_id' => $attributeValue->id],
+                            ['name' => $incomingTitle ?: ($incomingColor ?: $attributeValueText)]
                         );
+                    } else {
+                        // Guard against legacy wrong mapping (non-color attribute accidentally linked as color).
+                        Color::where('attribute_value_id', $attributeValue->id)->delete();
                     }
                 }
 
@@ -240,8 +259,10 @@ class SyncSparkyController extends Controller
                         'product_type' => $variant_product ? 2 : 1,
                         'variant_sku_prefix' => $product['variant_sku_prefix'] ?? $product['sku'],
                         'barcode_type' => $product['barcode_type'],
-                        // Prefer full description; fallback to shortdescription
-                        'description' => $product['description'] ?? ($product['shortdescription'] ?? null),
+                        // Prefer non-empty full description; fallback to shortdescription
+                        'description' => filled($product['description'] ?? null)
+                            ? $product['description']
+                            : ($product['shortdescription'] ?? null),
                         'unit_type_id' => 7,
                         'discount_type' => 1,
                         'minimum_order_qty' => 1,
@@ -389,9 +410,11 @@ class SyncSparkyController extends Controller
                     }
                     $attrValsMap = [];
                     foreach ((array) $request->input('product_attribute', []) as $av) {
+                        $title = isset($av['title']) ? trim((string) $av['title']) : null;
+                        $value = isset($av['value']) ? trim((string) $av['value']) : null;
                         $attrValsMap[$av['id'] ?? null] = [
-                            'title' => $av['title'] ?? ($av['value'] ?? null),
-                            'value' => $av['value'] ?? ($av['title'] ?? null),
+                            'title' => !empty($title) ? $title : (!empty($value) ? $value : null),
+                            'value' => !empty($value) ? $value : (!empty($title) ? $title : null),
                             'slug'  => $av['slug'] ?? \Illuminate\Support\Str::slug((string)($av['title'] ?? ($av['value'] ?? '')), '_'),
                             'color' => $av['color'] ?? null,
                             'attribute_set_id' => $av['attribute_set_id'] ?? null,
@@ -454,10 +477,14 @@ class SyncSparkyController extends Controller
                                     $val = new AttributeValue();
                                     $val->attribute_id = $localAttrId;
                                     $val->value = $valStr;
-                                    // Store color code if attribute name suggests color
-                                    if (mb_strtolower($attName) === 'color') { $val->color = $valStr; }
                                     $val->save();
                                     $valId = $val->id;
+                                    if (str_contains(mb_strtolower($attName), 'color')) {
+                                        Color::updateOrCreate(
+                                            ['attribute_value_id' => $valId],
+                                            ['name' => $valStr]
+                                        );
+                                    }
                                     Log::info('shop.sync.variants.attrval.created.byname', ['id'=>$valId,'value'=>$valStr,'attribute'=>$attName]);
                                 }
                                 $localPairs[] = [$localAttrId, $valId];
@@ -468,11 +495,13 @@ class SyncSparkyController extends Controller
                                 $itemValue = \Modules\Product\Entities\AttributeValue::where('external_attribute_id', $item['attribute_id'])->first();
                                 $appendSku = null;
                                 if ($itemValue) {
-                                    $appendSku = $itemValue->attribute_id == 1 ? ($itemValue->color->name ?? $itemValue->value ?? $itemValue->title) : ($itemValue->value ?? $itemValue->title);
+                                    $appendSku = $itemValue->color
+                                        ? ($itemValue->color->name ?? $itemValue->value ?? $itemValue->title)
+                                        : ($itemValue->value ?? $itemValue->title);
                                 } else {
                                     // Fallback using name/title map from product_attribute
                                     $mapped = $attrValsMap[$item['attribute_id'] ?? null] ?? null;
-                                    $appendSku = $mapped['value'] ?? $mapped['title'] ?? null;
+                                    $appendSku = $item['title'] ?? ($mapped['title'] ?? ($mapped['value'] ?? null));
                                 }
                                 if ($appendSku) {
                                     $sku .= '-' . str_replace(' ', '', (string) $appendSku);
@@ -580,10 +609,18 @@ class SyncSparkyController extends Controller
                             }
                         } else {
                         foreach ($variant['items'] as $item) {
+                            $needle = null;
                             // Resolve local attribute id (by external id or by set title)
                             $localAttrId = Attribute::where('external_attribute_set_id', $item['attribute_set_id'])->value('id');
+                            $valMeta = $attrValsMap[$item['attribute_id'] ?? null] ?? null;
+                            if (!$localAttrId && !empty($valMeta['attribute_set_id'])) {
+                                $localAttrId = Attribute::where('external_attribute_set_id', $valMeta['attribute_set_id'])->value('id');
+                            }
                             if (!$localAttrId) {
                                 $setMeta = $attrSetsMap[$item['attribute_set_id'] ?? null] ?? null;
+                                if (!$setMeta && !empty($valMeta['attribute_set_id'])) {
+                                    $setMeta = $attrSetsMap[$valMeta['attribute_set_id']] ?? null;
+                                }
                                 if ($setMeta) {
                                     $localAttrId = Attribute::whereRaw('LOWER(name) = ?', [mb_strtolower($setMeta['title'])])->value('id')
                                         ?: Attribute::whereRaw('LOWER(name) = ?', [mb_strtolower($setMeta['slug'])])->value('id');
@@ -603,8 +640,14 @@ class SyncSparkyController extends Controller
                             // Resolve local attribute value id (by external id or by title/value)
                             $localAttrValueId = AttributeValue::where('external_attribute_id', $item['attribute_id'])->value('id');
                             if (!$localAttrValueId && $localAttrId) {
-                                $valMeta = $attrValsMap[$item['attribute_id'] ?? null] ?? null;
-                                $needle = $valMeta['value'] ?? $valMeta['title'] ?? null;
+                                $setName = (string) optional(Attribute::find($localAttrId))->name;
+                                $isColorAttribute = str_contains(mb_strtolower($setName), 'color');
+                                $needle = null;
+                                if ($isColorAttribute) {
+                                    $needle = $item['color'] ?? ($valMeta['color'] ?? ($item['title'] ?? ($valMeta['title'] ?? null)));
+                                } else {
+                                    $needle = $item['title'] ?? ($valMeta['title'] ?? ($valMeta['value'] ?? null));
+                                }
                                 if ($needle) {
                                     $low = mb_strtolower($needle);
                                     $localAttrValueId = AttributeValue::where('attribute_id', $localAttrId)
@@ -715,7 +758,6 @@ class SyncSparkyController extends Controller
                 }
                 if (isset($product['shipping_type'])) $newProduct->shipping_type = (int) $product['shipping_type'];
                 if (isset($product['shipping_cost'])) $newProduct->shipping_cost = (float) $product['shipping_cost'];
-                if (isset($product['shipping_location'])) $newProduct->shipping_location = $product['shipping_location'];
                 if (array_key_exists('processing_time', $product) || array_key_exists('shippingpt', $product)) {
                     $newProduct->processing_time = (string) ($product['processing_time'] ?? $product['shippingpt'] ?? '');
                 }
