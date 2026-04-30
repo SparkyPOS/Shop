@@ -259,8 +259,10 @@ class SyncSparkyController extends Controller
                         'product_type' => $variant_product ? 2 : 1,
                         'variant_sku_prefix' => $product['variant_sku_prefix'] ?? $product['sku'],
                         'barcode_type' => $product['barcode_type'],
-                        // Prefer full description; fallback to shortdescription
-                        'description' => $product['description'] ?? ($product['shortdescription'] ?? null),
+                        // Prefer non-empty full description; fallback to shortdescription
+                        'description' => filled($product['description'] ?? null)
+                            ? $product['description']
+                            : ($product['shortdescription'] ?? null),
                         'unit_type_id' => 7,
                         'discount_type' => 1,
                         'minimum_order_qty' => 1,
