@@ -934,7 +934,7 @@
                                 </div>
                                 <div class="amazcart_delivery_wiz_content">
                                     <h4 class="font_16 f_w_700 mb_6">{{__('amazy.Door Delivery')}}</h4>
-                                    <p class="delivery_text font_14 f_w_400" id="door_delivery"></p>
+                                    <p class="delivery_text font_14 f_w_400" id="door_delivery">Fast Secure Door Delivery</p>
                                 </div>
                             </div>
                             <div class="amazcart_delivery_wiz_sep d-flex gap_15 ">
