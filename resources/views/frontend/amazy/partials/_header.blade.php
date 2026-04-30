@@ -60,6 +60,23 @@
             <div class="product_details_buttons d-md-none" id="cart_footer_mobile">
 
                 @if(request()->is('product/*'))
+                    <a href="javascript:void(0)" onclick="window.history.back()" class="d-flex flex-column justify-content-center product_details_icon">
+                        <i class="ti-arrow-left"></i>
+                        <span>{{__('common.back')}}</span>
+                    </a>
+                    @if (@$product->stock_manage == 1 && @$product->skus->first()->product_stock >= @$product->product->minimum_order_qty || @$product->stock_manage == 0)
+
+                        <button type="button" class="product_details_button style1 buy_now_btn" data-id="{{$product->id}}" data-type="product">
+                            <span>{{__('common.buy_now')}}</span>
+                        </button>
+
+                        <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
+                    @else
+                        <button type="button" class="product_details_button style1" disabled>
+                            <span>{{__('defaultTheme.out_of_stock')}}</span>
+                        </button>
+                        <button type="button" class="product_details_button" disabled>{{__('defaultTheme.out_of_stock')}}</button>
+                    @endif
                     @if(isModuleActive('MultiVendor'))
                         <a href="
                             @if ($product->seller->slug)
@@ -76,19 +93,6 @@
                         <i class="ti-home"></i>
                         <span>{{__('common.home')}}</span>
                     </a>
-                    @endif
-                    @if (@$product->stock_manage == 1 && @$product->skus->first()->product_stock >= @$product->product->minimum_order_qty || @$product->stock_manage == 0)
-
-                        <button type="button" class="product_details_button style1 buy_now_btn" data-id="{{$product->id}}" data-type="product">
-                            <span>{{__('common.buy_now')}}</span>
-                        </button>
-
-                        <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
-                    @else
-                        <button type="button" class="product_details_button style1" disabled>
-                            <span>{{__('defaultTheme.out_of_stock')}}</span>
-                        </button>
-                        <button type="button" class="product_details_button" disabled>{{__('defaultTheme.out_of_stock')}}</button>
                     @endif
                 @else
 
