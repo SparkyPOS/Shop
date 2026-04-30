@@ -564,5 +564,6 @@ return [
     "Privacy Policy" => "Privacy Policy",
     "Don't show this popup again" => "Don't Show This Popup Again",
     "new_seller" => "New Seller",
-    'stores'=>'Stores'
+    'stores'=>'Stores',
+    'back' => 'Back',
 ];
