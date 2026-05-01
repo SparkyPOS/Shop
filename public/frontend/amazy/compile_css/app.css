@@ -5188,6 +5188,9 @@ label {
     display: flex;
     align-items: center;
   }
+  .short_curt_icons.has_product_action_bar {
+    bottom: 56px;
+  }
 }
 .short_curt_icons li {
   flex: 1 1 100%;

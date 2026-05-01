@@ -112,7 +112,7 @@
                 @endif
             </div>
         @endif
-            <ul class="short_curt_icons">
+            <ul class="short_curt_icons {{ $showProductActionBar ? 'has_product_action_bar' : '' }}">
                 <li>
                     <a href="{{url('/')}}">
                         <div class="cart_singleIcon">
