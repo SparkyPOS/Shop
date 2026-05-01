@@ -168,12 +168,24 @@ class SellerProduct extends Model
                 $blank->value = [];
                 $blank->code = [];
                 $blank->attr_val_id = [];
+                $attributeName = strtolower((string) optional($variation->attribute)->name);
+                $rawValue = trim((string) optional($variation->attribute_value)->value);
+                $rawTitle = trim((string) optional($variation->attribute_value)->title);
+                $colorName = trim((string) optional(optional($variation->attribute_value)->color)->name);
+                $isColorAttribute = str_contains($attributeName, 'color');
+                $isNumericValue = $rawValue !== '' && preg_match('/^\d+$/', $rawValue);
+
+                if ($isColorAttribute) {
+                    $val_name = $colorName !== '' ? $colorName : ($rawTitle !== '' ? $rawTitle : $rawValue);
+                } else {
+                    $val_name = (!$isNumericValue && $rawValue !== '') ? $rawValue : ($rawTitle !== '' ? $rawTitle : $rawValue);
+                }
+
                 if (sizeof(array_filter($attr_value, function ($object) use ($variation) {
                     return $object->name == $variation->attribute->name;
                 }))) {
                     foreach ($attr_value as $key => $object) {
-                        $val_name = @$variation->attribute_value->color ? @$variation->attribute_value->color->name : @$variation->attribute_value->value;
-                        $code = $variation->attribute_value->value;
+                        $code = $rawValue;
                         $val_id = @$variation->attribute_value->color ? @$variation->attribute_value->color->attribute_value_id : @$variation->attribute_value->id;
                         if ($variation->attribute->name == $object->name) {
                             if (!in_array($val_name, $object->value, true)) {
@@ -184,9 +196,8 @@ class SellerProduct extends Model
                         }
                     }
                 } else {
-                    $val_name = @$variation->attribute_value->color ? @$variation->attribute_value->color->name : @$variation->attribute_value->value;
                     $val_id = @$variation->attribute_value->color ? @$variation->attribute_value->color->attribute_value_id : @$variation->attribute_value->id;
-                    $code = $variation->attribute_value->value;
+                    $code = $rawValue;
                     $blank->name = $variation->attribute->name;
                     $blank->attr_id = $variation->attribute->id;
                     array_push($attr_value, $blank);
