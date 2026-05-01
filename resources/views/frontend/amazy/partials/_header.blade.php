@@ -56,7 +56,7 @@
             </div>
         </div>
 
-        @if(request()->is('gift-cards/*') || request()->is('product/*'))
+        <!-- @if(request()->is('gift-cards/*') || request()->is('product/*')) -->
             <div class="product_details_buttons d-md-none" id="cart_footer_mobile">
 
                 @if(request()->is('product/*'))
@@ -105,7 +105,7 @@
                     <button class="product_details_button add_gift_card_to_cart" type="button" data-gift-card-id="{{ $card->id }}" data-seller="1" data-base-price="{{$base_price}}" data-shipping-method="1" data-show="{{json_encode($showData)}}">{{__('common.add_to_cart')}}</button>
                 @endif
             </div>
-        @else
+        <!-- @else -->
             <ul class="short_curt_icons">
                 <li>
                     <a href="{{url('/')}}">
@@ -182,7 +182,7 @@
             </li>
         @endguest
     </ul>
-@endif
+<!-- @endif -->
 </header>
     <!--/ HEADER::END -->
 
