@@ -56,10 +56,16 @@
             </div>
         </div>
 
-        <!-- @if(request()->is('gift-cards/*') || request()->is('product/*')) -->
+        @php
+            $isProductPage = request()->is('product/*');
+            $isGiftCardPage = request()->is('gift-cards/*');
+            $showProductActionBar = $isProductPage || $isGiftCardPage;
+        @endphp
+
+        @if($showProductActionBar)
             <div class="product_details_buttons d-md-none" id="cart_footer_mobile">
 
-                @if(request()->is('product/*'))
+                @if($isProductPage)
                     <a href="javascript:void(0)" onclick="window.history.back()" class="d-flex flex-column justify-content-center product_details_icon">
                         <i class="ti-arrow-left"></i>
                         <span>{{__('common.back')}}</span>
@@ -105,7 +111,7 @@
                     <button class="product_details_button add_gift_card_to_cart" type="button" data-gift-card-id="{{ $card->id }}" data-seller="1" data-base-price="{{$base_price}}" data-shipping-method="1" data-show="{{json_encode($showData)}}">{{__('common.add_to_cart')}}</button>
                 @endif
             </div>
-        <!-- @else -->
+        @endif
             <ul class="short_curt_icons">
                 <li>
                     <a href="{{url('/')}}">
@@ -182,7 +188,6 @@
             </li>
         @endguest
     </ul>
-<!-- @endif -->
 </header>
     <!--/ HEADER::END -->
 
