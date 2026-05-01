@@ -310,17 +310,33 @@
                         </div>
                     @else
                         <div class="amazy_table4">
-                            <div class="amazy_table4_head mb_20 d-none d-lg-block px-0">
-                                <div class="row gutters-5 m-0 align-items-center">
-                                    <div class="col-5 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.products')}}</h4> </div>
-                                    <!-- <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('Vendor')}}</h4> </div>
-                                    <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.store')}}</h4> </div> -->
-                                    <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.price')}}</h4> </div>
-                                    <div class="col-2 fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.quantity')}}</h4> </div>
-                                    <div class="col fw-600"> <h4 class="font_14 f_w_700 m-0 text-nowrap text-center priamry_text text-uppercase">{{__('common.subtotal')}}</h4> </div>
-                                    <div class="col fw-600"> </div>
-                                </div>
+                            <div class="amazy_table4_head cart-table-head mb_20 d-none d-lg-grid px-0">
+                            <div class="cart-table-head-cell cart-table-product-head">
+                                <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">
+                                    {{__('common.products')}}
+                                </h4>
                             </div>
+
+                            <div class="cart-table-head-cell">
+                                <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">
+                                    {{__('common.price')}}
+                                </h4>
+                            </div>
+
+                            <div class="cart-table-head-cell">
+                                <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">
+                                    {{__('common.quantity')}}
+                                </h4>
+                            </div>
+
+                            <div class="cart-table-head-cell">
+                                <h4 class="font_14 f_w_700 m-0 text-nowrap priamry_text text-uppercase">
+                                    {{__('common.subtotal')}}
+                                </h4>
+                            </div>
+
+                            <div class="cart-table-head-cell"></div>
+                        </div>
                             @foreach($cartData as $seller_id => $cartItems)
                                 @php
                                     $seller = App\Models\User::where('id',$seller_id)->first();
@@ -849,6 +865,32 @@
 </div>
 @push('styles')
 <style>
+    .cart-table-head {
+        display: none;
+    }
+
+    @media (min-width: 992px) {
+        .cart-table-head {
+            display: grid !important;
+            grid-template-columns: minmax(0, 5fr) minmax(120px, 2fr) minmax(150px, 2fr) minmax(130px, 2fr) 64px;
+            align-items: center;
+            min-height: 58px;
+            padding: 0 18px !important;
+            border: 1px solid #edf1f5;
+            background: #ffffff;
+        }
+
+        .cart-table-head-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        .cart-table-product-head {
+            justify-content: center;
+        }
+    }
     .cart-items-list {
         display: flex;
         flex-direction: column;
@@ -1253,38 +1295,162 @@
     }
 
     @media (min-width: 992px) {
+        .cart-items-list {
+            gap: 12px;
+        }
+
         .cart-item-inner {
             display: grid;
-            grid-template-columns: minmax(360px, 1fr) minmax(420px, auto);
+            grid-template-columns: minmax(0, 5fr) minmax(120px, 2fr) minmax(150px, 2fr) minmax(130px, 2fr) 64px;
             align-items: center;
-            gap: 20px;
-            padding: 16px 18px;
+            gap: 0;
+            padding: 18px;
+            border-radius: 16px;
+            min-height: 124px;
         }
 
         .cart-item-main {
+            grid-column: 1;
+            display: flex;
             align-items: center;
+            gap: 16px;
+            min-width: 0;
+            padding-right: 20px;
         }
 
         .cart-item-thumb {
-            width: 76px;
-            height: 88px;
+            width: 74px;
+            height: 86px;
+            border-radius: 12px;
         }
 
-        .cart-item-action-row {
-            margin-top: 0;
-            padding-top: 0;
-            border-top: 0;
-            grid-template-columns: auto auto 44px;
-            justify-content: end;
-            gap: 20px;
+        .cart-item-content {
+            min-width: 0;
         }
 
         .cart-item-title {
             font-size: 15px;
+            line-height: 1.3;
+            max-width: 100%;
+        }
+
+        .cart-item-attributes {
+            margin-top: 8px;
+            gap: 6px;
+        }
+
+        .cart-item-chip {
+            min-height: 26px;
+            padding: 5px 9px;
+            font-size: 11.5px;
+        }
+
+        .cart-item-meta {
+            margin-top: 9px;
+            gap: 5px;
+        }
+
+        .cart-item-meta-row {
+            font-size: 12px;
+        }
+
+        /*
+        Desktop trick:
+        The action row should not behave like one grouped flex row.
+        Its children need to become real grid columns matching the header.
+        */
+        .cart-item-action-row {
+            display: contents;
+            margin-top: 0;
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        .cart-item-price-wrap {
+            display: contents;
+        }
+
+        .cart-item-unit-price {
+            grid-column: 2;
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-width: 0;
+            text-align: center;
+        }
+
+        .cart-item-qty-wrap {
+            grid-column: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        .cart-item-total-price {
+            grid-column: 4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-width: 0;
+            text-align: center;
+        }
+
+        .cart-item-delete {
+            grid-column: 5;
+            justify-self: center;
+            align-self: center;
+        }
+
+        .cart-item-price-label {
+            color: #667085;
+            font-size: 11px;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        .cart-item-unit-price strong {
+            color: #101828;
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1.1;
+            white-space: nowrap;
         }
 
         .cart-item-total-price strong {
+            color: #101828;
             font-size: 18px;
+            font-weight: 800;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .cart-item-qty.product_number_count {
+            min-width: 126px;
+            height: 40px;
+            border-radius: 10px;
+        }
+
+        .cart-item-qty .count_single_item {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+        }
+
+        .cart-item-qty .input-number {
+            width: 46px;
+            min-width: 46px;
+            font-size: 14px;
+        }
+
+        .cart-item-delete {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
         }
     }
 </style>
