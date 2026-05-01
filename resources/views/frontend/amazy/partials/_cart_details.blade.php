@@ -583,7 +583,7 @@
                                                                         @endif
                                                                     @endif
 
-                                                                    <span class="cart-item-price-label">{{ __('common.price') }}</span>
+                                                                    <!-- <span class="cart-item-price-label">{{ __('common.price') }}</span> -->
                                                                     <strong class="set_base_price{{$cart->id}}">
                                                                         {{single_price(isset($pro_price) ? $pro_price : @$cart->product->sell_price)}}
                                                                     </strong>
@@ -596,9 +596,9 @@
                                                                 </div>
 
                                                                 <div class="cart-item-total-price">
-                                                                    <span class="cart-item-price-label d-none d-lg-block">
+                                                                    <!-- <span class="cart-item-price-label d-none d-lg-block">
                                                                         {{ __('common.total') }}
-                                                                    </span>
+                                                                    </span> -->
                                                                     <strong>
                                                                         {{single_price($cart->total_price)}}
                                                                     </strong>
@@ -878,6 +878,7 @@
             padding: 0 18px !important;
             border: 1px solid #edf1f5;
             background: #ffffff;
+            border-radius: 0;
         }
 
         .cart-table-head-cell {
@@ -885,10 +886,166 @@
             align-items: center;
             justify-content: center;
             min-width: 0;
+            text-align: center;
         }
 
-        .cart-table-product-head {
-            justify-content: center;
+        .cart-item-inner {
+            display: grid;
+            grid-template-columns: minmax(0, 5fr) minmax(120px, 2fr) minmax(150px, 2fr) minmax(130px, 2fr) 64px;
+            align-items: center !important;
+            column-gap: 0;
+            row-gap: 0;
+            padding: 18px 16px;
+            min-height: 126px;
+        }
+
+        .cart-item-main {
+            grid-column: 1;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            min-width: 0;
+            padding-right: 20px;
+            align-self: center !important;
+        }
+
+        .cart-item-thumb {
+            width: 74px;
+            height: 88px;
+            border-radius: 12px;
+            flex: 0 0 auto;
+        }
+
+        .cart-item-content {
+            min-width: 0;
+        }
+
+        .cart-item-title {
+            font-size: 15px;
+            line-height: 1.3;
+            margin: 0;
+        }
+
+        .cart-item-attributes {
+            margin-top: 8px;
+        }
+
+        .cart-item-meta {
+            margin-top: 8px;
+        }
+
+        .cart-item-meta-row {
+            font-size: 12px;
+            line-height: 1.3;
+        }
+
+        /* flatten action row into the parent desktop grid */
+        .cart-item-action-row {
+            display: contents !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
+            border-top: 0 !important;
+        }
+
+        .cart-item-price-wrap {
+            display: contents !important;
+        }
+
+        .cart-item-unit-price {
+            grid-column: 2;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            align-self: center !important;
+            min-height: 100%;
+            text-align: center;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .cart-item-qty-wrap {
+            grid-column: 3;
+            display: flex;
+            align-items: center !important;
+            justify-content: center !important;
+            align-self: center !important;
+            min-height: 100%;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .cart-item-total-price {
+            grid-column: 4;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            align-self: center !important;
+            min-height: 100%;
+            text-align: center;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        .cart-item-delete {
+            grid-column: 5;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            justify-self: center;
+            align-self: center !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+        }
+
+        .cart-item-unit-price strong,
+        .cart-item-total-price strong {
+            margin: 0 !important;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .cart-item-unit-price strong {
+            font-size: 15px;
+            font-weight: 700;
+            color: #101828;
+        }
+
+        .cart-item-total-price strong {
+            font-size: 15px;
+            font-weight: 800;
+            color: #101828;
+        }
+
+        .cart-item-qty.product_number_count {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 120px;
+            height: 40px;
+            margin: 0 !important;
+        }
+
+        .cart-item-qty .count_single_item {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+        }
+
+        .cart-item-qty .input-number {
+            width: 40px;
+            min-width: 40px;
+            height: 40px;
+            font-size: 14px;
+            margin: 0 !important;
+        }
+
+        /* force-hide old labels on desktop if still present anywhere */
+        .cart-item-unit-price .cart-item-price-label,
+        .cart-item-total-price .cart-item-price-label {
+            display: none !important;
         }
     }
     .cart-items-list {
