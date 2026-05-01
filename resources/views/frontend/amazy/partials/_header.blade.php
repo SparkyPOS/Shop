@@ -70,7 +70,7 @@
                             <span>{{__('common.buy_now')}}</span>
                         </button>
 
-                        <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
+                        <button class="product_details_button style11 add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
                     @else
                         <button type="button" class="product_details_button style1" disabled>
                             <span>{{__('defaultTheme.out_of_stock')}}</span>

@@ -17286,7 +17286,14 @@ section.return_part.padding_top.bg-white {
   background: #ffc107;
   transform: skewX(-20deg);
   position: relative;
-  left: 11px;
+  left: 3px;
+  z-index: 1;
+}
+
+.product_details_button.style11 {
+  transform: skewX(-20deg);
+  position: relative;
+  left: 3px;
   z-index: 1;
 }
 
