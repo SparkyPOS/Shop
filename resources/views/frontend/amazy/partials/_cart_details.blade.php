@@ -367,14 +367,20 @@
                                                             $pro_price = $cart->product->sell_price;
                                                         }
                                                         $productName = @$cart->product->product->product_name;
-                                                        $productUrl = singleproductURL(@$cart->seller->slug, @$cart->product->product->slug);
-                                                        if(@$cart->product->product->product->product_type == 1) {
+                                                        $productUrl = singleProductURL(@$cart->seller->slug, @$cart->product->product->slug);
+
+                                                        if (@$cart->product->product->product->product_type == 1) {
                                                             $productImage = showImage(@$cart->product->product->product->thumbnail_image_source);
                                                         } else {
-                                                            $productImage = showImage(@$cart->product->sku_variant_image ? @$cart->product->sku->variant_image : @$cart->product->product->product->thumbnail_image_source);
+                                                            $productImage = showImage(
+                                                                @$cart->product->sku->variant_image
+                                                                    ? @$cart->product->sku->variant_image
+                                                                    : @$cart->product->product->product->thumbnail_image_source
+                                                            );
                                                         }
+
                                                         $vendorId = @$cart->seller->sellerAccount->vendor_id;
-                                                        $storename = parentStoreName($cart->seller ?? null);
+                                                        $storeName = parentStoreName($cart->seller ?? null);
                                                     @endphp
                                                 @endif
 
