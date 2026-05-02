@@ -353,6 +353,41 @@
         $(document).ready(function() {
             var filterType = [];
             initRange ()
+
+            function updateProductShow(data) {
+                const parsedHtml = $.parseHTML(data,document, false);
+                const $response = $('<div></div>').append(parsedHtml);
+                $response.find('script').remove();
+                const $newProductShow = $response.find('#productShow');
+                const $newProductContent = $response.find('#ajax_product_list_area');
+                if($newProductShow.length) {
+                    $('#productShow').html($newProductShow.html());
+                } else if($newProductContent.length) {
+                    $('#productShow').html($newProductContent.html());
+                } else {
+                    $('#productShow').html($response.html());
+                }
+                reInitProductListPlugins();
+            }
+
+            function reInitProductListPlugins() {
+                if($.fn.niceSelect) {
+                    if($('#product_short_list').next('.nice-select').length) {
+                        $('#product_short_list').niceSelect('destroy');
+                    }
+                    if($('#paginate_by').next('.nice-select').length) {
+                        $('#paginate_by').niceSelect('destroy');
+                    }
+                    $('#product_short_list').niceSelect();
+                    $('#paginate_by').niceSelect();
+                }
+                activeTab();
+                if(typeof initLazyload === 'function') {
+                    initLazyload();
+                }
+                $('#pre-loader').hide();
+            }
+
             $(document).on('click', '#refresh_btn', function(event){
                 event.preventDefault();
                 filterType = [];
@@ -434,12 +469,13 @@
                     $.ajax({
                         url: url,
                         success: function(data) {
-                            $('#productShow').html(data);
-                            $('#product_short_list').niceSelect();
-                            $('#paginate_by').niceSelect();
-                            $('#pre-loader').hide();
-                            activeTab();
-                            initLazyload();
+                            // $('#productShow').html(data);
+                            // $('#product_short_list').niceSelect();
+                            // $('#paginate_by').niceSelect();
+                            // $('#pre-loader').hide();
+                            // activeTab();
+                            // initLazyload();
+                            updateProductShow(data);
                         }
                     });
                 } else {
@@ -463,13 +499,15 @@
                         url:url,
                         success:function(data)
                         {
-                            $('#productShow').html(data);
-                            $('#product_short_list').niceSelect();
-                            $('#paginate_by').niceSelect();
+                            // $('#productShow').html(data);
+                            // $('#product_short_list').niceSelect();
+                            // $('#paginate_by').niceSelect();
+                            // $('.filterCatCol').val(1);
+                            // $('#pre-loader').hide();
+                            // activeTab();
+                            // initLazyload();
+                            updateProductShow(data);
                             $('.filterCatCol').val(1);
-                            $('#pre-loader').hide();
-                            activeTab();
-                            initLazyload();
                         }
                     });
                 }else{
@@ -552,11 +590,13 @@
                 }
                 $('#pre-loader').show();
                 $.post('{{ route('frontend.seller.product_filter_by_type') }}', {_token:'{{ csrf_token() }}', filterType:filterType, seller_id:seller_id}, function(data){
-                    $('#productShow').html(data);
-                    $('.filterCatCol').val(1);
-                    $('#product_short_list').niceSelect();
-                    $('#paginate_by').niceSelect();
-                    $('#pre-loader').hide();
+                    // $('#productShow').html(data);
+                    // $('.filterCatCol').val(1);
+                    // $('#product_short_list').niceSelect();
+                    // $('#paginate_by').niceSelect();
+                    // $('#pre-loader').hide();
+                    updateProductShow(data);
+                     $('.filterCatCol').val(1);
                 });
             }
             function activeTab(){
