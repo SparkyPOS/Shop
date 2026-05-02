@@ -265,6 +265,10 @@
                                     @php
                                         $highestBid = (float) ($max_bid ?? 0);
                                         $reservePrice = (float) ($auction->reserve_price ?? 0);
+                                        if ($reservePrice <= 0) {
+                                            $activeSku = $product->skus->where('status', 1)->first();
+                                            $reservePrice = (float) ($activeSku->selling_price ?? $activeSku->sell_price ?? 0);
+                                        }
                                         $showReserveBuyNow = $reservePrice > 0 && $highestBid < $reservePrice;
                                     @endphp
 
