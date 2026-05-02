@@ -466,7 +466,7 @@ class SyncSparkyController extends Controller
                         'unit_type_id' => 7,
                         'discount_type' => 1,
                         'minimum_order_qty' => 1,
-                        'condition' => $product['condition'] ?? 'new',
+                        'condition' => $product['condition'] ?? 'New',
                         'is_physical' => 1,
                         'is_approved' => 1,
                         'status' => $product['status'] == 'available' ? 1 : 0 ,
