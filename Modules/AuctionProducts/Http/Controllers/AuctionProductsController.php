@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Modules\Setup\Entities\Country;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Carbon;
 use Modules\Product\Entities\Category;
 use Illuminate\Support\Facades\Artisan;
 use Yajra\DataTables\Facades\DataTables;
@@ -148,7 +149,7 @@ class AuctionProductsController extends Controller
             'date' => 'required',
             'starting_bidding_price' => 'required',
             'auction_description' => 'required',
-            'entry_amount' => "required",
+            'entry_amount' => "nullable",
             'increment_price' => "nullable",
             'reserve_price' => "required",
             'percentage' => 'nullable|numeric|min:0|max:100',
@@ -211,7 +212,7 @@ class AuctionProductsController extends Controller
             'date' => 'required',
             'starting_bidding_price' => 'required',
             'auction_description' => 'required',
-            'entry_amount' => "required",
+            'entry_amount' => "nullable",
             'increment_price' => "required",
             'reserve_price' => "required",
             'percentage' => 'nullable|numeric|min:0|max:100',
@@ -327,18 +328,7 @@ class AuctionProductsController extends Controller
 
         $product =  $this->auctionService->getActiveSellerProductById($seller_product_id);
         $auction = $this->auctionService->getAuctionById($id);
-        $is_entry_amount_paid = 0;
-        if(auth()->check())
-        {
-            $entryAmount = AuctionEntryAmountPayment::where('user_id',auth()->user()->id)->where('auction_id',$auction->id)->where('status',1)->first();
-            if(!empty($entryAmount) && $entryAmount->status == 1){
-                $is_entry_amount_paid = 1;
-            }elseif(!empty($entryAmount) && $entryAmount->status == 0){
-                $is_entry_amount_paid = 2;
-            }else{
-                $is_entry_amount_paid = 0;
-            }
-        }
+        $is_entry_amount_paid = 1;
 
         $max_bid = $this->auctionService->maxBidAmount($id);
         return view('auctionproducts::product_details',compact('product','auction','is_entry_amount_paid','max_bid'));
@@ -347,154 +337,15 @@ class AuctionProductsController extends Controller
     public function payEntryAmount($id)
     {
         $auction = $this->auctionService->getAuctionById($id);
-        $product = $this->auctionService->getActiveSellerProductById($auction->seller_product_id);
-        $gateway_activations = $this->checkoutService->getActivePaymentGetways();
-        $gateway_activations = $gateway_activations->where("slug",'!=','cash-on-delivery');
-        if(!isModuleActive('Bkash')){
-            $gateway_activations = $gateway_activations->where('slug', '!=','bkash');
-        }
-
-        if(!isModuleActive('SslCommerz')){
-            $gateway_activations = $gateway_activations->where('slug', '!=','sslcommerz');
-        }
-        if(!isModuleActive('MercadoPago')){
-            $gateway_activations = $gateway_activations->where('slug', '!=','mercado-pago');
-        }
-        if(!isModuleActive('Tabby')){
-            $gateway_activations = $gateway_activations->where('slug', '!=','tabby');
-        }
-        $gateway_activations = $gateway_activations->get();
-        return view('auctionproducts::pay_entry_amount',compact('product','auction','gateway_activations'));
+        Toastr::info('Auction entry fee is disabled. You can place a bid directly.', 'Info');
+        return redirect()->route('auctionproducts.view', [$auction->id, $auction->seller_product_id]);
     }
 
     public function auctionEntryAmountPay(Request $request, $id)
     {
-       $data = $request->all();
-       $auction = $this->auctionService->getAuctionById($id);
-       $gateway = $gateway_activations = $this->checkoutService->getActivePaymentGetways();
-       $gateway = $gateway->where('id',$data['payment_method'])->first();
-
-        $hasPaid = AuctionEntryAmountPayment::where('auction_id',$auction->id)->where('user_id',auth()->id())->where('status',0)->first();
-        if($hasPaid){
-            Toastr::error("Entry Amount payment already pending",'Error');
-            return redirect()->route('auctionproducts.view',[$auction->id, $auction->seller_product_id]);
-        }
-
-       if(!empty($gateway) && $gateway->method == 'Bank Payment')
-       {
-            $payment = $this->storeEntryAmount($data, $auction);
-            if($payment)
-            {
-                $image_url =  '';
-                if($request->hasFile('image')){
-                    $file = $request->file('image');
-                    $filename = time();
-                    $image_name = $filename.'.'.$file->getClientOriginalExtension();
-                    $path = 'uploads/all';
-                    $file->move(public_path($path),$image_name);
-                    $image_url = $path.'/'.$image_name;
-                }
-
-
-                $info = [
-                    "bank_name" => $data['bank_name'],
-                    "branch_name" => $data['branch_name'],
-                    "account_number" => $data['account_number'],
-                    "account_holder" => $data['account_holder'],
-                    "image" => $image_url
-                ];
-                AuctionEntryAmountGatewayInfo::create([
-                    "gateway_id" => $data['payment_method'],
-                    "entry_amount_payment_id" => $payment->id,
-                    "payment_info" => json_encode($info),
-                ]);
-                Toastr::success("Entry amout paid successfull By Bank Payment. Please wait unit admin confirmation",'Success');
-                return redirect()->route('auctionproducts.view',[$auction->id, $auction->seller_product_id]);
-            }else{
-                Toastr::error("Something went wrong!",'Error');
-                return back();
-            }
-       }elseif(!empty($gateway) && $gateway->method == 'Wallet'){
-            if(auth()->user()->CustomerCurrentWalletAmounts >= $auction->entry_amount){
-                $payment = $this->storeEntryAmount($data, $auction);
-                if($payment)
-                {
-                    $wallet_service = new WalletRepository;
-                    $wallet_service->entryAmountCreate($payment->id, $payment->amount, "Entry Amount Payment", auth()->id(), 'registered');
-                    Toastr::success("Entry amout paid successfull By Wallet. Please wait unit admin confirmation",'Success');
-                    return redirect()->route('auctionproducts.view',[$auction->id, $auction->seller_product_id]);
-                }else{
-                    Toastr::error("Something went wrong!",'Error');
-                    return back();
-                }
-
-           }else{
-
-               Toastr::error("Insufficient Balance","Error");
-               return back();
-           }
-       }elseif(!empty($gateway) && $gateway->method == 'Midtrans'){
-                $payment = $this->storeEntryAmount($data, $auction);
-                session()->put('auction_entry_amount',$payment);
-                $midtrans = new MidtransController;
-                $trans = [
-                    "payment_id" => $payment->id,
-                    "payment_method" => $data['payment_method'],
-                    "payment_by" => "Midtrans",
-                    "amout" => $payment->amount
-                ];
-                return $midtrans->paymentProcess($trans);
-
-       } elseif(!empty($gateway) && $gateway->method == 'Clickpay'){
-                $payment = $this->storeEntryAmount($data, $auction);
-                if($payment){
-                    $customer['name'] = $request->customer_name;
-                    $customer['amount'] = round($request->amount,2);
-                    $customer['email'] = $request->customer_email;
-                    $customer['phone'] = $request->customer_phone;
-                    $customer['zip'] = $request->customer_postal_code;
-                    $customer['description'] = "Products Checkout";
-                    $customer['callback'] = route('clickpay.callback');
-                    $customer['return'] = route('clickpay.return');
-                    $customer['address'] = $request->customer_address;
-                    $state = State::find($request->customer_state);
-                    $customer['state'] = !empty($state) ?$state->name:'Riyad';
-                    $city = City::find($request->customer_city);
-                    $customer['city'] = !empty($city) ? $city->name:'Ar-Riyad';
-                    $country = Country::find($request->customer_country);
-                    $customer['country'] = !empty($country) ? $country->code:'SA';
-                    $customer['payment_for'] = 'auction-entry-amount';
-                    $customer['entry_payment_id'] = $payment->id;
-                    $clickpay = new ClickpayController();
-                    $response = $clickpay->payment($customer);
-                    if($response != false){
-                        return redirect()->to($response)->send();
-                    }else{
-                        Toastr::error(trans('common.Something Went Wrong'),trans('common.error'));
-                        return back();
-                    }
-
-                }
-                Toastr::error(trans('Payment Failed'),trans('common.error'));
-                return back();
-
-     }else{
-            Toastr::error("Something went wrong!",'Error');
-            return back();
-       }
-    }
-
-    public function storeEntryAmount($data, $auction)
-    {
-        $payment = AuctionEntryAmountPayment::create([
-            "auction_id" => $auction->id,
-            "user_id" => auth()->id(),
-            "amount" => $auction->entry_amount,
-            "payment_method" => $data['payment_method'],
-            "status" => 0
-        ]);
-
-        return $payment;
+        $auction = $this->auctionService->getAuctionById($id);
+        Toastr::info('Auction entry fee is disabled. You can place a bid directly.', 'Info');
+        return redirect()->route('auctionproducts.view', [$auction->id, $auction->seller_product_id]);
     }
 
     public function placeBid(Request $request)
@@ -502,7 +353,8 @@ class AuctionProductsController extends Controller
 
         $validator = Validator::make($request->all(), [
 
-            'bid_amount' => 'required'
+            'auction_id' => 'required|exists:auctions,id',
+            'bid_amount' => 'required|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -513,22 +365,55 @@ class AuctionProductsController extends Controller
         }
 
         $user = auth()->user();
+        if (!$user) {
+            return response()->json([
+                'success' => 4,
+                'data' => 'login_required'
+            ], 401);
+        }
+
+        $auction = Auction::where('id', $request->auction_id)
+            ->where('status', 1)
+            ->first();
+
+        if (!$auction) {
+            return response()->json([
+                'success' => 5,
+                'data' => 'auction_not_available'
+            ]);
+        }
+
+        $today = Carbon::today();
+        $startsAt = $auction->auction_start_date ? Carbon::parse($auction->auction_start_date)->startOfDay() : null;
+        $endsAt = $auction->auction_end_date ? Carbon::parse($auction->auction_end_date)->endOfDay() : null;
+
+        if (($startsAt && $today->lt($startsAt)) || ($endsAt && $today->gt($endsAt))) {
+            return response()->json([
+                'success' => 6,
+                'data' => 'auction_not_active'
+            ]);
+        }
 
         if(isset($request->bid_amount)){
-            $maxBid = AuctionBid::where('auction_id',$request->auction_id)->pluck('bid_amount')->max();
+            $bidAmount = (float) $request->bid_amount;
+            $increment = (float) ($auction->increment_price ?? 0);
+            $maxBid = AuctionBid::where('auction_id',$request->auction_id)->max('bid_amount');
             if(!empty($maxBid)){
-                if($request->bid_amount < $maxBid){
+                $minimumBid = (float) $maxBid + max($increment, 0.01);
+                if($bidAmount < $minimumBid){
                     return response()->json([
                         'success' => 3,
-                        'data' => 'low_bid_amount'
+                        'data' => 'low_bid_amount',
+                        'minimum_bid' => $minimumBid,
                     ]);
                 }
             }else{
-                $firstBid = Auction::where('id',$request->auction_id)->pluck('starting_bidding_price');
-                if($request->bid_amount < $firstBid[0]){
+                $minimumBid = (float) ($auction->starting_bidding_price ?? 0);
+                if($bidAmount < $minimumBid){
                     return response()->json([
                         'success' => 2,
-                        'data' => 'first_low_bid'
+                        'data' => 'first_low_bid',
+                        'minimum_bid' => $minimumBid,
                     ]);
                 }
             }
@@ -544,7 +429,6 @@ class AuctionProductsController extends Controller
 
 
 
-            $auction = Auction::where('id',$request->auction_id)->first();
             $event = [
                 'id' => $auction->id,
                 "message" => "New Bid has been placed on ".$auction->auction_title,

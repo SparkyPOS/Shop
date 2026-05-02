@@ -53,7 +53,7 @@ class AuctionProductsRepository
             'auction_description' => $request['auction_description'],
             'status' => isset($request['status']) ? $request['status'] : 0,
             "reserve_price" => isset($request['reserve_price']) ? $request['reserve_price']:0,
-            "entry_amount" => isset($request['entry_amount']) ? $request['entry_amount']:0,
+            "entry_amount" => 0,
             "increment_price" => isset($request['increment_price']) ? $request['increment_price']:0,
             "percentage" => isset($request['percentage']) ? $request['percentage'] : 0,
         ]);
@@ -84,7 +84,7 @@ class AuctionProductsRepository
                 'auction_description' => $request['auction_description'],
                 'status' => isset($request['status']) ? $request['status'] : 0,
                 "reserve_price" => isset($request['reserve_price']) ? $request['reserve_price']:0,
-                "entry_amount" => isset($request['entry_amount']) ? $request['entry_amount']:0,
+                "entry_amount" => 0,
                 "increment_price" => isset($request['increment_price']) ? $request['increment_price']:0,
                 "percentage" => isset($request['percentage']) ? $request['percentage'] : 0,
             ]);

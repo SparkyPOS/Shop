@@ -111,15 +111,7 @@ $LanguageList = getLanguageList();
                                             </div>
                                         </div>
 
-                                        <div class="col-lg-12">
-                                            <div class="primary_input mb-25">
-                                                <label class="primary_input_label" for="entry_amount">{{__('auctionproduct.entry_amount')}} <span class="text-danger">*</span></label>
-                                                <input class="primary_input_field" min='0' pattern="[0-9]*" type="number" id="entry_amount" name="entry_amount" autocomplete="off" value="{{ old('entry_amount',$auction->entry_amount) }}" placeholder="{{__('auctionproduct.entry_amount')}}">
-                                                @error('entry_amount')
-                                                    <span class="text-danger" id="error_entry_amount">{{ $message }}</span>
-                                                @enderror
-                                            </div>
-                                        </div>
+                                        <input type="hidden" name="entry_amount" value="0">
 
                                         <div class="col-lg-12">
                                             <div class="primary_input mb-25">

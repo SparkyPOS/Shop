@@ -1083,7 +1083,8 @@ class SyncSparkyController extends Controller
                             // optional extended fields if POS provides
                             if (isset($product['reserve_price'])) $auction->reserve_price = (float) $product['reserve_price'];
                             if (isset($product['increment_price'])) $auction->increment_price = (float) $product['increment_price'];
-                            if (isset($product['entry_amount'])) $auction->entry_amount = (float) $product['entry_amount'];
+                            // Shop auctions follow a marketplace bid flow with no entry fee.
+                            $auction->entry_amount = 0;
                             $auction->status = 1; // list auction
                             $auction->save();
                         } else {

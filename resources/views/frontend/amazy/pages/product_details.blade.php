@@ -498,39 +498,10 @@
 
                                             <div class="row mt_30 " id="add_to_cart_div">
                                                 @if($start == 1)
-                                                    @if($is_entry_amount_paid == 0)
-                                                        <div class="col-lg-12 mb-3">
-                                                            <p>{{__('auctionproduct.to_start_bidding_on_this_auction_you_need_to_pay_entry_amount')}} {{ single_price($auction->entry_amount) }}</p>
+                                                    @if($auction->status == 1 && $auction->auction_end_date >= date('Y-m-d'))
+                                                        <div class="col-md-6">
+                                                            <button type="button" id="placeBid" class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase" data-id="{{$auction->id}}" data-type="product">{{__('auctionproduct.place_bid')}}</button>
                                                         </div>
-                                                    @endif
-                                                    @if($auction->status == 1 && $auction->auction_end_date > date('Y-m-d'))
-                                                        @if($is_entry_amount_paid == 1)
-                                                            <div class="col-md-6">
-                                                                <button type="button" id="placeBid" class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase" data-id="{{$auction->id}}" data-type="product">{{__('auctionproduct.place_bid')}}</button>
-                                                            </div>
-                                                        @elseif($is_entry_amount_paid == 2)
-                                                            @auth
-                                                                <div class="col-md-6">
-                                                                    <a href="javascript:void(0)"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.panding_entry_amount')}}</a>
-                                                                </div>
-                                                            @endauth
-                                                            @guest
-                                                                <div class="col-md-6">
-                                                                    <a href="{{ route('sso.redirect') }}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
-                                                                </div>
-                                                            @endguest
-                                                        @else
-                                                            @auth
-                                                                <div class="col-md-6">
-                                                                    <a href="{{ route('auction.payentryAmount',$auction->id) }}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
-                                                                </div>
-                                                            @endauth
-                                                            @guest
-                                                                <div class="col-md-6">
-                                                                    <a href="{{ route('sso.redirect') }}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase">{{__('auctionproduct.pay_entry_amount')}}</a>
-                                                                </div>
-                                                            @endguest
-                                                        @endif
                                                     @else
                                                         <div class="col-md-6">
                                                             <button type="button" disabled class="amaz_primary_btn style2 mb_20  add_to_cart text-uppercase flex-fill text-center w-100">{{__('auctionproduct.place_bid')}}</button>
@@ -2522,13 +2493,19 @@
                         toastr.error("Bid amount should be greater than Starting Bid!", "{{__('common.error')}}");
                     }
                     if(data.success==3 && data.data=='low_bid_amount'){
-                        toastr.error("Bid amount should be greater than Highest Bid!", "{{__('common.error')}}");
+                        toastr.error("Bid amount should be at least " + data.minimum_bid, "{{__('common.error')}}");
+                    }
+                    if(data.success==4 && data.data=='login_required'){
+                        window.location.href = '{{url("/login")}}';
+                    }
+                    if(data.success==5 || data.success==6){
+                        toastr.error("Auction is not available for bidding.", "{{__('common.error')}}");
                     }
                     if(data.success===1 && data.data==true){
                         $('#placebid_modal').modal('hide');
                         toastr.success("Bid placed successfully", "{{__('common.success')}}");
                         location.reload();
-                    }else if(data.success !== 0){
+                    }else if(![0, 2, 3, 4, 5, 6].includes(data.success)){
                         toastr.error("Can't place Bid!", "{{__('common.error')}}");
                     }
                 });
