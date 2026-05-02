@@ -554,10 +554,10 @@
                                                     {{ __('product.report_this_product') }}
                                                 </a>
                                             @endif
-                                    @else
+                                    @elseif($auction == null)
                                     <div class="row mt_30 " id="add_to_cart_div">
                                         <div class="col-md-12">
-                                            <a href="https://app.sparkypos.com" class="amaz_primary_btn w-100">
+                                            <a href="{{ route('sso.redirect', ['redirect_to' => url()->current()]) }}" class="amaz_primary_btn w-100">
                                                 {{__('defaultTheme.login_to_order')}}
                                             </a>
                                         </div>
@@ -1834,7 +1834,7 @@
                         }else{
                             $('#availability').html(response.data.product_stock);
                         }
-                        if(response.data.product.stock_manage == 1 && parseInt(response.data.product_stock) >= parseInt(response.data.product.product.minimum_order_qty) || response.data.product.stock_manage == 0){
+                        if((response.data.product.stock_manage == 1 && parseInt(response.data.product_stock) >= parseInt(response.data.product.product.minimum_order_qty) || response.data.product.stock_manage == 0) && {{ isset($auction) && $auction ? 'false' : 'true' }}){
                             @if(isGuestAddtoCart())
                                 $('#add_to_cart_div').html(`
                                     <div class="col-md-6">
@@ -1847,7 +1847,7 @@
                             @else
                                 $('#add_to_cart_div').html(`
                                 <div class="col-md-12">
-                                                <a href="https://app.sparkypos.com" class="amaz_primary_btn w-100">
+                                                <a href="{{ route('sso.redirect', ['redirect_to' => url()->current()]) }}" class="amaz_primary_btn w-100">
                                                     {{__('defaultTheme.login_to_order')}}
                                                 </a>
                                             </div>
