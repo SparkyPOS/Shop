@@ -234,7 +234,7 @@
                                     @endif
                                 </div>
                                 <div class="destils_prise_information_box mb_20">
-                                    @if(isGuestAddtoCart() == true)
+                                    @if(isGuestAddtoCart() == true && (!isset($auction) || !$auction))
                                     <h2 class="pro_details_prise d-flex align-items-center  m-0">
                                         <span>
                                             {{getProductDiscountedPrice($product)}}
@@ -242,7 +242,7 @@
                                     </h2>
                                     @endif
                                     <div class="pro_details_disPrise d-flex align-items-center gap_15">
-                                        @if(isGuestAddtoCart() == true)
+                                        @if(isGuestAddtoCart() == true && (!isset($auction) || !$auction))
                                             <h4 class="discount_prise  m-0  ">
                                                 <span class="text-decoration-line-through">
                                                     @if($product->hasDeal || $product->hasDiscount == 'yes')
@@ -251,7 +251,7 @@
                                                 </span>
                                             </h4>
                                         @endif
-                                        @if(isGuestAddtoCart() == true)
+                                        @if(isGuestAddtoCart() == true && (!isset($auction) || !$auction))
                                             @if(@$product->hasDeal)
                                                 @if(@$product->hasDeal->discount > 0)
                                                     @if(@$product->hasDeal->discount_type == 0)
@@ -407,7 +407,7 @@
                                         @endif
                                     ">
 
-                                    @if(isGuestAddtoCart() == true)
+                                    @if(isGuestAddtoCart() == true && (!isset($auction) || !$auction))
                                     <h5 class="mb-0">{{__('common.total')}}:
                                         <span id="total_price">
                                             @if(@$product->hasDeal)
@@ -463,31 +463,40 @@
                                                 $start = 0;
                                             }
                                         @endphp
-                                        <div class="single_pro_varient">
-                                            <h5 class="font_16 f_w_500 theme_text3 pt-2 text-6870" > @if($start == 0) {{__('auctionproduct.auction_starts_in')}}: @else {{__('auctionproduct.auction_ends_in')}}: @endif </h5>
-                                            <div class="product_number_count mr_5">
-                                                <div id="count_down" class="deals_end_count amazy_date_counter"></div>
-                                            </div>
-                                        </div>
-
                                         <div class="product_info">
-                                            <div class="single_pro_varient">
-                                                <h5 class="font_16 f_w_500 theme_text3 pt-2 text-6870" >{{__('auctionproduct.starting_bid')}}:</h5>
-                                                <div class="product_number_count mr_5">
-                                                    <span class="font_17">{{ getNumberTranslate(single_price($auction->starting_bidding_price)) }}</span>
-                                                </div>
-                                            </div>
-
                                             @php
                                                 $highestBid = (float) ($max_bid ?? 0);
                                                 $reservePrice = (float) ($auction->reserve_price ?? 0);
                                                 $showReserveBuyNow = $reservePrice > 0 && $highestBid < $reservePrice;
+                                                $currentBidLabel = $highestBid > 0 ? single_price($highestBid) : single_price($auction->starting_bidding_price);
                                             @endphp
 
-                                            <div class="single_pro_varient m-n-30" >
-                                                <h5 class="font_16 f_w_500 theme_text3 pt-2 text-6870" >{{__('auctionproduct.highest_bid')}}:</h5>
-                                                <div class="product_number_count mr_5">
-                                                    <span class="font_17">{{ getNumberTranslate(single_price($highestBid)) }}</span>
+                                            <div class="auction-summary mb_20">
+                                                <div class="single_pro_varient m-0">
+                                                    <h5 class="font_16 f_w_500 theme_text3 pt-2 text-6870">{{ $highestBid > 0 ? __('auctionproduct.highest_bid') : __('auctionproduct.starting_bid') }}:</h5>
+                                                    <div class="product_number_count mr_5">
+                                                        <span class="font_24 f_w_700">{{ getNumberTranslate($currentBidLabel) }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="single_pro_varient m-0">
+                                                    <h5 class="font_14 f_w_500 theme_text3 pt-2 text-6870">{{__('auctionproduct.starting_bid')}}:</h5>
+                                                    <div class="product_number_count mr_5">
+                                                        <span class="font_16">{{ getNumberTranslate(single_price($auction->starting_bidding_price)) }}</span>
+                                                    </div>
+                                                </div>
+                                                @if($showReserveBuyNow)
+                                                    <div class="single_pro_varient m-0">
+                                                        <h5 class="font_14 f_w_500 theme_text3 pt-2 text-6870">{{ __('common.buy_now') }}:</h5>
+                                                        <div class="product_number_count mr_5">
+                                                            <span class="font_16">{{ single_price($reservePrice) }}</span>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                                <div class="single_pro_varient">
+                                                    <h5 class="font_16 f_w_500 theme_text3 pt-2 text-6870" > @if($start == 0) {{__('auctionproduct.auction_starts_in')}}: @else {{__('auctionproduct.auction_ends_in')}}: @endif </h5>
+                                                    <div class="product_number_count mr_5">
+                                                        <div id="count_down" class="deals_end_count amazy_date_counter"></div>
+                                                    </div>
                                                 </div>
                                             </div>
 
