@@ -86,22 +86,20 @@
                         <i class="ti-arrow-left"></i>
                         <span>{{__('common.back')}}</span>
                     </a>
-                    @if(!$isAuctionProduct)
-                        @if ($productHasStock)
+                    @if ($productHasStock)
 
-                            <button type="button" class="product_details_button style1 buy_now_btn" data-id="{{$product->id}}" data-type="product">
-                                <span>{{__('common.buy_now')}}</span>
-                            </button>
+                        <button type="button" class="product_details_button style1 buy_now_btn {{$isAuctionProduct ? 'hidden' : ''}}" data-id="{{$product->id}}" data-type="product">
+                            <span>{{__('common.buy_now')}}</span>
+                        </button>
 
-                            <button class="product_details_button style11 add_to_cart_btn" type="button">
-                                <span>{{__('common.add_to_cart')}}</span>
-                            </button>
-                        @else
-                            <button type="button" class="product_details_button style1" disabled>
-                                <span>{{__('defaultTheme.out_of_stock')}}</span>
-                            </button>
-                            <button type="button" class="product_details_button" disabled>{{__('defaultTheme.out_of_stock')}}</button>
-                        @endif
+                        <button class="product_details_button style11 add_to_cart_btn {{$isAuctionProduct ? 'hidden' : ''}}" type="button">
+                            <span>{{__('common.add_to_cart')}}</span>
+                        </button>
+                    @else
+                        <button type="button" class="product_details_button style1" disabled>
+                            <span>{{__('defaultTheme.out_of_stock')}}</span>
+                        </button>
+                        <button type="button" class="product_details_button" disabled>{{__('defaultTheme.out_of_stock')}}</button>
                     @endif
                     @if(isModuleActive('MultiVendor'))
                         <a href="

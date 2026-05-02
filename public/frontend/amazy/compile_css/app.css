@@ -17308,6 +17308,10 @@ section.return_part.padding_top.bg-white {
   transform: skewX(20deg);
 }
 
+.buy_now_btn.hidden, .add_to_cart_btn.hidden {
+  visibility: hidden;
+}
+
 .amaz_recomanded_box .product_widget5 .thumb {
   margin: 0 auto;
 }
