@@ -69,7 +69,7 @@
             $productHasStock = false;
             if($isProductPage && isset($product)) {
                 $stockManage = @$product->stock_manage;
-                $productStock = @$product->sku->first()->product_stock;
+                $productStock = @$product->skus->first()->product_stock;
                 $minimumOrderQty = @$product->product->minimum_order_qty;
                 $productHasStock = (
                     ($stockManage == 1 && $productStock >= $minimumOrderQty) ||
