@@ -56,21 +56,45 @@
             </div>
         </div>
 
-        @if(request()->is('gift-cards/*') || request()->is('product/*'))
+        @php
+            $isProductPage = request()->is('product/*');
+            $isGiftCardPage = request()->is('gift-cards/*');
+            $showProductActionBar = $isProductPage || $isGiftCardPage;
+
+            $isAuctionProduct  = $isProductPage && (
+                (isset($is_auction_product) && $is_auction_product) ||
+                (isset($auction) && $auction)
+            );
+
+            $productHasStock = false;
+            if($isProductPage && isset($product)) {
+                $stockManage = @$product->stock_manage;
+                $productStock = @$product->skus->first()->product_stock;
+                $minimumOrderQty = @$product->product->minimum_order_qty;
+                $productHasStock = (
+                    ($stockManage == 1 && $productStock >= $minimumOrderQty) ||
+                    ($stockManage == 0)
+                );
+            }
+        @endphp
+
+        @if($showProductActionBar)
             <div class="product_details_buttons d-md-none" id="cart_footer_mobile">
 
-                @if(request()->is('product/*'))
+                @if($isProductPage)
                     <a href="javascript:void(0)" onclick="window.history.back()" class="d-flex flex-column justify-content-center product_details_icon">
                         <i class="ti-arrow-left"></i>
                         <span>{{__('common.back')}}</span>
                     </a>
-                    @if (@$product->stock_manage == 1 && @$product->skus->first()->product_stock >= @$product->product->minimum_order_qty || @$product->stock_manage == 0)
+                    @if ($productHasStock)
 
-                        <button type="button" class="product_details_button style1 buy_now_btn" data-id="{{$product->id}}" data-type="product">
+                        <button type="button" class="product_details_button style1 buy_now_btn {{$isAuctionProduct ? 'hidden' : ''}}" data-id="{{$product->id}}" data-type="product">
                             <span>{{__('common.buy_now')}}</span>
                         </button>
 
-                        <button class="product_details_button add_to_cart_btn" type="button">{{__('common.add_to_cart')}}</button>
+                        <button class="product_details_button style11 add_to_cart_btn {{$isAuctionProduct ? 'hidden' : ''}}" type="button">
+                            <span>{{__('common.add_to_cart')}}</span>
+                        </button>
                     @else
                         <button type="button" class="product_details_button style1" disabled>
                             <span>{{__('defaultTheme.out_of_stock')}}</span>
@@ -103,8 +127,8 @@
                     <button class="product_details_button add_gift_card_to_cart" type="button" data-gift-card-id="{{ $card->id }}" data-seller="1" data-base-price="{{$base_price}}" data-shipping-method="1" data-show="{{json_encode($showData)}}">{{__('common.add_to_cart')}}</button>
                 @endif
             </div>
-        @else
-            <ul class="short_curt_icons">
+        @endif
+            <ul class="short_curt_icons {{ $showProductActionBar ? 'has_product_action_bar' : '' }}">
                 <li>
                     <a href="{{url('/')}}">
                         <div class="cart_singleIcon">
@@ -180,7 +204,6 @@
             </li>
         @endguest
     </ul>
-@endif
 </header>
     <!--/ HEADER::END -->
 

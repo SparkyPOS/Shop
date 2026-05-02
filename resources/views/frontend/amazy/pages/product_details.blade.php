@@ -164,7 +164,7 @@
                             <div class="product_content_details mb_20">
                                 <div id="stock_div">
                                     @php
-                                        $cond = $product->product->condition === 'used' ? __('product.used') : __('product.new');
+                                        $cond = $product->product->condition === 'Used' ? __('product.used') : __('product.new');
                                     @endphp
                                     @if ($product->stock_manage == 1 && @$product->skus->where('status',1)->first()->product_stock >= @$product->product->minimum_order_qty)
                                         <span class="stoke_badge">{{__('common.in_stock')}}</span>
@@ -376,7 +376,7 @@
                                     </div>
                                 @endif
                                 <div class="product_info">
-                                    <div class="single_pro_varient">
+                                    <div class="single_pro_varient {{ isset($auction) && $auction ? 'd-none' : '' }}">
                                         <h5 class="font_14 f_w_500 theme_text3 " >{{__('common.quantity')}}:</h5>
                                         <div class="product_number_count mr_5" data-target="amount-1">
                                             <span class="count_single_item inumber_decrement qtyChange" data-value="-"> <i class="ti-minus"></i></span>
@@ -517,7 +517,7 @@
                                         </div>
                                     @endif
 
-                                    @if(isGuestAddtoCart() == true)
+                                    @if(isGuestAddtoCart() == true && $auction == null)
                                         <div class="row mt_30 " id="add_to_cart_div">
                                                 @if ($product->stock_manage == 1 && $product->skus->where('status',1)->first()->product_stock >= $product->product->minimum_order_qty)
                                                     <div class="col-6">

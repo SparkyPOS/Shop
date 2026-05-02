@@ -122,11 +122,13 @@ class ProductController extends Controller
         $max_bid = null;
         $is_entry_amount_paid = 1;
         $hide_purchase_cta = false;
+        $is_auction_product = false;
         try {
             $auction = Auction::where('seller_product_id', $product->id)
                 ->where('status', 1)
                 ->first();
             if ($auction) {
+                $is_auction_product = true;
                 $max_bid = AuctionBid::where('auction_id', $auction->id)->max('bid_amount');
                 $is_entry_amount_paid = 1;
                 // Hide purchase CTA if highest bid reaches configured percentage of product price
@@ -153,9 +155,9 @@ class ProductController extends Controller
 
         if(isModuleActive('CheckPincode')){
             $pincodeConfig = PinCodeConfigurations::first();
-            return view(theme('pages.product_details'),compact('product','rating','total_review','recent_viewed_products','pincodeConfig','reasons','auction','max_bid','is_entry_amount_paid','hide_purchase_cta'));
+            return view(theme('pages.product_details'),compact('product','rating','total_review','recent_viewed_products','pincodeConfig','reasons','auction','max_bid','is_entry_amount_paid','hide_purchase_cta', 'is_auction_product'));
         }
-        return view(theme('pages.product_details'),compact('product','rating','total_review','recent_viewed_products','reasons','auction','max_bid','is_entry_amount_paid','hide_purchase_cta'));
+        return view(theme('pages.product_details'),compact('product','rating','total_review','recent_viewed_products','reasons','auction','max_bid','is_entry_amount_paid','hide_purchase_cta', 'is_auction_product'));
 
     }
     public function showVendors(Request $request)

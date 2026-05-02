@@ -5188,6 +5188,9 @@ label {
     display: flex;
     align-items: center;
   }
+  .short_curt_icons.has_product_action_bar {
+    bottom: 56px;
+  }
 }
 .short_curt_icons li {
   flex: 1 1 100%;
@@ -17286,12 +17289,27 @@ section.return_part.padding_top.bg-white {
   background: #ffc107;
   transform: skewX(-20deg);
   position: relative;
-  left: 11px;
+  left: 3px;
+  z-index: 1;
+}
+
+.product_details_button.style11 {
+  background: #3B82F6;
+  transform: skewX(-20deg);
+  position: relative;
+  left: 3px;
   z-index: 1;
 }
 
 .product_details_button.style1 span {
   transform: skewX(20deg);
+}
+.product_details_button.style11 span {
+  transform: skewX(20deg);
+}
+
+.buy_now_btn.hidden, .add_to_cart_btn.hidden {
+  visibility: hidden;
 }
 
 .amaz_recomanded_box .product_widget5 .thumb {
