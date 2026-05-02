@@ -263,14 +263,9 @@
                                     </div>
 
                                     @php
-                                        $highestBid = 0;
-                                        $counter=0;
-                                        if(!empty($auction->auction_bid) && $auction->auction_bid->count() > 0){
-                                            foreach ($auction->auction_bid as  $bid) {
-                                                $counter++;
-                                            }
-                                            $highestBid = $auction->auction_bid[$counter-1]->bid_amount;
-                                        }
+                                        $highestBid = (float) ($max_bid ?? 0);
+                                        $reservePrice = (float) ($auction->reserve_price ?? 0);
+                                        $showReserveBuyNow = $reservePrice > 0 && $highestBid < $reservePrice;
                                     @endphp
 
                                     <div class="single_pro_varient m-n-30" >
@@ -286,6 +281,13 @@
                                                 <div class="col-md-6">
                                                     <button type="button" id="placeBid" class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn" data-id="{{$auction->id}}" data-type="product">{{__('auctionproduct.place_bid')}}</button>
                                                 </div>
+                                                @if($showReserveBuyNow)
+                                                    <div class="col-md-6">
+                                                        <button type="button" class="amaz_primary_btn3 mb_20 w-100 text-center justify-content-center text-uppercase auction_buy_now_btn" data-price="{{ $reservePrice }}">
+                                                            {{ __('common.buy_now') }} - {{ single_price($reservePrice) }}
+                                                        </button>
+                                                    </div>
+                                                @endif
                                             @else
                                                 <div class="col-md-6">
                                                     <button type="button" disabled class="amaz_primary_btn style2 mb_20  add_to_cart text-uppercase flex-fill text-center w-100">{{__('auctionproduct.place_bid')}}</button>
@@ -1173,6 +1175,16 @@
                 @else
                     window.location.href = '{{ route("sso.redirect", ["redirect_to" => url()->current()]) }}';
                 @endif
+            });
+
+            $(document).on('click','.auction_buy_now_btn', function(event){
+                event.preventDefault();
+                let reservePrice = parseFloat($(this).data('price') || 0);
+                if (reservePrice <= 0) {
+                    return;
+                }
+
+                buyNow($('#product_sku_id').val(), $('#seller_id').val(), $('#qty').data('value'), reservePrice, $('#shipping_type').val(), 'product', $('#owner').val(), null, 'auction');
             });
 
 
