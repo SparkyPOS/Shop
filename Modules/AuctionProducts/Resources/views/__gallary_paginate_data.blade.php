@@ -188,35 +188,24 @@
                                 <div class="product_number_count mr_5 auction-p-number" >
                                     <div id="count_down{{$auction_id}}" class="deals_end_count amazy_date_counter"></div>
                                 </div>
-                                @if(isGuestAddtoCart())
-                                    <div class="product__meta text-center">
-                                        <span class="product_banding ">{{ @$product->brand->name ?? " " }}</span>
-                                        <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
-                                        <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
-                                        <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
-                                            <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
+                                <div class="product__meta text-center">
+                                    <span class="product_banding ">{{ @$product->brand->name ?? " " }}</span>
+                                    <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
+                                    <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
+                                    <a href="{{singleProductURL(@$product->seller->slug, $product->slug)}}">
+                                        <h4>@if ($product->product_name) {{ textLimit(@$product->product_name, 50) }} @else {{ textLimit(@$product->product->product_name, 50) }} @endif</h4>
+                                    </a>
+                                    <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
+                                        <a class="home10_primary_btn2" href="{{route('auctionproducts.view',[$product->auction_id,$product->seller_product_id])}}">
+                                            {{__('auctionproduct.place_bid')}}
                                         </a>
-                                        <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
-                                            <a class="home10_primary_btn2" href="{{route('auctionproducts.view',[$product->auction_id,$product->seller_product_id])}}">
-                                                {{__('auctionproduct.place_bid')}}
-                                            </a>
-                                            <p>
-                                                <strong>
-                                                    {{single_price($product->starting_bidding_price)}}
-                                                </strong>
-                                            </p>
-                                        </div>
+                                        <p>
+                                            <strong>
+                                                {{single_price($product->starting_bidding_price)}}
+                                            </strong>
+                                        </p>
                                     </div>
-                                @else
-                                    <div class="product__meta text-center">
-                                        <span class="product_banding ">{{ @$product->brand->name ?? " " }}</span>
-                                        <span class="product_banding ">Store: {{ @$product->seller->SellerAccount->seller_shop_display_name }}</span>
-                                        <span class="product_banding ">Vendor: {{ @$product->seller->SellerAccount->vendor_id }}</span>
-                                        <a class="home10_primary_btn2 w-100" href="https://app.sparkypos.com">
-                                            {{__('auctionproduct.login_to_bid')}}
-                                        </a>
-                                    </div>
-                                @endif
+                                </div>
                             </div>
                         </div>
 

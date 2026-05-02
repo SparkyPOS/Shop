@@ -2461,7 +2461,7 @@
                 @if(Illuminate\Support\Facades\Auth::check())
                     $('#placebid_modal').modal('show');
                 @else
-                    window.location.href = '{{url("/login")}}';
+                    window.location.href = '{{ route("sso.redirect", ["redirect_to" => url()->current()]) }}';
                 @endif
             });
 
@@ -2496,7 +2496,7 @@
                         toastr.error("Bid amount should be at least " + data.minimum_bid, "{{__('common.error')}}");
                     }
                     if(data.success==4 && data.data=='login_required'){
-                        window.location.href = '{{url("/login")}}';
+                        window.location.href = '{{ route("sso.redirect", ["redirect_to" => url()->current()]) }}';
                     }
                     if(data.success==5 || data.success==6){
                         toastr.error("Auction is not available for bidding.", "{{__('common.error')}}");

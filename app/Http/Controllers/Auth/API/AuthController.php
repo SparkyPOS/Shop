@@ -120,7 +120,9 @@ class AuthController extends Controller
                 }
                 if ($user instanceof User) {
                     Auth::loginUsingId($user->id);
-                    $redirectTarget = ($redirectTo ?: url('/')) . '?success=true';
+                    $request->session()->regenerate();
+
+                    $redirectTarget = $this->appendQueryParam($redirectTo ?: url('/'), 'success', 'true');
 
                     return view('auth.sso')->with([
                         'redirectTo' => $redirectTarget,
@@ -131,9 +133,16 @@ class AuthController extends Controller
             
             return redirect($mainapp.'/sign-in');
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return redirect($mainapp.'/sign-in');
         }
+    }
+
+    private function appendQueryParam(string $url, string $key, string $value): string
+    {
+        $separator = str_contains($url, '?') ? '&' : '?';
+
+        return $url.$separator.urlencode($key).'='.urlencode($value);
     }
 
     public function ssoRedirectToPos(Request $request)
@@ -146,14 +155,20 @@ class AuthController extends Controller
         }
         $target = $target ?: $mainapp;
 
-        $shopReturnTarget = $request->headers->get('referer');
+        $requestedReturnTarget = $request->query('redirect_to');
+        $shopReturnTarget = is_string($requestedReturnTarget) && trim($requestedReturnTarget) !== ''
+            ? trim($requestedReturnTarget)
+            : $request->headers->get('referer');
+
+        if (is_string($shopReturnTarget) && !preg_match('/^https?:\/\//i', $shopReturnTarget)) {
+            $shopReturnTarget = $shopBase.'/'.ltrim($shopReturnTarget, '/');
+        }
+
         if (!is_string($shopReturnTarget) || trim($shopReturnTarget) === '') {
             $shopReturnTarget = $shopBase;
         }
         $shopReturnTarget = trim($shopReturnTarget);
-        if (!preg_match('/^https?:\/\//i', $shopReturnTarget)) {
-            $shopReturnTarget = $shopBase;
-        } else {
+        if (preg_match('/^https?:\/\//i', $shopReturnTarget)) {
             $returnParts = parse_url($shopReturnTarget);
             $shopParts = parse_url($shopBase);
             $sameHost = ($returnParts['host'] ?? null) && ($shopParts['host'] ?? null)
@@ -161,6 +176,8 @@ class AuthController extends Controller
             if (!$sameHost) {
                 $shopReturnTarget = $shopBase;
             }
+        } else {
+            $shopReturnTarget = $shopBase;
         }
 
         if (!Auth::check()) {
