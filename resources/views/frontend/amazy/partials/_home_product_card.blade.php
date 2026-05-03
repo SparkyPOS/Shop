@@ -42,7 +42,7 @@
     $showStoreVendor = $showStoreVendor ?? true;
 @endphp
 
-<div class="{{ $cardClass }}">
+<div class="{{ $cardClass }} {{ $isAuctionActive ? 'home-auction-card' : '' }}">
     @if ($isAuctionActive)
         <div class="auction-svg">
             <img class="auction-icon" src="{{ asset('public/auction.svg') }}" alt="auction">
@@ -140,8 +140,8 @@
     </div>
 
     @if ($isAuctionActive && $auctionDate)
-        <div class="product_number_count mr_5 auction-p-number">
-            <div class="deals_end_count amazy_date_counter js-home-auction-countdown"
+        <div class="product_number_count mr_5 auction-p-number home-auction-count-wrap">
+            <div class="deals_end_count amazy_date_counter js-home-auction-countdown home-auction-timer"
                  id="home_auction_count_down_{{ $auction->id }}_{{ $product->id }}"
                  data-auction-date="{{ $auctionDate }}"></div>
         </div>
@@ -167,7 +167,7 @@
 
         @if($isAuctionActive)
             <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
-                <a class="home10_primary_btn2" href="{{ route('auctionproducts.view', [$auction->id, $product->id]) }}">
+                <a class="home10_primary_btn2 home-auction-bid-btn" href="{{ route('auctionproducts.view', [$auction->id, $product->id]) }}">
                     {{ __('auctionproduct.place_bid') }}
                 </a>
                 <p>

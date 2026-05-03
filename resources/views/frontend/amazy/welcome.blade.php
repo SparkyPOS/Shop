@@ -18,6 +18,55 @@
     top: 0;
     left: 0;
 }
+
+/* Keep auction cards visually aligned with normal product cards on homepage */
+.home-auction-card .auction-svg {
+    top: 10px;
+    right: 10px;
+}
+
+.home-auction-card .auction-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.home-auction-card .home-auction-count-wrap {
+    margin: 6px 0 4px !important;
+}
+
+.home-auction-card .home-auction-timer {
+    gap: 4px;
+    justify-content: center;
+}
+
+.home-auction-card .home-auction-timer .single_count {
+    min-width: 28px;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.home-auction-card .home-auction-timer .single_count span {
+    font-size: 11px;
+    line-height: 1;
+}
+
+.home-auction-card .home-auction-timer .count_separator {
+    font-size: 11px;
+    line-height: 1;
+    color: var(--text_color);
+    opacity: .7;
+}
+
+.home-auction-card .home-auction-bid-btn {
+    min-height: 34px;
+    padding: 8px 12px;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.home-auction-card .product__meta h4 {
+    min-height: 44px;
+}
 </style>
 @endpush
 
