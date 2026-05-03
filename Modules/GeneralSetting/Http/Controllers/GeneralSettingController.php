@@ -254,7 +254,6 @@ class GeneralSettingController extends Controller
                 Toastr::error('Invalid timezone selected. Please choose a valid timezone.');
                 return redirect()->back()->withInput();
             }
-            $request->merge(['time_zone' => $normalizedTimeZone]);
             putEnvConfigration('TIME_ZONE', $normalizedTimeZone);
         }
         if($request->has('decimal_limit')){
