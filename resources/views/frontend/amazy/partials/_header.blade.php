@@ -67,6 +67,7 @@
             );
 
             $productHasStock = false;
+            $productStoreUrl = null;
             if($isProductPage && isset($product)) {
                 $stockManage = @$product->stock_manage;
                 $productStock = @$product->skus->first()->product_stock;
@@ -75,6 +76,14 @@
                     ($stockManage == 1 && $productStock >= $minimumOrderQty) ||
                     ($stockManage == 0)
                 );
+
+                if (isset($product->seller)) {
+                    if (!empty($product->seller->slug)) {
+                        $productStoreUrl = route('frontend.seller', $product->seller->slug);
+                    } else {
+                        $productStoreUrl = route('frontend.seller', base64_encode($product->seller->id));
+                    }
+                }
             }
         @endphp
 
@@ -211,19 +220,14 @@
                 </a>
             </li>
         @endguest
-        <li>
-            <a href="
-                @if ($product->seller->slug)
-                    {{route('frontend.seller',$product->seller->slug)}}
-                @else
-                    {{route('frontend.seller',base64_encode($product->seller->id))}}
-                @endif
-            " class="d-flex flex-column justify-content-center product_details_icon">
-                <i class="ti-shopping-cart-full"></i>
-                <span>{{__('common.store')}}</span>
-            </a>
-        </li>
+        @if($productStoreUrl)
+            <li>
+                <a href="{{ $productStoreUrl }}" class="d-flex flex-column justify-content-center product_details_icon">
+                    <i class="ti-shopping-cart-full"></i>
+                    <span>{{__('common.store')}}</span>
+                </a>
+            </li>
+        @endif
     </ul>
 </header>
     <!--/ HEADER::END -->
-
