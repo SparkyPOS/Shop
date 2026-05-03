@@ -57,12 +57,33 @@
     padding-left: 0 !important;
     display: flex;
     justify-content: center;
+    width: 100%;
 }
 
 .home-auction-card--full .home-auction-timer {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(4px, .6vw, 8px);
+    width: min(100%, 320px);
+    margin: 0 auto;
+}
+
+.home-auction-card--full .home-auction-timer .single_count {
+    min-width: 0;
+    padding: clamp(4px, .6vw, 7px) 2px;
+    border-radius: 4px;
+}
+
+.home-auction-card--full .home-auction-timer .single_count span {
+    font-size: clamp(11px, 1.3vw, 16px);
+    line-height: 1;
+    margin-bottom: 3px;
+}
+
+.home-auction-card--full .home-auction-timer .single_count p {
+    font-size: clamp(8px, .85vw, 10px);
+    line-height: 1;
+    white-space: nowrap;
 }
 
 /* Compact mode: used for non-best-deals sections */
