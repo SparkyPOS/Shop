@@ -116,7 +116,7 @@ class Category extends Model
             return $query->whereHas('categories',function($q){
                 $q->where('category_id', $this->id);
             });
-        })->activeSeller()->take($amount)->get();
+        })->with('auction')->activeSeller()->take($amount)->get();
     }
     public function sellerProductWithPaginate(){
         $products = SellerProduct::with('product','reviews')->where('status',1)->whereHas('product',function($query){

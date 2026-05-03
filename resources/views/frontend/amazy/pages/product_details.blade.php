@@ -2433,6 +2433,51 @@
     .auction-hide-cta .add_to_cart_btn,
     .auction-hide-cta .product_details_button.style1.buy_now_btn,
     .auction-hide-cta .product_details_button.add_to_cart_btn { display: none !important; }
+
+    .auction-summary .single_pro_varient {
+        margin-bottom: 10px;
+        align-items: center;
+    }
+
+    .auction-summary .single_pro_varient:last-child {
+        margin-bottom: 0;
+    }
+
+    .auction-summary #count_down {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .auction-summary #count_down .single_count {
+        min-width: 56px;
+        padding: 6px 8px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .auction-summary #count_down .single_count span {
+        font-size: 16px;
+        line-height: 1.1;
+    }
+
+    .auction-summary #count_down .single_count p {
+        margin: 2px 0 0;
+        font-size: 11px;
+        line-height: 1.1;
+    }
+
+    @media (max-width: 575.98px) {
+        .auction-summary #count_down .single_count {
+            min-width: 50px;
+            padding: 5px 6px;
+        }
+
+        .auction-summary #count_down .single_count span {
+            font-size: 14px;
+        }
+    }
 </style>
 @endpush
 

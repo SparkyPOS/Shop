@@ -163,6 +163,36 @@
                 event.preventDefault();
                 $('#logout-form').submit();
             });
+
+            window.initHomeAuctionCountdown = function (context) {
+                var $scope = context ? $(context) : $(document);
+                if (typeof $.fn.countdown === 'undefined') {
+                    return;
+                }
+
+                $scope.find('.js-home-auction-countdown').each(function () {
+                    var $timer = $(this);
+                    if ($timer.data('countdownInited')) {
+                        return;
+                    }
+
+                    var auctionDate = $timer.data('auction-date');
+                    if (!auctionDate) {
+                        return;
+                    }
+
+                    $timer.data('countdownInited', true);
+                    $timer.countdown(auctionDate, function (event) {
+                        $(this).html(
+                            event.strftime(
+                                '<div class=\"single_count\"><span>%D</span><p>Days</p></div><div class=\"single_count\"><span>%H</span><p>Hours</p></div><div class=\"single_count\"><span>%M</span><p>Minutes</p></div><div class=\"single_count\"><span>%S</span><p>Seconds</p></div>'
+                            )
+                        );
+                    });
+                });
+            };
+
+            window.initHomeAuctionCountdown(document);
             // load more homepage
             var ENDPOINT = "{{ url('/') }}";
             var Cpage = 1;
@@ -192,6 +222,7 @@
                     $('#pre-loader').hide();
                     $(tbl_name).append(response);
                     initLazyload();
+                    window.initHomeAuctionCountdown(tbl_name);
                 })
                 .fail(function (jqXHR, ajaxOptions, thrownError) {
                     toastr.error("{{__('common.error_message')}}","{{__('common.error')}}");

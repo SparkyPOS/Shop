@@ -51,6 +51,13 @@
                 <input type="hidden" class="productQtyCount" value="{{$best_deal->getProductByQuery()->count()}}">
                 <div class="trending_product_active owl-carousel">
                     @foreach($best_deal->getProductByQuery() as $key => $product)
+                        @include('frontend.amazy.partials._home_product_card', [
+                            'product' => $product,
+                            'cardClass' => 'product_widget5 mb_30 style5',
+                            'metaClass' => 'product__meta text-center',
+                            'showStoreVendor' => true,
+                        ])
+                        @continue
                         <div class="product_widget5 mb_30 style5">
                             <div class="product_thumb_upper">
                                 @php
@@ -1461,6 +1468,13 @@
                         <!-- conttent  -->
                         <div class="amaz_fieature_active fieature_crousel_area owl-carousel">
                             @foreach($top_rating->getHomePageProductByQuery() as $key => $product)
+                            @include('frontend.amazy.partials._home_product_card', [
+                                'product' => $product,
+                                'cardClass' => 'product_widget5 mb_30 style5',
+                                'metaClass' => 'product__meta px-3 text-center',
+                                'showStoreVendor' => true,
+                            ])
+                            @continue
                             <div class="product_widget5 mb_30 style5">
                                 <div class="product_thumb_upper">
                                     @php
@@ -1630,6 +1644,13 @@
                         <!-- conttent  -->
                         <div class="amaz_fieature_active fieature_crousel_area owl-carousel">
                             @foreach($peoples_choice->getHomePageProductByQuery() as $key => $product)
+                            @include('frontend.amazy.partials._home_product_card', [
+                                'product' => $product,
+                                'cardClass' => 'product_widget5 mb_30 style5',
+                                'metaClass' => 'product__meta px-3 text-center',
+                                'showStoreVendor' => true,
+                            ])
+                            @continue
 
                             <div class="product_widget5 mb_30 style5">
                                 <div class="product_thumb_upper">
@@ -1804,6 +1825,13 @@
                         <!-- conttent  -->
                         <div class="amaz_fieature_active fieature_crousel_area owl-carousel">
                             @foreach($top_picks->getHomePageProductByQuery() as $key => $product)
+                            @include('frontend.amazy.partials._home_product_card', [
+                                'product' => $product,
+                                'cardClass' => 'product_widget5 mb_30 style5',
+                                'metaClass' => 'product__meta px-3 text-center',
+                                'showStoreVendor' => true,
+                            ])
+                            @continue
                                 <div class="product_widget5 mb_30 style5">
                                     <div class="product_thumb_upper">
                                         @php
@@ -2016,6 +2044,13 @@
                     </div>
                     <div class="amaz_recomanded_box_body2 dataApp">
                         @foreach($more_products->getHomePageProductByQuery() as $key => $product)
+                        @include('frontend.amazy.partials._home_product_card', [
+                            'product' => $product,
+                            'cardClass' => 'product_widget5 style5',
+                            'metaClass' => 'product__meta text-center',
+                            'showStoreVendor' => true,
+                        ])
+                        @continue
                         <div class="product_widget5 style5">
                             <div class="product_thumb_upper">
                                 @php
