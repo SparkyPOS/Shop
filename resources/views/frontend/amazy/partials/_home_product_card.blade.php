@@ -40,9 +40,10 @@
     $cardClass = $cardClass ?? 'product_widget5 mb_30 style5';
     $metaClass = $metaClass ?? 'product__meta text-center';
     $showStoreVendor = $showStoreVendor ?? true;
+    $auctionStyle = $auctionStyle ?? 'compact';
 @endphp
 
-<div class="{{ $cardClass }} {{ $isAuctionActive ? 'home-auction-card' : '' }}">
+<div class="{{ $cardClass }} {{ $isAuctionActive ? 'home-auction-card home-auction-card--' . $auctionStyle : '' }}">
     @if ($isAuctionActive)
         <div class="auction-svg">
             <img class="auction-icon" src="{{ asset('public/auction.svg') }}" alt="auction">
