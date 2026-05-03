@@ -185,7 +185,7 @@
                     $timer.countdown(auctionDate, function (event) {
                         $(this).html(
                             event.strftime(
-                                '<div class=\"single_count\"><span>%D</span></div><span class=\"count_separator\">:</span><div class=\"single_count\"><span>%H</span></div><span class=\"count_separator\">:</span><div class=\"single_count\"><span>%M</span></div><span class=\"count_separator\">:</span><div class=\"single_count\"><span>%S</span></div>'
+                                '<div class=\"single_count\"><span>%D</span><p>Days</p></div><div class=\"single_count\"><span>%H</span><p>Hrs</p></div><div class=\"single_count\"><span>%M</span><p>Mins</p></div><div class=\"single_count\"><span>%S</span><p>Secs</p></div>'
                             )
                         );
                     });

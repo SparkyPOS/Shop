@@ -35,24 +35,36 @@
 }
 
 .home-auction-card .home-auction-timer {
-    gap: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     justify-content: center;
 }
 
 .home-auction-card .home-auction-timer .single_count {
-    min-width: 28px;
-    padding: 2px 4px;
-    border-radius: 3px;
+    min-width: 30px;
+    padding: 2px 3px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .home-auction-card .home-auction-timer .single_count span {
-    font-size: 11px;
-    line-height: 1;
+    font-size: 12px;
+    line-height: 1.1;
+    font-weight: 700;
 }
 
-.home-auction-card .home-auction-timer .count_separator {
-    font-size: 11px;
+.home-auction-card .home-auction-timer .single_count p {
+    margin-top: 1px;
+    margin-bottom: 0;
+    font-size: 9px;
     line-height: 1;
+    text-transform: uppercase;
     color: var(--text_color);
     opacity: .7;
 }
