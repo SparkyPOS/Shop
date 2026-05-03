@@ -319,7 +319,34 @@ class GeneralSettingController extends Controller
             return $timezone;
         }
 
-        // Common typo seen in settings imports: American/* -> America/*
+        $legacyMap = [
+            // Common typo
+            'American/New_York' => 'America/New_York',
+
+            // Legacy IDs from timezone seed no longer valid on newer PHP builds
+            'US/Samoa' => 'Pacific/Pago_Pago',
+            'US/Hawaii' => 'Pacific/Honolulu',
+            'US/Alaska' => 'America/Anchorage',
+            'US/Pacific' => 'America/Los_Angeles',
+            'US/Arizona' => 'America/Phoenix',
+            'US/Mountain' => 'America/Denver',
+            'Canada/Saskatchewan' => 'America/Regina',
+            'US/Central' => 'America/Chicago',
+            'US/Eastern' => 'America/New_York',
+            'US/East-Indiana' => 'America/Indiana/Indianapolis',
+            'Canada/Atlantic' => 'America/Halifax',
+            'Canada/Newfoundland' => 'America/St_Johns',
+            'America/Buenos_Aires' => 'America/Argentina/Buenos_Aires',
+            'America/Godthab' => 'America/Nuuk',
+            'Europe/Kiev' => 'Europe/Kyiv',
+            'Asia/Chongqing' => 'Asia/Shanghai',
+            'Australia/Canberra' => 'Australia/Sydney',
+        ];
+
+        if (isset($legacyMap[$timezone]) && $this->isValidTimezoneId($legacyMap[$timezone])) {
+            return $legacyMap[$timezone];
+        }
+
         if (str_starts_with($timezone, 'American/')) {
             $candidate = 'America/' . substr($timezone, strlen('American/'));
             if ($this->isValidTimezoneId($candidate)) {
