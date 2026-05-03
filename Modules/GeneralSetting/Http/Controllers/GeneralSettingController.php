@@ -248,8 +248,14 @@ class GeneralSettingController extends Controller
                 $user->save();
             }
         }
-        if($request->time_zone != null){
-            putEnvConfigration('TIME_ZONE',$request->time_zone);
+        if ($request->filled('time_zone')) {
+            $normalizedTimeZone = $this->normalizeTimezoneId($request->time_zone);
+            if ($normalizedTimeZone === null) {
+                Toastr::error('Invalid timezone selected. Please choose a valid timezone.');
+                return redirect()->back()->withInput();
+            }
+            $request->merge(['time_zone' => $normalizedTimeZone]);
+            putEnvConfigration('TIME_ZONE', $normalizedTimeZone);
         }
         if($request->has('decimal_limit')){
             $request->merge(['decimal_limit' => intval(round($request->decimal_limit))]);
@@ -296,6 +302,37 @@ class GeneralSettingController extends Controller
             LogActivity::errorLog($e->getMessage());
             return 0;
         }
+    }
+
+    private function normalizeTimezoneId(?string $timezone): ?string
+    {
+        if ($timezone === null) {
+            return null;
+        }
+
+        $timezone = trim($timezone);
+        if ($timezone === '') {
+            return null;
+        }
+
+        if ($this->isValidTimezoneId($timezone)) {
+            return $timezone;
+        }
+
+        // Common typo seen in settings imports: American/* -> America/*
+        if (str_starts_with($timezone, 'American/')) {
+            $candidate = 'America/' . substr($timezone, strlen('American/'));
+            if ($this->isValidTimezoneId($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function isValidTimezoneId(string $timezone): bool
+    {
+        return in_array($timezone, timezone_identifiers_list(), true);
     }
 
     public function sms_gateway_credentials_update(Request $request)
