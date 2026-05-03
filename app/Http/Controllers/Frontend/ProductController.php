@@ -120,6 +120,7 @@ class ProductController extends Controller
         // Attach auction context if this product is under an active auction
         $auction = null;
         $max_bid = null;
+        $auction_winner_bid = null;
         $is_entry_amount_paid = 1;
         $hide_purchase_cta = false;
         $is_auction_product = false;
@@ -130,6 +131,12 @@ class ProductController extends Controller
             if ($auction) {
                 $is_auction_product = true;
                 $max_bid = AuctionBid::where('auction_id', $auction->id)->max('bid_amount');
+                if (!empty($auction->auction_end_date) && $auction->auction_end_date < now()->toDateString()) {
+                    $auction_winner_bid = AuctionBid::where('auction_id', $auction->id)
+                        ->orderByDesc('bid_amount')
+                        ->orderByDesc('id')
+                        ->first();
+                }
                 $is_entry_amount_paid = 1;
                 // Hide purchase CTA if highest bid reaches configured percentage of product price
                 try {
@@ -155,9 +162,9 @@ class ProductController extends Controller
 
         if(isModuleActive('CheckPincode')){
             $pincodeConfig = PinCodeConfigurations::first();
-            return view(theme('pages.product_details'),compact('product','rating','total_review','recent_viewed_products','pincodeConfig','reasons','auction','max_bid','is_entry_amount_paid','hide_purchase_cta', 'is_auction_product'));
+            return view(theme('pages.product_details'),compact('product','rating','total_review','recent_viewed_products','pincodeConfig','reasons','auction','max_bid','auction_winner_bid','is_entry_amount_paid','hide_purchase_cta', 'is_auction_product'));
         }
-        return view(theme('pages.product_details'),compact('product','rating','total_review','recent_viewed_products','reasons','auction','max_bid','is_entry_amount_paid','hide_purchase_cta', 'is_auction_product'));
+        return view(theme('pages.product_details'),compact('product','rating','total_review','recent_viewed_products','reasons','auction','max_bid','auction_winner_bid','is_entry_amount_paid','hide_purchase_cta', 'is_auction_product'));
 
     }
     public function showVendors(Request $request)

@@ -16,11 +16,13 @@
 
     $auction = null;
     $isAuctionActive = false;
+    $isAuctionEnded = false;
     $auctionDate = null;
 
     if (isModuleActive('AuctionProducts') && isset($product->auction) && $product->auction) {
         $auction = $product->auction;
         $today = date('Y-m-d');
+        $isAuctionEnded = !empty($auction->auction_end_date) && $auction->auction_end_date < $today;
         $isAuctionActive = (int) $auction->status === 1 && !empty($auction->auction_end_date) && $auction->auction_end_date >= $today;
 
         if ($isAuctionActive) {
@@ -43,6 +45,7 @@
     $auctionStyle = $auctionStyle ?? 'compact';
 @endphp
 
+@if(!$isAuctionEnded)
 <div class="{{ $cardClass }} {{ $isAuctionActive ? 'home-auction-card home-auction-card--' . $auctionStyle : '' }}">
     @if ($isAuctionActive)
         <div class="auction-svg">
@@ -214,3 +217,4 @@
         @endif
     </div>
 </div>
+@endif
