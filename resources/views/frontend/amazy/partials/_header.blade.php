@@ -78,7 +78,7 @@
             }
         @endphp
 
-        @if($showProductActionBar)
+        <!-- @if($showProductActionBar)
             <div class="product_details_buttons d-md-none" id="cart_footer_mobile">
 
                 @if($isProductPage)
@@ -127,8 +127,16 @@
                     <button class="product_details_button add_gift_card_to_cart" type="button" data-gift-card-id="{{ $card->id }}" data-seller="1" data-base-price="{{$base_price}}" data-shipping-method="1" data-show="{{json_encode($showData)}}">{{__('common.add_to_cart')}}</button>
                 @endif
             </div>
-        @endif
-            <ul class="short_curt_icons {{ $showProductActionBar ? 'has_product_action_bar' : '' }}">
+        @endif -->
+            <ul class="short_curt_icons">
+                <li>
+                    <a href="javascript:void(0)" onclick="window.history.back()">
+                        <div class="cart_singleIcon">
+                            <i class="ti-arrow-left"></i>
+                        </div>
+                        <span>{{__('common.back')}}</span>
+                    </a>
+                </li>
                 <li>
                     <a href="{{url('/')}}">
                         <div class="cart_singleIcon">
@@ -137,14 +145,14 @@
                         <span>{{__('common.home')}}</span>
                     </a>
                 </li>
-                <li>
+                <!-- <li>
                     <a href="{{ url('/category') }}">
                         <div class="cart_singleIcon">
                             <i class="ti-align-justify"></i>
                         </div>
                         <span>{{__('common.category')}}</span>
                     </a>
-                </li>
+                </li> -->
                 <li>
                     <a class="position-relative" href="{{url('/cart')}}">
                         <div class="cart_singleIcon cart_singleIcon_cart d-flex align-items-center justify-content-center position-relative">
@@ -167,7 +175,7 @@
                 <span>{{__('common.cart')}} (<span class="cart_count_bottom">{{getNumberTranslate($items)}}</span>)</span>
             </a>
         </li>
-        <li>
+        <!-- <li>
             @if (isset($flash_deal))
                 <a class="position-relative" href="{{ route('frontend.flash-deal', $flash_deal->slug) }}">
                     <div class="cart_singleIcon">
@@ -183,7 +191,7 @@
                     <span>{{__('common.notification')}}</span>
                 </a>
             @endif
-        </li>
+        </li> -->
         @guest
             <li>
                 <a href="https://app.sparkypos.com">
@@ -203,6 +211,18 @@
                 </a>
             </li>
         @endguest
+        <li>
+            <a href="
+                @if ($product->seller->slug)
+                    {{route('frontend.seller',$product->seller->slug)}}
+                @else
+                    {{route('frontend.seller',base64_encode($product->seller->id))}}
+                @endif
+            " class="d-flex flex-column justify-content-center product_details_icon">
+                <i class="ti-shopping-cart-full"></i>
+                <span>{{__('common.store')}}</span>
+            </a>
+        </li>
     </ul>
 </header>
     <!--/ HEADER::END -->
