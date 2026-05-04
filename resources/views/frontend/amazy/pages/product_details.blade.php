@@ -453,8 +453,10 @@
                                             $start_date = date('Y/m/d',strtotime($auction->auction_start_date));
                                             $end_date = date('Y/m/d',strtotime($auction->auction_end_date));
                                             $current_date = date('Y/m/d');
+                                            $today_ymd = date('Y-m-d');
                                             $auction_date = '1990/01/01';
                                             $start = 1;
+                                            $isAuctionEnded = !empty($auction->auction_end_date) && $auction->auction_end_date < $today_ymd;
                                             if($start_date<= $current_date && $end_date >= $current_date){
                                                 $auction_date = $end_date;
                                                 $start = 1;
@@ -496,39 +498,63 @@
                                                         </div>
                                                     </div>
                                                 @endif
-                                                <div class="single_pro_varient">
-                                                    <h5 class="font_16 f_w_500 theme_text3 pt-2 text-6870" > @if($start == 0) {{__('auctionproduct.auction_starts_in')}}: @else {{__('auctionproduct.auction_ends_in')}}: @endif </h5>
-                                                    <div class="product_number_count mr_5">
-                                                        <div id="count_down" class="deals_end_count amazy_date_counter"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div class="row mt_30 " id="add_to_cart_div">
-                                                @if($start == 1)
-                                                    @if($auction->status == 1 && $auction->auction_end_date >= date('Y-m-d'))
-                                                        <div class="col-md-6">
-                                                            <button type="button" id="placeBid" class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase" data-id="{{$auction->id}}" data-type="product">{{__('auctionproduct.place_bid')}}</button>
+                                                @if(!$isAuctionEnded)
+                                                    <div class="single_pro_varient">
+                                                        <h5 class="font_16 f_w_500 theme_text3 pt-2 text-6870" > @if($start == 0) {{__('auctionproduct.auction_starts_in')}}: @else {{__('auctionproduct.auction_ends_in')}}: @endif </h5>
+                                                        <div class="product_number_count mr_5">
+                                                            <div id="count_down" class="deals_end_count amazy_date_counter"></div>
                                                         </div>
-                                                        @if($showReserveBuyNow)
-                                                            <div class="col-md-6">
-                                                                <button type="button" class="amaz_primary_btn3 mb_20 w-100 text-center justify-content-center text-uppercase auction_buy_now_btn" data-price="{{ $reservePrice }}">
-                                                                    {{ __('common.buy_now') }} - {{ single_price($reservePrice) }}
-                                                                </button>
-                                                            </div>
-                                                        @endif
-                                                    @else
-                                                        <div class="col-md-6">
-                                                            <button type="button" disabled class="amaz_primary_btn style2 mb_20  add_to_cart text-uppercase flex-fill text-center w-100">{{__('auctionproduct.place_bid')}}</button>
-                                                        </div>
-                                                    @endif
-                                                    <div class="col-md-6">
-                                                        <button class="amaz_primary_btn style2 mb_20  bid_histoy text-uppercase flex-fill text-center w-100" data-url="{{ route('auction.auctionHistory',$auction->id) }}">
-                                                            {{ __('Bid History') }}
-                                                        </button>
                                                     </div>
                                                 @endif
                                             </div>
+
+                                            @if($isAuctionEnded)
+                                                <div class="auction-ended-box mb_20">
+                                                    <h5 class="f_w_700 text-uppercase mb-2">Auction Ended</h5>
+                                                    @if(isset($auction_winner_bid) && $auction_winner_bid)
+                                                        <p class="mb-1">Awarded to: <strong>{{ $auction_winner_bid->customer_name }}</strong></p>
+                                                        <p class="mb-0">Winning bid: <strong>{{ single_price($auction_winner_bid->bid_amount) }}</strong></p>
+                                                    @else
+                                                        <p class="mb-0">No winner awarded yet.</p>
+                                                    @endif
+                                                </div>
+                                                <div class="row mt_20" id="add_to_cart_div">
+                                                    <div class="col-md-6">
+                                                        <button type="button" disabled class="amaz_primary_btn style2 mb_20 add_to_cart text-uppercase flex-fill text-center w-100">Auction Ended</button>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <button class="amaz_primary_btn style2 mb_20 bid_histoy text-uppercase flex-fill text-center w-100" data-url="{{ route('auction.auctionHistory',$auction->id) }}">
+                                                            {{ __('Bid History') }}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="row mt_30 " id="add_to_cart_div">
+                                                    @if($start == 1)
+                                                        @if($auction->status == 1 && $auction->auction_end_date >= date('Y-m-d'))
+                                                            <div class="col-md-6">
+                                                                <button type="button" id="placeBid" class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase" data-id="{{$auction->id}}" data-type="product">{{__('auctionproduct.place_bid')}}</button>
+                                                            </div>
+                                                            @if($showReserveBuyNow)
+                                                                <div class="col-md-6">
+                                                                    <button type="button" class="amaz_primary_btn3 mb_20 w-100 text-center justify-content-center text-uppercase auction_buy_now_btn" data-price="{{ $reservePrice }}">
+                                                                        {{ __('common.buy_now') }} - {{ single_price($reservePrice) }}
+                                                                    </button>
+                                                                </div>
+                                                            @endif
+                                                        @else
+                                                            <div class="col-md-6">
+                                                                <button type="button" disabled class="amaz_primary_btn style2 mb_20  add_to_cart text-uppercase flex-fill text-center w-100">{{__('auctionproduct.place_bid')}}</button>
+                                                            </div>
+                                                        @endif
+                                                        <div class="col-md-6">
+                                                            <button class="amaz_primary_btn style2 mb_20  bid_histoy text-uppercase flex-fill text-center w-100" data-url="{{ route('auction.auctionHistory',$auction->id) }}">
+                                                                {{ __('Bid History') }}
+                                                            </button>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endif
                                         </div>
                                     @endif
 
@@ -2441,6 +2467,18 @@
 
     .auction-summary .single_pro_varient:last-child {
         margin-bottom: 0;
+    }
+
+    .auction-ended-box {
+        padding: 12px 14px;
+        border: 1px solid #e4d1d1;
+        border-left: 4px solid #d9534f;
+        border-radius: 8px;
+        background: #fff7f7;
+    }
+
+    .auction-ended-box p {
+        color: #4a4a4a;
     }
 
     .auction-summary #count_down {
