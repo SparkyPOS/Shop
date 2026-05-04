@@ -158,6 +158,11 @@ class SellerProduct extends Model
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
+    public function auction()
+    {
+        return $this->hasOne(\Modules\AuctionProducts\Entities\Auction::class, 'seller_product_id', 'id');
+    }
+
     public function getVariantDetailsAttribute()
     {
         $product = $this->load('skus', 'skus.product_variations');

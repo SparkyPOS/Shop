@@ -248,8 +248,13 @@ class GeneralSettingController extends Controller
                 $user->save();
             }
         }
-        if($request->time_zone != null){
-            putEnvConfigration('TIME_ZONE',$request->time_zone);
+        if ($request->filled('time_zone')) {
+            $normalizedTimeZone = $this->normalizeTimezoneId($request->time_zone);
+            if ($normalizedTimeZone === null) {
+                Toastr::error('Invalid timezone selected. Please choose a valid timezone.');
+                return redirect()->back()->withInput();
+            }
+            putEnvConfigration('TIME_ZONE', $normalizedTimeZone);
         }
         if($request->has('decimal_limit')){
             $request->merge(['decimal_limit' => intval(round($request->decimal_limit))]);
@@ -296,6 +301,64 @@ class GeneralSettingController extends Controller
             LogActivity::errorLog($e->getMessage());
             return 0;
         }
+    }
+
+    private function normalizeTimezoneId(?string $timezone): ?string
+    {
+        if ($timezone === null) {
+            return null;
+        }
+
+        $timezone = trim($timezone);
+        if ($timezone === '') {
+            return null;
+        }
+
+        if ($this->isValidTimezoneId($timezone)) {
+            return $timezone;
+        }
+
+        $legacyMap = [
+            // Common typo
+            'American/New_York' => 'America/New_York',
+
+            // Legacy IDs from timezone seed no longer valid on newer PHP builds
+            'US/Samoa' => 'Pacific/Pago_Pago',
+            'US/Hawaii' => 'Pacific/Honolulu',
+            'US/Alaska' => 'America/Anchorage',
+            'US/Pacific' => 'America/Los_Angeles',
+            'US/Arizona' => 'America/Phoenix',
+            'US/Mountain' => 'America/Denver',
+            'Canada/Saskatchewan' => 'America/Regina',
+            'US/Central' => 'America/Chicago',
+            'US/Eastern' => 'America/New_York',
+            'US/East-Indiana' => 'America/Indiana/Indianapolis',
+            'Canada/Atlantic' => 'America/Halifax',
+            'Canada/Newfoundland' => 'America/St_Johns',
+            'America/Buenos_Aires' => 'America/Argentina/Buenos_Aires',
+            'America/Godthab' => 'America/Nuuk',
+            'Europe/Kiev' => 'Europe/Kyiv',
+            'Asia/Chongqing' => 'Asia/Shanghai',
+            'Australia/Canberra' => 'Australia/Sydney',
+        ];
+
+        if (isset($legacyMap[$timezone]) && $this->isValidTimezoneId($legacyMap[$timezone])) {
+            return $legacyMap[$timezone];
+        }
+
+        if (str_starts_with($timezone, 'American/')) {
+            $candidate = 'America/' . substr($timezone, strlen('American/'));
+            if ($this->isValidTimezoneId($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    private function isValidTimezoneId(string $timezone): bool
+    {
+        return in_array($timezone, timezone_identifiers_list(), true);
     }
 
     public function sms_gateway_credentials_update(Request $request)

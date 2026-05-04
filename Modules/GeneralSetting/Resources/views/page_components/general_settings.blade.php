@@ -125,8 +125,34 @@
                     <div class="primary_input mb-25">
                         <label class="primary_input_label" for="">{{ __('general_settings.time_zone') }}</label>
                         <select class="primary_select mb-25" name="time_zone" id="time_zone_id">
+                            @php
+                                $legacyTimezoneMap = [
+                                    'US/Samoa' => 'Pacific/Pago_Pago',
+                                    'US/Hawaii' => 'Pacific/Honolulu',
+                                    'US/Alaska' => 'America/Anchorage',
+                                    'US/Pacific' => 'America/Los_Angeles',
+                                    'US/Arizona' => 'America/Phoenix',
+                                    'US/Mountain' => 'America/Denver',
+                                    'Canada/Saskatchewan' => 'America/Regina',
+                                    'US/Central' => 'America/Chicago',
+                                    'US/Eastern' => 'America/New_York',
+                                    'US/East-Indiana' => 'America/Indiana/Indianapolis',
+                                    'Canada/Atlantic' => 'America/Halifax',
+                                    'Canada/Newfoundland' => 'America/St_Johns',
+                                    'America/Buenos_Aires' => 'America/Argentina/Buenos_Aires',
+                                    'America/Godthab' => 'America/Nuuk',
+                                    'Europe/Kiev' => 'Europe/Kyiv',
+                                    'Asia/Chongqing' => 'Asia/Shanghai',
+                                    'Australia/Canberra' => 'Australia/Sydney',
+                                    'American/New_York' => 'America/New_York',
+                                ];
+                            @endphp
                             @foreach ($timezones as $key => $timeZone)
-                                <option value="{{ $timeZone->code }}" @if ($setting->time_zone == $timeZone->code) selected @endif>{{ getNumberTranslate($timeZone->time_zone) }}</option>
+                                @php
+                                    $normalizedOptionCode = $legacyTimezoneMap[$timeZone->code] ?? $timeZone->code;
+                                    $isSelectedTimezone = ($setting->time_zone == $timeZone->code) || ($setting->time_zone == $normalizedOptionCode);
+                                @endphp
+                                <option value="{{ $timeZone->code }}" @if ($isSelectedTimezone) selected @endif>{{ getNumberTranslate($timeZone->time_zone) }}</option>
                             @endforeach
                         </select>
                     </div>

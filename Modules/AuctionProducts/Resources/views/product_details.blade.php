@@ -263,14 +263,13 @@
                                     </div>
 
                                     @php
-                                        $highestBid = 0;
-                                        $counter=0;
-                                        if(!empty($auction->auction_bid) && $auction->auction_bid->count() > 0){
-                                            foreach ($auction->auction_bid as  $bid) {
-                                                $counter++;
-                                            }
-                                            $highestBid = $auction->auction_bid[$counter-1]->bid_amount;
+                                        $highestBid = (float) ($max_bid ?? 0);
+                                        $reservePrice = (float) ($auction->reserve_price ?? 0);
+                                        if ($reservePrice <= 0) {
+                                            $activeSku = $product->skus->where('status', 1)->first();
+                                            $reservePrice = (float) ($activeSku->selling_price ?? $activeSku->sell_price ?? 0);
                                         }
+                                        $showReserveBuyNow = $reservePrice > 0 && $highestBid < $reservePrice;
                                     @endphp
 
                                     <div class="single_pro_varient m-n-30" >
@@ -282,41 +281,16 @@
 
                                     <div class="row mt_30 " id="add_to_cart_div">
                                         @if($start == 1)
-                                        @if($is_entry_amount_paid == 0)
-                                           <div class="col-lg-12 mb-3">
-                                                <p>{{__('auctionproduct.to_start_bidding_on_this_auction_you_need_to_pay_entry_amount')}} {{ single_price($auction->entry_amount) }}</p>
-                                           </div>
-                                        @endif
-                                            @if($auction->status == 1 && $auction->auction_end_date > date('Y-m-d'))
-                                                @if($is_entry_amount_paid == 1)
-
+                                            @if($auction->status == 1 && $auction->auction_end_date >= date('Y-m-d'))
+                                                <div class="col-md-6">
+                                                    <button type="button" id="placeBid" class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn" data-id="{{$auction->id}}" data-type="product">{{__('auctionproduct.place_bid')}}</button>
+                                                </div>
+                                                @if($showReserveBuyNow)
                                                     <div class="col-md-6">
-                                                        <button type="button" id="placeBid" class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn" data-id="{{$auction->id}}" data-type="product">{{__('auctionproduct.place_bid')}}</button>
+                                                        <button type="button" class="amaz_primary_btn3 mb_20 w-100 text-center justify-content-center text-uppercase auction_buy_now_btn" data-price="{{ $reservePrice }}">
+                                                            {{ __('common.buy_now') }} - {{ single_price($reservePrice) }}
+                                                        </button>
                                                     </div>
-                                                @elseif($is_entry_amount_paid == 2)
-                                                     @auth
-                                                         <div class="col-md-6">
-                                                             <a href="javascript:void(0)"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn">{{__('auctionproduct.panding_entry_amount')}}</a>
-                                                         </div>
-                                                    @endauth
-                                                    @guest
-                                                        <div class="col-md-6">
-                                                            <a href="{{ route('sso.redirect') }}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn">{{__('auctionproduct.pay_entry_amount')}}</a>
-                                                        </div>
-                                                    @endguest
-                                                @else
-                                                    @auth
-                                                     <div class="col-md-6">
-                                                         <a href="{{ route('auction.payentryAmount',$auction->id) }}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn">{{__('auctionproduct.pay_entry_amount')}}</a>
-                                                     </div>
-                                                    @endauth
-
-                                                    @guest
-                                                        <div class="col-md-6">
-                                                            <a href="{{ route('sso.redirect') }}"  class="amaz_primary_btn3 mb_20  w-100 text-center justify-content-center text-uppercase buy_now_btn">{{__('auctionproduct.pay_entry_amount')}}</a>
-                                                        </div>
-                                                    @endguest
-
                                                 @endif
                                             @else
                                                 <div class="col-md-6">
@@ -1203,8 +1177,18 @@
                 @if(Illuminate\Support\Facades\Auth::check())
                     $('#placebid_modal').modal('show');
                 @else
-                    window.location.href = '{{url("/login")}}';
+                    window.location.href = '{{ route("sso.redirect", ["redirect_to" => url()->current()]) }}';
                 @endif
+            });
+
+            $(document).on('click','.auction_buy_now_btn', function(event){
+                event.preventDefault();
+                let reservePrice = parseFloat($(this).data('price') || 0);
+                if (reservePrice <= 0) {
+                    return;
+                }
+
+                buyNow($('#product_sku_id').val(), $('#seller_id').val(), $('#qty').data('value'), reservePrice, $('#shipping_type').val(), 'product', $('#owner').val(), null, 'auction');
             });
 
 
@@ -1240,13 +1224,19 @@
                             toastr.error("Bid amount should be greater than Starting Bid!", "{{__('common.error')}}");
                         }
                         if(data.success==3 && data.data=='low_bid_amount'){
-                            toastr.error("Bid amount should be greater than Highest Bid!", "{{__('common.error')}}");
+                            toastr.error("Bid amount should be at least " + data.minimum_bid, "{{__('common.error')}}");
+                        }
+                        if(data.success==4 && data.data=='login_required'){
+                            window.location.href = '{{ route("sso.redirect", ["redirect_to" => url()->current()]) }}';
+                        }
+                        if(data.success==5 || data.success==6){
+                            toastr.error("Auction is not available for bidding.", "{{__('common.error')}}");
                         }
                         if(data.success===1 && data.data==true){
                             $('#placebid_modal').modal('hide');
                             toastr.success("Bid placed successfully", "{{__('common.success')}}");
                             location.reload();
-                        }else{
+                        }else if(![0, 2, 3, 4, 5, 6].includes(data.success)){
                             toastr.error("Can't place Bid!", "{{__('common.error')}}");
                         }
                 });

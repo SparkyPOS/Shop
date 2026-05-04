@@ -18,6 +18,155 @@
     top: 0;
     left: 0;
 }
+
+/* Shared auction card alignment */
+.home-auction-card .product__meta h4 {
+    min-height: 44px;
+}
+
+.home-auction-card .auction-svg {
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+}
+
+/* Full mode: match auction gallery card style */
+.home-auction-card--full .auction-svg {
+    border-radius: 50%;
+    position: absolute;
+    z-index: 1;
+    background: #ff2732;
+    height: 60px;
+    width: 60px;
+    display: flex;
+    justify-content: center;
+    margin-top: 5px;
+    right: 6px;
+}
+
+.home-auction-card--full .auction-svg .auction-icon {
+    width: 50%;
+    height: auto;
+    transform: unset !important;
+}
+
+.home-auction-card--full .home-auction-count-wrap {
+    margin-top: 2px !important;
+    margin-bottom: 6px !important;
+    padding-left: 0 !important;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.home-auction-card--full .home-auction-timer {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(3px, .45vw, 6px);
+    width: min(94%, 260px);
+    margin: 0 auto;
+    padding: clamp(4px, .5vw, 7px);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, .55);
+}
+
+.home-auction-card--full .home-auction-timer .single_count {
+    min-width: 0;
+    padding: clamp(3px, .45vw, 5px) 2px;
+    border-radius: 4px;
+}
+
+.home-auction-card--full .home-auction-timer .single_count span {
+    font-size: clamp(10px, 1vw, 13px);
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.home-auction-card--full .home-auction-timer .single_count p {
+    font-size: clamp(7px, .7vw, 9px);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.home-auction-card--full .product__meta {
+    padding-top: 4px !important;
+    padding-bottom: 8px !important;
+}
+
+.home-auction-card--full .product__meta .product_banding {
+    margin-bottom: 2px;
+    line-height: 1.2;
+}
+
+.home-auction-card--full .product__meta h4 {
+    margin-top: 4px;
+    margin-bottom: 10px;
+    min-height: 36px;
+}
+
+.home-auction-card--full .product__meta .product_price {
+    margin-top: 0;
+}
+
+.home-auction-card--full .product__meta .product_price p {
+    margin-bottom: 0;
+    line-height: 1;
+}
+
+/* Compact mode: used for non-best-deals sections */
+.home-auction-card--compact .auction-svg {
+    top: 10px;
+    right: 10px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #ff2732;
+    align-items: center;
+}
+
+.home-auction-card--compact .auction-icon {
+    width: 12px;
+    height: 12px;
+    transform: unset !important;
+}
+
+.home-auction-card--compact .home-auction-count-wrap {
+    margin: 6px 0 4px !important;
+    padding-left: 0 !important;
+}
+
+.home-auction-card--compact .home-auction-timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.home-auction-card--compact .home-auction-timer .single_count {
+    min-width: 30px;
+    padding: 2px 3px;
+}
+
+.home-auction-card--compact .home-auction-timer .single_count span {
+    font-size: 12px;
+    line-height: 1.1;
+    font-weight: 700;
+}
+
+.home-auction-card--compact .home-auction-timer .single_count p {
+    margin-top: 1px;
+    margin-bottom: 0;
+    font-size: 9px;
+    line-height: 1;
+}
+
+.home-auction-card--compact .home-auction-bid-btn {
+    min-height: 34px;
+    padding: 8px 12px;
+    font-size: 12px;
+    line-height: 1.2;
+}
 </style>
 @endpush
 
@@ -51,6 +200,14 @@
                 <input type="hidden" class="productQtyCount" value="{{$best_deal->getProductByQuery()->count()}}">
                 <div class="trending_product_active owl-carousel">
                     @foreach($best_deal->getProductByQuery() as $key => $product)
+                        @include('frontend.amazy.partials._home_product_card', [
+                            'product' => $product,
+                            'cardClass' => 'product_widget5 mb_30 style5',
+                            'metaClass' => 'product__meta text-center',
+                            'showStoreVendor' => true,
+                            'auctionStyle' => 'full',
+                        ])
+                        @continue
                         <div class="product_widget5 mb_30 style5">
                             <div class="product_thumb_upper">
                                 @php
@@ -1461,6 +1618,13 @@
                         <!-- conttent  -->
                         <div class="amaz_fieature_active fieature_crousel_area owl-carousel">
                             @foreach($top_rating->getHomePageProductByQuery() as $key => $product)
+                            @include('frontend.amazy.partials._home_product_card', [
+                                'product' => $product,
+                                'cardClass' => 'product_widget5 mb_30 style5',
+                                'metaClass' => 'product__meta px-3 text-center',
+                                'showStoreVendor' => true,
+                            ])
+                            @continue
                             <div class="product_widget5 mb_30 style5">
                                 <div class="product_thumb_upper">
                                     @php
@@ -1630,6 +1794,13 @@
                         <!-- conttent  -->
                         <div class="amaz_fieature_active fieature_crousel_area owl-carousel">
                             @foreach($peoples_choice->getHomePageProductByQuery() as $key => $product)
+                            @include('frontend.amazy.partials._home_product_card', [
+                                'product' => $product,
+                                'cardClass' => 'product_widget5 mb_30 style5',
+                                'metaClass' => 'product__meta px-3 text-center',
+                                'showStoreVendor' => true,
+                            ])
+                            @continue
 
                             <div class="product_widget5 mb_30 style5">
                                 <div class="product_thumb_upper">
@@ -1804,6 +1975,13 @@
                         <!-- conttent  -->
                         <div class="amaz_fieature_active fieature_crousel_area owl-carousel">
                             @foreach($top_picks->getHomePageProductByQuery() as $key => $product)
+                            @include('frontend.amazy.partials._home_product_card', [
+                                'product' => $product,
+                                'cardClass' => 'product_widget5 mb_30 style5',
+                                'metaClass' => 'product__meta px-3 text-center',
+                                'showStoreVendor' => true,
+                            ])
+                            @continue
                                 <div class="product_widget5 mb_30 style5">
                                     <div class="product_thumb_upper">
                                         @php
@@ -2016,6 +2194,13 @@
                     </div>
                     <div class="amaz_recomanded_box_body2 dataApp">
                         @foreach($more_products->getHomePageProductByQuery() as $key => $product)
+                        @include('frontend.amazy.partials._home_product_card', [
+                            'product' => $product,
+                            'cardClass' => 'product_widget5 style5',
+                            'metaClass' => 'product__meta text-center',
+                            'showStoreVendor' => true,
+                        ])
+                        @continue
                         <div class="product_widget5 style5">
                             <div class="product_thumb_upper">
                                 @php

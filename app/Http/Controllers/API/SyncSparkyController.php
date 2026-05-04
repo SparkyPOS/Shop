@@ -1081,9 +1081,14 @@ class SyncSparkyController extends Controller
                             $auction->auction_start_date = substr((string) $product['start_auction'], 0, 10);
                             $auction->auction_end_date = substr((string) $product['end_auction'], 0, 10);
                             // optional extended fields if POS provides
-                            if (isset($product['reserve_price'])) $auction->reserve_price = (float) $product['reserve_price'];
+                            $reservePrice = isset($product['reserve_price']) ? (float) $product['reserve_price'] : 0;
+                            if ($reservePrice <= 0) {
+                                $reservePrice = (float) ($product['selling_price'] ?? $product['sale_price_edit'] ?? 0);
+                            }
+                            $auction->reserve_price = $reservePrice;
                             if (isset($product['increment_price'])) $auction->increment_price = (float) $product['increment_price'];
-                            if (isset($product['entry_amount'])) $auction->entry_amount = (float) $product['entry_amount'];
+                            // Shop auctions follow a marketplace bid flow with no entry fee.
+                            $auction->entry_amount = 0;
                             $auction->status = 1; // list auction
                             $auction->save();
                         } else {

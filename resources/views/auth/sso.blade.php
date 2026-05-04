@@ -17,13 +17,13 @@
         </form>
     @endif
 <script>
-    const token = '{{ $token ?? null }}';
-    const redirectTo = '{{ $redirectTo ?? null }}';
+    const token = @json($token ?? null);
+    const redirectTo = @json($redirectTo ?? url('/'));
     document.addEventListener('DOMContentLoaded', function() {
         if (token) {
             document.getElementById('ssoForm').submit();
         } else {
-            document.location = redirectTo;
+            document.location = redirectTo || @json(url('/'));
         }
     })
 </script>

@@ -14,7 +14,6 @@ use Modules\UserActivityLog\Traits\LogActivity;
 use Modules\Product\Services\ReportReasonService;
 use Modules\AuctionProducts\Entities\Auction;
 use Modules\AuctionProducts\Entities\AuctionBid;
-use Modules\AuctionProducts\Entities\AuctionEntryAmountPayment;
 use Modules\CheckPincode\Entities\PinCodeConfigurations;
 class ProductController extends Controller
 {
@@ -121,7 +120,7 @@ class ProductController extends Controller
         // Attach auction context if this product is under an active auction
         $auction = null;
         $max_bid = null;
-        $is_entry_amount_paid = 0;
+        $is_entry_amount_paid = 1;
         $hide_purchase_cta = false;
         $is_auction_product = false;
         try {
@@ -131,20 +130,7 @@ class ProductController extends Controller
             if ($auction) {
                 $is_auction_product = true;
                 $max_bid = AuctionBid::where('auction_id', $auction->id)->max('bid_amount');
-                if (auth()->check()) {
-                    $entryAmount = AuctionEntryAmountPayment::where('user_id', auth()->user()->id)
-                        ->where('auction_id', $auction->id)
-                        ->latest()
-                        ->first();
-                    if (!empty($entryAmount) && $entryAmount->status == 1) {
-                        $is_entry_amount_paid = 1;
-                    } elseif (!empty($entryAmount) && $entryAmount->status == 0) {
-                        $is_entry_amount_paid = 2; // pending
-                    } else {
-                        $is_entry_amount_paid = 0; // not paid
-                    }
-                }
-
+                $is_entry_amount_paid = 1;
                 // Hide purchase CTA if highest bid reaches configured percentage of product price
                 try {
                     $percentage = isset($auction->percentage) ? floatval($auction->percentage) : 0.0;
