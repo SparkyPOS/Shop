@@ -119,6 +119,11 @@ class AuthController extends Controller
                     $user = User::where('external_customer_id', (string) $userId)->first();
                 }
                 if ($user instanceof User) {
+                    if (Auth::check()) {
+                        Auth::logout();
+                        $request->session()->invalidate();
+                        $request->session()->regenerateToken();
+                    }
                     Auth::loginUsingId($user->id);
                     $request->session()->regenerate();
 
