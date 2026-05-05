@@ -32,7 +32,7 @@ class CreateShippingMethodsTable extends Migration
                 'method_name' => 'Email Delivery',
                 'logo' => null,
                 'phone' => null,
-                'shipment_time' => '12-24 hrs',
+                'shipment_time' => '',
                 'cost' => 0,
                 'is_active' => 1,
                 'request_by_user' => null,

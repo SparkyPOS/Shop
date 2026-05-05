@@ -92,7 +92,6 @@
 
                             <div class="checout_head_title d-flex align-items-center package_table_head px-3 py-2">
                                 <span class="flex-fill">{{ getNumberTranslate(count($packages)) }} {{ __('common.items') }}</span>
-                                <span>{{ __('vendor') }}</span>
                                 <span>{{ __('common.subtotal') }}</span>
                                 <span>{{ __('common.quantity') }}</span>
                                 <span>{{ __('common.price') }}</span>
@@ -178,9 +177,6 @@
                                                                 </div>
                                                             </a>
                                                         </td>
-                                                        <td>
-                                                            <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{$item->seller->sellerAccount->vendor_id}}</h4>
-                                                        </td>
                                                         <td class="d-none d-md-table-cell">
                                                             <div class="d-flex align-items-center gap_7">
                                                                 @if($item->product->product->hasDeal)
@@ -210,7 +206,7 @@
                                                             </div>
                                                         </td>
                                                         <td>
-                                                            <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
                                                         </td>
                                                         <td>
                                                             <h4 class="font_16 f_w_500 m-0 text-nowrap">{{single_price($item->total_price)}}</h4>
@@ -243,7 +239,7 @@
                                                             </a>
                                                         </td>
                                                         <td>
-                                                            <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{$item->seller->sellerAccount->vendor_id}}</h4>
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{$item->seller->sellerAccount->vendor_id}}</h4>
                                                         </td>
                                                         <td>
                                                             <div class="d-flex align-items-center gap_7">
@@ -273,7 +269,7 @@
                                                             </div>
                                                         </td>
                                                         <td>
-                                                            <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{$item->qty}}</h4>
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{$item->qty}}</h4>
                                                         </td>
                                                         <td>
                                                             <h4 class="font_16 f_w_500 m-0 text-nowrap">{{single_price($item->total_price)}}</h4>
@@ -428,9 +424,6 @@
                                                             </a>
                                                         </td>
                                                         <td>
-                                                            <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{$item->seller->sellerAccount->vendor_id}}</h4>
-                                                        </td>
-                                                        <td>
 
                                                             @if(!Session::has('auction_type'))
                                                             <div class="d-flex align-items-center gap_7">
@@ -462,7 +455,7 @@
                                                             @endif
                                                         </td>
                                                         <td>
-                                                            <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
                                                         </td>
                                                         <td>
                                                             <h4 class="font_16 f_w_500 m-0 text-nowrap">{{single_price($item->total_price)}}</h4>
@@ -501,7 +494,7 @@
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
+                                                        <h4 class="font_16 f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
                                                     </td>
                                                     <td>
                                                         <h4 class="font_16 f_w_500 m-0 text-nowrap">{{single_price($item->total_price)}}</h4>
