@@ -24,6 +24,8 @@ use Modules\GeneralSetting\Entities\UserNotificationSetting;
 use Modules\GeneralSetting\Services\NotificationSettingService;
 use App\Services\CustomerSyncService;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+use Modules\RolePermission\Entities\Role;
 
 /**
  * @group User Management
@@ -102,12 +104,12 @@ class AuthController extends Controller
                 return redirect($mainapp.'/sign-in');
             }
 
-            $pasedToken = Crypt::decryptString($encryptedToken);
-            [$userId, $date, $redirectTo] = array_pad(explode('|', $pasedToken), 3, null);
-            $issuedAt = strtotime($date ?? '');
+            $parsedToken = Crypt::decryptString($encryptedToken);
+            [$userId, $date, $redirectTo, $ssoMeta] = $this->extractSsoPayload($parsedToken);
+            $issuedAt = strtotime((string) ($date ?? ''));
             $timeDifference = $issuedAt ? time() - $issuedAt : null;
 
-            if ($timeDifference !== null && $timeDifference >= 0 && $timeDifference < 300) {
+            if ($timeDifference !== null && $timeDifference >= 0 && $timeDifference < 600) {
                 $user = null;
                 if (Schema::hasColumn('users', 'app_user_id')) {
                     $user = User::where('app_user_id', $userId)->first();
@@ -118,12 +120,18 @@ class AuthController extends Controller
                 if (!$user && Schema::hasColumn('users', 'external_customer_id')) {
                     $user = User::where('external_customer_id', (string) $userId)->first();
                 }
+                if (!$user && !empty($ssoMeta['email'])) {
+                    $user = User::where('email', (string) $ssoMeta['email'])->first();
+                }
+                if (!$user) {
+                    $user = $this->provisionShopUserFromSso($userId, $ssoMeta);
+                } else {
+                    $this->hydrateShopUserSsoIdentifiers($user, $userId);
+                }
                 if ($user instanceof User) {
-                    if (Auth::check()) {
-                        Auth::logout();
-                        $request->session()->invalidate();
-                        $request->session()->regenerateToken();
-                    }
+                    Auth::logout();
+                    $request->session()->invalidate();
+                    $request->session()->regenerateToken();
                     Auth::loginUsingId($user->id);
                     $request->session()->regenerate();
 
@@ -141,6 +149,132 @@ class AuthController extends Controller
         } catch (\Throwable $e) {
             return redirect($mainapp.'/sign-in');
         }
+    }
+
+    private function extractSsoPayload(string $decryptedToken): array
+    {
+        $payload = json_decode($decryptedToken, true);
+        if (is_array($payload)) {
+            $userId = (string) ($payload['appUserId'] ?? $payload['userId'] ?? '');
+            $issuedAt = (string) ($payload['issuedAt'] ?? '');
+            $redirectTo = $payload['redirectTo'] ?? null;
+
+            return [$userId, $issuedAt, $redirectTo, $payload];
+        }
+
+        [$userId, $date, $redirectTo] = array_pad(explode('|', $decryptedToken, 3), 3, null);
+
+        return [$userId, $date, $redirectTo, []];
+    }
+
+    private function hydrateShopUserSsoIdentifiers(User $user, string $sourceUserId): void
+    {
+        $shouldSave = false;
+
+        if (Schema::hasColumn('users', 'app_user_id') && (empty($user->app_user_id) || (string) $user->app_user_id !== (string) $sourceUserId)) {
+            $user->app_user_id = (int) $sourceUserId;
+            $shouldSave = true;
+        }
+        if (Schema::hasColumn('users', 'pos_user_id') && (empty($user->pos_user_id) || (string) $user->pos_user_id !== (string) $sourceUserId)) {
+            $user->pos_user_id = (int) $sourceUserId;
+            $shouldSave = true;
+        }
+        if (Schema::hasColumn('users', 'external_customer_id') && (empty($user->external_customer_id) || (string) $user->external_customer_id !== (string) $sourceUserId)) {
+            $user->external_customer_id = (int) $sourceUserId;
+            $shouldSave = true;
+        }
+
+        if ($shouldSave) {
+            $user->save();
+        }
+    }
+
+    private function provisionShopUserFromSso(string $sourceUserId, array $ssoMeta): ?User
+    {
+        if (trim($sourceUserId) === '') {
+            return null;
+        }
+
+        $email = isset($ssoMeta['email']) ? trim((string) $ssoMeta['email']) : null;
+        if ($email === '') {
+            $email = null;
+        }
+        if ($email && User::where('email', $email)->exists()) {
+            $email = null;
+        }
+
+        $firstName = trim((string) ($ssoMeta['firstName'] ?? $ssoMeta['first_name'] ?? ''));
+        $lastName = trim((string) ($ssoMeta['lastName'] ?? $ssoMeta['last_name'] ?? ''));
+        if ($firstName === '' && !empty($ssoMeta['fullName'])) {
+            $parts = preg_split('/\s+/', trim((string) $ssoMeta['fullName']));
+            $lastName = trim((string) array_pop($parts));
+            $firstName = trim(implode(' ', $parts));
+        }
+        if ($firstName === '') {
+            $firstName = 'SSO';
+        }
+        if ($lastName === '') {
+            $lastName = 'User';
+        }
+
+        $baseUsername = trim((string) ($ssoMeta['username'] ?? $ssoMeta['name'] ?? ($email ? explode('@', $email)[0] : 'user_'.$sourceUserId)));
+        if ($baseUsername === '') {
+            $baseUsername = 'user_'.$sourceUserId;
+        }
+        $username = $baseUsername;
+        $counter = 1;
+        while (User::where('username', $username)->exists()) {
+            $username = $baseUsername.'_'.$counter++;
+        }
+
+        $shopRoleType = $this->mapSparkyRoleToShopType(
+            isset($ssoMeta['roleNamespace']) ? (string) $ssoMeta['roleNamespace'] : null,
+            isset($ssoMeta['roleType']) ? (string) $ssoMeta['roleType'] : null
+        );
+        $role = Role::where('type', $shopRoleType)->orderBy('id')->first()
+            ?: Role::where('type', 'customer')->orderBy('id')->first();
+        if (!$role) {
+            return null;
+        }
+
+        $user = new User();
+        $user->first_name = $firstName;
+        $user->last_name = $lastName;
+        $user->username = $username;
+        $user->email = $email;
+        $user->phone = !empty($ssoMeta['phone']) ? (string) $ssoMeta['phone'] : null;
+        $user->role_id = $role->id;
+        $user->is_active = 1;
+        $user->password = Hash::make(Str::random(32));
+        if (Schema::hasColumn('users', 'app_user_id')) {
+            $user->app_user_id = (int) $sourceUserId;
+        }
+        if (Schema::hasColumn('users', 'pos_user_id')) {
+            $user->pos_user_id = (int) $sourceUserId;
+        }
+        if (Schema::hasColumn('users', 'external_customer_id')) {
+            $user->external_customer_id = (int) $sourceUserId;
+        }
+        $user->save();
+
+        return $user;
+    }
+
+    private function mapSparkyRoleToShopType(?string $roleNamespace, ?string $roleType): string
+    {
+        $source = strtolower(trim((string) ($roleNamespace ?: $roleType ?: '')));
+
+        if (in_array($source, ['admin', 'superadmin', 'nexopos.store.administrator'], true)) {
+            return 'admin';
+        }
+        if (in_array($source, ['staff', 'nexopos.store.cashier'], true)) {
+            return 'staff';
+        }
+        if (in_array($source, ['vendor', 'seller'], true)) {
+            return 'seller';
+        }
+
+        return 'customer';
     }
 
     private function appendQueryParam(string $url, string $key, string $value): string
@@ -211,16 +345,40 @@ class AuthController extends Controller
         }
 
         try {
-            $payload = implode('|', [
-                $appUserId,
-                now()->format('Y-m-d H:i:s'),
-                $target,
-            ]);
-            $token = base64_encode(Crypt::encryptString($payload));
+            $payload = [
+                'appUserId' => (string) $appUserId,
+                'issuedAt' => now()->toIso8601String(),
+                'redirectTo' => $target,
+                'email' => (string) ($user->email ?? ''),
+                'username' => (string) ($user->username ?? ''),
+                'firstName' => (string) ($user->first_name ?? ''),
+                'lastName' => (string) ($user->last_name ?? ''),
+                'phone' => (string) ($user->phone ?? ''),
+                'roleType' => optional($user->role)->type,
+                'roleNamespace' => $this->mapShopRoleTypeToSparkyNamespace(optional($user->role)->type),
+            ];
+            $token = base64_encode(Crypt::encryptString(json_encode($payload, JSON_UNESCAPED_SLASHES)));
             return redirect()->away($mainapp.'/sso?t='.urlencode($token));
         } catch (\Throwable $e) {
             return redirect()->away($mainapp.'/sign-in');
         }
+    }
+
+    private function mapShopRoleTypeToSparkyNamespace(?string $shopRoleType): string
+    {
+        $roleType = strtolower(trim((string) $shopRoleType));
+
+        if (in_array($roleType, ['superadmin', 'admin'], true)) {
+            return 'admin';
+        }
+        if ($roleType === 'staff') {
+            return 'nexopos.store.cashier';
+        }
+        if ($roleType === 'seller') {
+            return 'Vendor';
+        }
+
+        return 'Customer';
     }
 
     public function ssoLogout(Request $request)
