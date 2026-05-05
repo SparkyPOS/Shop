@@ -201,6 +201,16 @@
                 </a>
             @endif
         </li> -->
+        @if(!$productStoreUrl)
+            <li>
+                <a class="position-relative" href="{{url('/profile/notifications')}}">
+                    <div class="cart_singleIcon">
+                        <i class="ti-bell"></i>
+                    </div>
+                    <span>{{__('common.notification')}}</span>
+                </a>
+            </li>
+        @endif
         @guest
             <li>
                 <a href="https://app.sparkypos.com">
