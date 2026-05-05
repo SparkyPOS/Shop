@@ -12,11 +12,7 @@
                         <div class="tab-content tab_content quick_view_tab_content" id="quickViewTabContent_{{ $product->id }}">
                             @if(count($product->product->gallary_images) > 0)
                                 @foreach($product->product->gallary_images as $image)
-                                    <div
-                                        class="gallary_img tab-pane fade {{ $product->product->gallary_images->first()->id == $image->id ? 'show active' : '' }}"
-                                        id="quick_view_thumb_{{ $image->id }}"
-                                        role="tabpanel"
-                                    >
+                                    <div class="gallary_img tab-pane fade {{ $product->product->gallary_images->first()->id == $image->id ? 'show active' : '' }}" id="quick_view_thumb_{{ $image->id }}" role="tabpanel">
                                         <div class="img_div quick_view_img_div">
                                             <img
                                                 data-zoom-image="{{ showImage($image->images_source) }}"
@@ -29,11 +25,7 @@
                                     </div>
                                 @endforeach
                             @else
-                                <div
-                                    class="tab-pane fade show active"
-                                    id="quick_view_thumb_{{ $product->id }}"
-                                    role="tabpanel"
-                                >
+                                <div class="tab-pane fade show active" id="quick_view_thumb_{{ $product->id }}" role="tabpanel">
                                     <div class="img_div quick_view_img_div">
                                         <img
                                             @if ($product->thum_img != null)
@@ -52,60 +44,70 @@
                             @endif
                         </div>
 
-                        <ul class="nav tab_thumb quick_view_tab_thumb" id="quickViewTab_{{ $product->id }}" role="tablist">
-                            @if(count($product->product->gallary_images) > 0)
-                                @foreach($product->product->gallary_images as $i => $image)
+                        <div class="quick_view_thumb_area">
+                            <button type="button" class="quick_view_thumb_arrow quick_view_thumb_prev" aria-label="Previous image">
+                                <i class="ti-angle-left"></i>
+                            </button>
+
+                            <ul class="nav tab_thumb quick_view_tab_thumb" id="quickViewTab_{{ $product->id }}" role="tablist">
+                                @if(count($product->product->gallary_images) > 0)
+                                    @foreach($product->product->gallary_images as $i => $image)
+                                        <li class="nav-item thumb_small_m">
+                                            <a
+                                                class="nav-link {{ $i == 0 ? 'active' : '' }} small-img"
+                                                id="quick_view_thumb_{{ $image->id }}_tab"
+                                                data-img="{{ showImage($image->images_source) }}"
+                                                data-toggle="tab"
+                                                href="#quick_view_thumb_{{ $image->id }}"
+                                                role="tab"
+                                                aria-controls="quick_view_thumb_{{ $image->id }}"
+                                                aria-selected="{{ $i == 0 ? 'true' : 'false' }}"
+                                            >
+                                                <div class="thamb_img quick_view_thumb_img">
+                                                    <img
+                                                        src="{{ showImage($image->images_source) }}"
+                                                        alt="{{ $product->product_name }}"
+                                                        title="{{ $product->product_name }}"
+                                                        class="img-fluid selector-img"
+                                                        data-id="#quick_view_thumb_{{ $image->id }}_tab"
+                                                    >
+                                                </div>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                @else
                                     <li class="nav-item thumb_small_m">
                                         <a
-                                            class="nav-link {{ $i == 0 ? 'active' : '' }} small-img"
-                                            id="quick_view_thumb_{{ $image->id }}_tab"
-                                            data-img="{{ showImage($image->images_source) }}"
+                                            class="nav-link active small-img"
+                                            id="quick_view_thumb_{{ $product->id }}_tab"
                                             data-toggle="tab"
-                                            href="#quick_view_thumb_{{ $image->id }}"
+                                            href="#quick_view_thumb_{{ $product->id }}"
                                             role="tab"
-                                            aria-controls="quick_view_thumb_{{ $image->id }}"
-                                            aria-selected="{{ $i == 0 ? 'true' : 'false' }}"
+                                            aria-controls="quick_view_thumb_{{ $product->id }}"
+                                            aria-selected="true"
                                         >
                                             <div class="thamb_img quick_view_thumb_img">
                                                 <img
-                                                    src="{{ showImage($image->images_source) }}"
+                                                    @if ($product->thum_img != null)
+                                                        src="{{ showImage($product->thum_img) }}"
+                                                    @else
+                                                        src="{{ showImage($product->product->thumbnail_image_source) }}"
+                                                    @endif
                                                     alt="{{ $product->product_name }}"
                                                     title="{{ $product->product_name }}"
                                                     class="img-fluid selector-img"
-                                                    data-id="#quick_view_thumb_{{ $image->id }}_tab"
+                                                    data-id="#quick_view_thumb_{{ $product->id }}_tab"
                                                 >
                                             </div>
                                         </a>
                                     </li>
-                                @endforeach
-                            @else
-                                <li class="nav-item thumb_small_m">
-                                    <a
-                                        class="nav-link active small-img"
-                                        id="quick_view_thumb_{{ $product->id }}_tab"
-                                        data-toggle="tab"
-                                        href="#quick_view_thumb_{{ $product->id }}"
-                                        role="tab"
-                                        aria-controls="quick_view_thumb_{{ $product->id }}"
-                                        aria-selected="true"
-                                    >
-                                        <div class="thamb_img quick_view_thumb_img">
-                                            <img
-                                                @if ($product->thum_img != null)
-                                                    src="{{ showImage($product->thum_img) }}"
-                                                @else
-                                                    src="{{ showImage($product->product->thumbnail_image_source) }}"
-                                                @endif
-                                                alt="{{ $product->product_name }}"
-                                                title="{{ $product->product_name }}"
-                                                class="img-fluid selector-img"
-                                                data-id="#quick_view_thumb_{{ $product->id }}_tab"
-                                            >
-                                        </div>
-                                    </a>
-                                </li>
-                            @endif
-                        </ul>
+                                @endif
+                            </ul>
+
+                            <button type="button" class="quick_view_thumb_arrow quick_view_thumb_next" aria-label="Next image">
+                                <i class="ti-angle-right"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="product_details_wrapper">
@@ -269,6 +271,15 @@
                             <input type="hidden" value="{{ singleProductURL(@$product->seller->slug, @$product->slug) }}" id="product_url_modal">
                             <input type="hidden" name="thumb_image" id="thumb_image_modal" value="@if ($product->thum_img != null) {{ showImage($product->thum_img) }} @else {{ showImage($product->product->thumbnail_image_source) }} @endif">
 
+                            @if(!empty(trim(strip_tags(@$product->product->description))))
+                                <div class="quick_view_description">
+                                    <h4 class="font_14 f_w_700 mb_8">{{ __('common.description') }}</h4>
+                                    <div class="quick_view_description_text">
+                                        {!! \Illuminate\Support\Str::limit(strip_tags(@$product->product->description), 190) !!}
+                                    </div>
+                                </div>
+                            @endif
+
                             <div class="product_info">
                                 <div class="single_pro_varient">
                                     <h5 class="font_14 f_w_500 theme_text3">{{ __('common.quantity') }}:</h5>
@@ -294,7 +305,7 @@
                                     </div>
                                 </div>
 
-                                <div class="row mt_20">
+                                <div class="row mt_15">
                                     <h4>
                                         <span>{{ __('common.total') }}:</span>
                                         <span id="total_price_modal">
@@ -311,17 +322,17 @@
                                     </h4>
                                 </div>
 
-                                <div class="row mt_30" id="add_to_cart_div_modal">
+                                <div class="row mt_20" id="add_to_cart_div_modal">
                                     @if ($product->stock_manage == 1 && $product->skus->first()->product_stock >= $product->product->minimum_order_qty || $product->stock_manage == 0)
                                         <div class="col-md-6">
-                                            <a href="" id="add_to_cart_btn_modal" class="home10_primary_btn2 mb_20 w-100 text-center add_to_cart text-uppercase flex-fill text-center">{{ __('common.add_to_cart') }}</a>
+                                            <a href="" id="add_to_cart_btn_modal" class="home10_primary_btn2 mb_15 w-100 text-center add_to_cart text-uppercase flex-fill text-center">{{ __('common.add_to_cart') }}</a>
                                         </div>
                                         <div class="col-md-6">
-                                            <a href="#" class="home10_primary_btn4 w-100 radius_5px mb_20 w-100 text-center justify-content-center text-uppercase buy_now_btn_modal" data-id="{{ $product->id }}" data-type="product">{{ __('common.buy_now') }}</a>
+                                            <a href="#" class="home10_primary_btn4 w-100 radius_5px mb_15 w-100 text-center justify-content-center text-uppercase buy_now_btn_modal" data-id="{{ $product->id }}" data-type="product">{{ __('common.buy_now') }}</a>
                                         </div>
                                     @else
                                         <div class="col-md-6">
-                                            <button type="button" disabled class="amaz_primary_btn style2 mb_20 add_to_cart text-uppercase flex-fill text-center w-100">{{ __('defaultTheme.out_of_stock') }}</button>
+                                            <button type="button" disabled class="amaz_primary_btn style2 mb_15 add_to_cart text-uppercase flex-fill text-center w-100">{{ __('defaultTheme.out_of_stock') }}</button>
                                         </div>
                                     @endif
                                 </div>
@@ -335,15 +346,6 @@
                                     </a>
                                 </div>
                             </div>
-
-                            @if(!empty(trim(strip_tags(@$product->product->description))))
-                                <div class="quick_view_description mt_30">
-                                    <h4 class="font_16 f_w_700 mb_10">{{ __('common.description') }}</h4>
-                                    <div class="quick_view_description_text">
-                                        {!! @$product->product->description !!}
-                                    </div>
-                                </div>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -376,7 +378,7 @@
 
 <style>
     #theme_modal.quick_view_modal_custom .quick_view_modal_dialog {
-        max-width: 1040px;
+        max-width: 980px;
         width: calc(100% - 40px);
     }
 
@@ -389,32 +391,31 @@
 
     #theme_modal.quick_view_modal_custom .quick_view_modal_grid {
         display: grid;
-        grid-template-columns: minmax(0, 52%) minmax(0, 48%);
-        min-height: 620px;
+        grid-template-columns: minmax(0, 45%) minmax(0, 55%);
+        min-height: auto;
         background: #ffffff;
     }
 
     #theme_modal.quick_view_modal_custom .quick_view_modal_close {
         position: absolute;
-        top: 22px;
-        right: 24px;
+        top: 20px;
+        right: 22px;
         z-index: 20;
     }
 
     #theme_modal.quick_view_modal_custom .quick_view_product_gallery {
-        padding: 34px;
+        padding: 30px;
         background: #f8fafc;
         border-right: 1px solid #eef2f6;
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 14px;
         min-width: 0;
     }
 
     #theme_modal.quick_view_modal_custom .quick_view_tab_content {
         width: 100%;
-        flex: 1 1 auto;
-        min-height: 470px;
+        height: 430px;
         background: #ffffff;
         border: 1px solid #eef2f6;
         display: flex;
@@ -429,7 +430,7 @@
 
     #theme_modal.quick_view_modal_custom .quick_view_img_div {
         width: 100%;
-        height: 470px;
+        height: 430px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -446,23 +447,36 @@
         display: block !important;
     }
 
+    #theme_modal.quick_view_modal_custom .quick_view_thumb_area {
+        position: relative;
+    }
+
     #theme_modal.quick_view_modal_custom .quick_view_tab_thumb {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 9px;
         margin: 0;
         padding: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-behavior: smooth;
+        scrollbar-width: none;
+    }
+
+    #theme_modal.quick_view_modal_custom .quick_view_tab_thumb::-webkit-scrollbar {
+        display: none;
     }
 
     #theme_modal.quick_view_modal_custom .quick_view_tab_thumb .nav-item {
-        width: 100%;
+        flex: 0 0 88px;
+        width: 88px;
         margin: 0;
     }
 
     #theme_modal.quick_view_modal_custom .quick_view_tab_thumb .nav-link {
-        width: 100%;
-        height: 92px;
-        padding: 6px;
+        width: 88px;
+        height: 86px;
+        padding: 5px;
         border: 1px solid #d9e1ea;
         background: #ffffff;
         display: flex;
@@ -490,15 +504,79 @@
         display: block;
     }
 
+    #theme_modal.quick_view_modal_custom .quick_view_thumb_arrow {
+        position: absolute;
+        top: 50%;
+        width: 30px;
+        height: 30px;
+        border: 0;
+        border-radius: 50%;
+        background: #081225;
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-50%);
+        transition: opacity .2s ease, visibility .2s ease;
+        cursor: pointer;
+    }
+
+    #theme_modal.quick_view_modal_custom .quick_view_thumb_prev {
+        left: -9px;
+    }
+
+    #theme_modal.quick_view_modal_custom .quick_view_thumb_next {
+        right: -9px;
+    }
+
+    #theme_modal.quick_view_modal_custom .quick_view_thumb_area:hover .quick_view_thumb_arrow {
+        opacity: 1;
+        visibility: visible;
+    }
+
     #theme_modal.quick_view_modal_custom .product_details_wrapper {
-        padding: 48px 44px 34px;
-        max-height: 82vh;
-        overflow-y: auto;
+        padding: 38px 42px 32px;
         min-width: 0;
+        max-height: none;
+        overflow: visible;
+    }
+
+    #theme_modal.quick_view_modal_custom .product_content_details {
+        margin-bottom: 0 !important;
+    }
+
+    #theme_modal.quick_view_modal_custom .product_content_details > p {
+        margin-bottom: 6px;
+        font-size: 13px;
+        line-height: 1.35;
+    }
+
+    #theme_modal.quick_view_modal_custom .product_content_details h3 {
+        margin: 12px 0 8px;
+        font-size: 23px;
+        line-height: 1.25;
+    }
+
+    #theme_modal.quick_view_modal_custom .prise_text {
+        margin-bottom: 8px;
+        font-size: 22px;
+        line-height: 1.25;
+    }
+
+    #theme_modal.quick_view_modal_custom .product_ratings {
+        margin: 10px 0 14px;
+    }
+
+    #theme_modal.quick_view_modal_custom .product_color_varient {
+        margin-bottom: 14px !important;
     }
 
     #theme_modal.quick_view_modal_custom .quick_view_description {
-        padding-top: 22px;
+        margin: 10px 0 18px;
+        padding: 14px 0 0;
         border-top: 1px solid #eef2f6;
     }
 
@@ -508,15 +586,31 @@
     }
 
     #theme_modal.quick_view_modal_custom .quick_view_description_text {
-        max-height: 140px;
-        overflow-y: auto;
         color: #475467;
-        font-size: 13.5px;
-        line-height: 1.65;
+        font-size: 13px;
+        line-height: 1.55;
     }
 
-    #theme_modal.quick_view_modal_custom .quick_view_description_text p {
-        margin-bottom: 8px;
+    #theme_modal.quick_view_modal_custom .product_info .single_pro_varient {
+        margin-bottom: 12px;
+    }
+
+    #theme_modal.quick_view_modal_custom #add_to_cart_div_modal {
+        margin-top: 18px !important;
+    }
+
+    #theme_modal.quick_view_modal_custom #add_to_cart_div_modal .home10_primary_btn2,
+    #theme_modal.quick_view_modal_custom #add_to_cart_div_modal .home10_primary_btn4 {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1.2;
+    }
+
+    #theme_modal.quick_view_modal_custom .add_wish_compare {
+        gap: 22px;
+        flex-wrap: wrap;
     }
 
     @media (max-width: 991.98px) {
@@ -527,26 +621,21 @@
 
         #theme_modal.quick_view_modal_custom .quick_view_modal_grid {
             grid-template-columns: 1fr;
-            min-height: auto;
         }
 
         #theme_modal.quick_view_modal_custom .quick_view_product_gallery {
             border-right: 0;
             border-bottom: 1px solid #eef2f6;
-            padding: 28px;
+            padding: 24px;
         }
 
-        #theme_modal.quick_view_modal_custom .quick_view_tab_content {
-            min-height: 400px;
-        }
-
+        #theme_modal.quick_view_modal_custom .quick_view_tab_content,
         #theme_modal.quick_view_modal_custom .quick_view_img_div {
-            height: 400px;
+            height: 360px;
         }
 
         #theme_modal.quick_view_modal_custom .product_details_wrapper {
-            max-height: none;
-            padding: 32px 28px 28px;
+            padding: 28px 26px 28px;
         }
     }
 
@@ -561,34 +650,27 @@
         }
 
         #theme_modal.quick_view_modal_custom .quick_view_product_gallery {
-            padding: 18px;
-            gap: 12px;
+            padding: 16px;
+            gap: 10px;
         }
 
-        #theme_modal.quick_view_modal_custom .quick_view_tab_content {
-            min-height: 300px;
-        }
-
+        #theme_modal.quick_view_modal_custom .quick_view_tab_content,
         #theme_modal.quick_view_modal_custom .quick_view_img_div {
-            height: 300px;
+            height: 290px;
         }
 
-        #theme_modal.quick_view_modal_custom .quick_view_tab_thumb {
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 8px;
+        #theme_modal.quick_view_modal_custom .quick_view_tab_thumb .nav-item,
+        #theme_modal.quick_view_modal_custom .quick_view_tab_thumb .nav-link {
+            flex-basis: 72px;
+            width: 72px;
         }
 
         #theme_modal.quick_view_modal_custom .quick_view_tab_thumb .nav-link {
-            height: 70px;
-            padding: 4px;
+            height: 68px;
         }
 
         #theme_modal.quick_view_modal_custom .product_details_wrapper {
-            padding: 24px 18px 22px;
-        }
-
-        #theme_modal.quick_view_modal_custom .quick_view_description_text {
-            max-height: 150px;
+            padding: 22px 18px 24px;
         }
     }
 </style>
@@ -624,6 +706,20 @@
                 $('#theme_modal .small-img').removeClass('active');
                 $(a_id).addClass('active');
                 $('#theme_modal #thumb_image_modal').val(image);
+            });
+
+        $(document)
+            .off('click.quickViewThumbPrev', '#theme_modal .quick_view_thumb_prev')
+            .on('click.quickViewThumbPrev', '#theme_modal .quick_view_thumb_prev', function () {
+                const $thumbs = $('#theme_modal .quick_view_tab_thumb');
+                $thumbs.animate({ scrollLeft: $thumbs.scrollLeft() - 110 }, 180);
+            });
+
+        $(document)
+            .off('click.quickViewThumbNext', '#theme_modal .quick_view_thumb_next')
+            .on('click.quickViewThumbNext', '#theme_modal .quick_view_thumb_next', function () {
+                const $thumbs = $('#theme_modal .quick_view_tab_thumb');
+                $thumbs.animate({ scrollLeft: $thumbs.scrollLeft() + 110 }, 180);
             });
     })(jQuery);
 </script>
