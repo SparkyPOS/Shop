@@ -89,7 +89,7 @@
                                         @if (auth()->check() && auth()->user()->role->type == "superadmin" || auth()->check() && auth()->user()->role->type == "admin" || auth()->check() && auth()->user()->role->type == "staff")
                                             <a href="{{ route('admin.dashboard') }}">{{ __('common.dashboard') }}</a>
                                         @elseif (auth()->check() && auth()->user()->role->type == "seller" && isModuleActive('MultiVendor'))
-                                            <a href="{{ route('seller.dashboard') }}">{{ __('common.dashboard') }}</a>
+                                            <a href="{{ route('sso.redirect') }}">{{ __('common.dashboard') }}</a>
                                         @elseif (auth()->check() && auth()->user()->role->type == "affiliate")
                                             <a href="{{ route('affiliate.my_affiliate.index') }}">{{ __('common.dashboard') }}</a>
                                         @else
