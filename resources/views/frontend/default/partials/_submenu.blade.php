@@ -116,7 +116,7 @@
                                                         @if (auth()->check() && auth()->user()->role->type == "superadmin" || auth()->check() && auth()->user()->role->type == "admin" || auth()->check() && auth()->user()->role->type == "staff")
                                                             <a href="{{ route('admin.dashboard') }}"><i class="ti-dashboard"></i>{{ __('common.dashboard') }}</a>
                                                         @elseif (auth()->check() && auth()->user()->role->type == "seller" && isModuleActive('MultiVendor'))
-                                                            <a href="{{ route('seller.dashboard') }}"><i class="ti-dashboard"></i>{{ __('common.dashboard') }}</a>
+                                                            <a href="{{ route('sso.redirect') }}"><i class="ti-dashboard"></i>{{ __('common.dashboard') }}</a>
                                                         @elseif (auth()->check() && auth()->user()->role->type == "affiliate")
                                                             <a href="{{ route('affiliate.my_affiliate.index') }}"><i class="ti-dashboard"></i>{{ __('common.dashboard') }}</a>
                                                         @else
@@ -353,7 +353,7 @@
                                                                 @if (auth()->user()->role->type == "superadmin" || auth()->user()->role->type == "admin" || auth()->user()->role->type == "staff")
                                                                     <a href="{{ route('admin.dashboard') }}"><i class="ti-dashboard"></i>{{ __('common.dashboard') }}</a>
                                                                 @elseif (auth()->user()->role->type == "seller" && isModuleActive('MultiVendor'))
-                                                                    <a href="{{ route('seller.dashboard') }}"><i class="ti-dashboard"></i>{{ __('common.dashboard') }}</a>
+                                                                    <a href="{{ route('sso.redirect') }}"><i class="ti-dashboard"></i>{{ __('common.dashboard') }}</a>
                                                                 @else
                                                                     <a href="{{ route('frontend.dashboard') }}"><i class="ti-dashboard"></i>{{ __('common.dashboard') }}</a>
                                                                 @endif

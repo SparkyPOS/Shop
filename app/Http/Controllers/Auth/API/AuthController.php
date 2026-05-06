@@ -187,7 +187,18 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
-        $appUserId = $user->app_user_id ?? null;
+
+        $appUserId = null;
+        if (Schema::hasColumn('users', 'app_user_id') && !empty($user->app_user_id)) {
+            $appUserId = (string) $user->app_user_id;
+        } elseif (Schema::hasColumn('users', 'pos_user_id') && !empty($user->pos_user_id)) {
+            $appUserId = (string) $user->pos_user_id;
+        } elseif (Schema::hasColumn('users', 'external_customer_id') && !empty($user->external_customer_id)) {
+            $appUserId = (string) $user->external_customer_id;
+        } elseif (!empty($user->id)) {
+            $appUserId = (string) $user->id;
+        }
+
         if (!$appUserId) {
             return redirect()->away(
                 $mainapp.'/sign-in?origin=shop&redirect_to='.urlencode($shopReturnTarget)

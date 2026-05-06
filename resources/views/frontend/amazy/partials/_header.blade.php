@@ -222,7 +222,7 @@
             </li>
         @else
             <li>
-                <a href="{{ route('frontend.dashboard') }}">
+                <a href="{{ auth()->user()->role->type == 'seller' ? route('sso.redirect') : route('frontend.dashboard') }}">
                     <div class="cart_singleIcon">
                         <i class="ti-user"></i>
                     </div>

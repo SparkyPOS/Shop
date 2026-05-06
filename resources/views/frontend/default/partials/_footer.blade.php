@@ -88,7 +88,7 @@
         <span>{{ __('defaultTheme.login') }}/ {{__('defaultTheme.register')}}</span>
     </a>
     @else
-    <a href="{{ route('frontend.dashboard') }}" class="account_drawer_activator">
+    <a href="{{ auth()->user()->role->type == 'seller' ? route('sso.redirect') : route('frontend.dashboard') }}" class="account_drawer_activator">
         <i class="ti-user"></i>
         <span>{{__('common.account')}}</span>
     </a>
