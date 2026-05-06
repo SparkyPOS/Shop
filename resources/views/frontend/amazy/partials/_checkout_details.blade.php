@@ -206,7 +206,7 @@
                                                             </div>
                                                         </td>
                                                         <td>
-                                                            <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
                                                         </td>
                                                         <td>
                                                             <h4 class="font_16 f_w_500 m-0 text-nowrap">{{single_price($item->total_price)}}</h4>
@@ -239,7 +239,7 @@
                                                             </a>
                                                         </td>
                                                         <td>
-                                                            <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{$item->seller->sellerAccount->vendor_id}}</h4>
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{$item->seller->sellerAccount->vendor_id}}</h4>
                                                         </td>
                                                         <td>
                                                             <div class="d-flex align-items-center gap_7">
@@ -269,7 +269,7 @@
                                                             </div>
                                                         </td>
                                                         <td>
-                                                            <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{$item->qty}}</h4>
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{$item->qty}}</h4>
                                                         </td>
                                                         <td>
                                                             <h4 class="font_16 f_w_500 m-0 text-nowrap">{{single_price($item->total_price)}}</h4>
@@ -455,7 +455,7 @@
                                                             @endif
                                                         </td>
                                                         <td>
-                                                            <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
                                                         </td>
                                                         <td>
                                                             <h4 class="font_16 f_w_500 m-0 text-nowrap">{{single_price($item->total_price)}}</h4>
@@ -494,7 +494,7 @@
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
+                                                        <h4 class="font_16 f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
                                                     </td>
                                                     <td>
                                                         <h4 class="font_16 f_w_500 m-0 text-nowrap">{{single_price($item->total_price)}}</h4>
