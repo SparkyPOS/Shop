@@ -92,7 +92,6 @@
 
                             <div class="checout_head_title d-flex align-items-center package_table_head px-3 py-2">
                                 <span class="flex-fill">{{ getNumberTranslate(count($packages)) }} {{ __('common.items') }}</span>
-                                <span>{{ __('vendor') }}</span>
                                 <span>{{ __('common.subtotal') }}</span>
                                 <span>{{ __('common.quantity') }}</span>
                                 <span>{{ __('common.price') }}</span>
@@ -177,9 +176,6 @@
                                                                     @endif
                                                                 </div>
                                                             </a>
-                                                        </td>
-                                                        <td>
-                                                            <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{$item->seller->sellerAccount->vendor_id}}</h4>
                                                         </td>
                                                         <td class="d-none d-md-table-cell">
                                                             <div class="d-flex align-items-center gap_7">
@@ -426,9 +422,6 @@
                                                                     @endif
                                                                 </div>
                                                             </a>
-                                                        </td>
-                                                        <td>
-                                                            <h4 class="font_16_top f_w_500 m-0 text-nowrap">{{$item->seller->sellerAccount->vendor_id}}</h4>
                                                         </td>
                                                         <td>
 
