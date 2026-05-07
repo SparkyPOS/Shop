@@ -470,7 +470,7 @@ class CheckoutController extends Controller
         if(isModuleActive('MultiVendor')){
            $package_wise_shipping = session()->get('package_wise_shipping');
            $session_packages = [];
-            foreach ( $cartData as $seller_id => $packages){
+           foreach ( $cartData as $seller_id => $packages){
                 $additional_cost = 0;
                 $totalItemPrice = 0;
                 $totalItemWeight = 0;
@@ -480,13 +480,10 @@ class CheckoutController extends Controller
                 $package_cost = 0;
                 $physical_count = 0;
                 $item_in_cart = 0;
+                $syncedPackageShipping = $this->resolveSyncedPackageShipping($packages);
                 foreach ($packages as $key => $item){
                     if($item->product_type == 'product' && $item->product->product->product->is_physical == 1){
-                        if(sellerWiseShippingConfig($seller_id)['amount_multiply_with_qty']){
-                            $additional_cost += ($item->product->sku->additional_shipping * $item->qty);
-                        }else{
-                            $additional_cost += $item->product->sku->additional_shipping;
-                        }
+                        $additional_cost += $this->resolveCartItemAdditionalShipping($item, $seller_id);
                        $totalItemPrice += $item->total_price;
                        $totalItemWeight += !empty($item->product->sku->weight) ? $item->qty * $item->product->sku->weight : 0;
                        $totalItemHeight += $item->qty * $item->product->sku->height;
@@ -539,23 +536,25 @@ class CheckoutController extends Controller
                         }
                     }
                }
-               if($shipping_method && $shipping_method->cost_based_on == 'Price'){
-                   if($totalItemPrice > 0 && $shipping_method->cost > 0){
-                       $package_cost = ($totalItemPrice / 100) *  $shipping_method->cost + $additional_cost;
-                   }
+               if ($syncedPackageShipping['is_synced']) {
+                    $package_cost = $syncedPackageShipping['shipping_cost'];
+               } elseif($shipping_method && $shipping_method->cost_based_on == 'Price'){
+                    if($totalItemPrice > 0 && $shipping_method->cost > 0){
+                        $package_cost = ($totalItemPrice / 100) *  $shipping_method->cost + $additional_cost;
+                    }
 
                }elseif ($shipping_method && $shipping_method->cost_based_on == 'Weight'){
-                   if($totalItemWeight > 0 && $shipping_method->cost > 0){
-                       $package_cost = ($totalItemWeight / 100) *  $shipping_method->cost + $additional_cost;
-                   }
+                    if($totalItemWeight > 0 && $shipping_method->cost > 0){
+                        $package_cost = ($totalItemWeight / 100) *  $shipping_method->cost + $additional_cost;
+                    }
                }else{
-                   if($shipping_method && $shipping_method->cost > 0){
+                    if($shipping_method && $shipping_method->cost > 0){
                         if(sellerWiseShippingConfig($seller_id)['amount_multiply_with_qty']){
                             $package_cost = ($shipping_method->cost * $item_in_cart) + $additional_cost;
                         }else{
                             $package_cost = $shipping_method->cost + $additional_cost;
                         }
-                   }
+                    }
                }
                if($physical_count > 0){
                 if(isModuleActive('INTShipping') && app('theme')->folder_path == 'amazy'){
@@ -580,7 +579,9 @@ class CheckoutController extends Controller
                        'shipping_method'=>$shipping_method_name,
                        'shipping_time'=>$shipping_time,
                        'physical_count' => $physical_count,
-                       'item_incart' => $item_in_cart
+                       'item_incart' => $item_in_cart,
+                       'pos_synced_shipping' => $syncedPackageShipping['is_synced'],
+                       'pos_synced_shipping_cost' => $syncedPackageShipping['shipping_cost']
                    ];
                }else{
                     $email_shipping = \Modules\Shipping\Entities\ShippingMethod::first();
@@ -596,7 +597,10 @@ class CheckoutController extends Controller
                         'shipping_id'=> 1,
                         'shipping_method'=>$email_shipping->method_name,
                         'shipping_time'=>$email_shipping->shipment_time,
-                        'physical_count' => $physical_count
+                        'physical_count' => $physical_count,
+                        'item_incart' => $item_in_cart,
+                        'pos_synced_shipping' => false,
+                        'pos_synced_shipping_cost' => 0
                     ];
                }
            }
@@ -667,10 +671,13 @@ class CheckoutController extends Controller
             $new_package_wise_shipping = [];
             foreach ($package_wise_shippings as $package_wise_shipping){
                 if($package_wise_shipping['seller_id'] == $request->seller){
+                    $isPosSyncedShipping = !empty($package_wise_shipping['pos_synced_shipping']);
                     $shipping_method = ShippingMethod::with(['carrier'])->findOrFail($request->shipping_method);
                     $package_cost = 0;
 
-                    if($shipping_method->cost_based_on == 'Price'){
+                    if ($isPosSyncedShipping) {
+                        $package_cost = (float) ($package_wise_shipping['pos_synced_shipping_cost'] ?? $package_wise_shipping['shipping_cost'] ?? 0);
+                    } elseif($shipping_method->cost_based_on == 'Price'){
                         if($package_wise_shipping['totalItemPrice'] > 0 && $shipping_method->cost > 0){
                             $package_cost = ($package_wise_shipping['totalItemPrice'] / 100) *  $shipping_method->cost + $package_wise_shipping['additional_cost'];
                         }
@@ -703,7 +710,9 @@ class CheckoutController extends Controller
                         'totalItemLength'=>$package_wise_shipping['totalItemLength'],
                         'totalItemBreadth'=>$package_wise_shipping['totalItemBreadth'],
                         'physical_count' => $package_wise_shipping['physical_count'],
-                        'item_incart' => $package_wise_shipping['item_incart']
+                        'item_incart' => $package_wise_shipping['item_incart'],
+                        'pos_synced_shipping' => $isPosSyncedShipping,
+                        'pos_synced_shipping_cost' => (float) ($package_wise_shipping['pos_synced_shipping_cost'] ?? 0)
                     ];
                 }else{
                     $new_package_wise_shipping[$package_wise_shipping['seller_id']] = [
@@ -719,7 +728,9 @@ class CheckoutController extends Controller
                         'totalItemLength'=>$package_wise_shipping['totalItemLength'],
                         'totalItemBreadth'=>$package_wise_shipping['totalItemBreadth'],
                         'physical_count' => $package_wise_shipping['physical_count'],
-                        'item_incart' => $package_wise_shipping['item_incart']
+                        'item_incart' => $package_wise_shipping['item_incart'],
+                        'pos_synced_shipping' => !empty($package_wise_shipping['pos_synced_shipping']),
+                        'pos_synced_shipping_cost' => (float) ($package_wise_shipping['pos_synced_shipping_cost'] ?? 0)
                     ];
                 }
             }
@@ -866,6 +877,64 @@ class CheckoutController extends Controller
             ]);
         }
         return $this->reloadWithData();
+    }
+
+    private function resolveCartItemAdditionalShipping($item, int $sellerId): float
+    {
+        $additional = (float) (optional(optional($item->product)->sku)->additional_shipping ?? 0);
+        if ($additional <= 0) {
+            return 0.0;
+        }
+
+        $syncedExternalId = optional(optional(optional($item->product)->product)->product)->external_product_id ?? null;
+        if (!empty($syncedExternalId)) {
+            return $additional * (int) $item->qty;
+        }
+
+        if (sellerWiseShippingConfig($sellerId)['amount_multiply_with_qty']) {
+            return $additional * (int) $item->qty;
+        }
+
+        return $additional;
+    }
+
+    private function resolveSyncedPackageShipping($packages): array
+    {
+        $shippingCost = 0.0;
+        $physicalCount = 0;
+        $syncedPhysicalCount = 0;
+
+        foreach ($packages as $item) {
+            if (
+                $item->product_type !== 'product'
+                || empty($item->product)
+                || empty($item->product->product)
+                || empty($item->product->product->product)
+                || (int) $item->product->product->product->is_physical !== 1
+            ) {
+                continue;
+            }
+            $physicalCount++;
+
+            $shopProduct = $item->product->product->product;
+            if (empty($shopProduct->external_product_id)) {
+                continue;
+            }
+
+            $syncedPhysicalCount++;
+            $unitShippingCost = (float) ($shopProduct->shipping_cost ?? 0);
+            if ($unitShippingCost <= 0) {
+                $unitShippingCost = (float) (optional($item->product->sku)->additional_shipping ?? 0);
+            }
+            $shippingCost += max($unitShippingCost, 0) * max((int) $item->qty, 1);
+        }
+
+        $isSynced = $physicalCount > 0 && $physicalCount === $syncedPhysicalCount;
+
+        return [
+            'is_synced' => $isSynced,
+            'shipping_cost' => $isSynced ? $shippingCost : 0,
+        ];
     }
 
 

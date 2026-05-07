@@ -561,17 +561,13 @@ class CheckoutRepository{
                     $totalItemBreadth = 0;
                     $physical_count = 0;
                     $item_in_cart = 0;
-                    if($cart->product_type == 'product' && $cart->product->product->product->is_physical == 1){
-                        if(sellerWiseShippingConfig($seller_id)['amount_multiply_with_qty']){
-                            $additional_cost += ($cart->product->sku->additional_shipping * $cart->qty);
-                        }else{
-                            $additional_cost += $cart->product->sku->additional_shipping;
-                        }
-                        $totalItemPrice += $cart->total_price;
-                        $totalItemWeight += !empty($cart->product->sku->weight) ? $cart->qty * $cart->product->sku->weight : 0;
-                        $totalItemHeight += $cart->qty * $cart->product->sku->height;
-                        $totalItemLength += $cart->qty * $cart->product->sku->length;
-                        $totalItemBreadth += $cart->qty * $cart->product->sku->breadth;
+                        if($cart->product_type == 'product' && $cart->product->product->product->is_physical == 1){
+                            $additional_cost += $this->resolveCartItemAdditionalShipping($cart, $seller_id);
+                            $totalItemPrice += $cart->total_price;
+                            $totalItemWeight += !empty($cart->product->sku->weight) ? $cart->qty * $cart->product->sku->weight : 0;
+                            $totalItemHeight += $cart->qty * $cart->product->sku->height;
+                            $totalItemLength += $cart->qty * $cart->product->sku->length;
+                            $totalItemBreadth += $cart->qty * $cart->product->sku->breadth;
                         $physical_count += 1;
                         $item_in_cart += $cart->qty;
                     }
@@ -754,11 +750,7 @@ class CheckoutRepository{
                     }else{
                         $is_physical_product = 1;
                         $shipping_qty += 1;
-                        if(sellerWiseShippingConfig(1)['amount_multiply_with_qty']){
-                            $additional_shipping += $cart->product->sku->additional_shipping * $cart->qty;
-                        }else{
-                            $additional_shipping += $cart->product->sku->additional_shipping;
-                        }
+                        $additional_shipping += $this->resolveCartItemAdditionalShipping($cart, 1);
                     }
                     $e_items[]=[
                         "item_id"=> $cart->product->sku->sku,
@@ -914,6 +906,26 @@ class CheckoutRepository{
         ];
         return $result;
     }
+
+    private function resolveCartItemAdditionalShipping($cart, int $sellerId): float
+    {
+        $additional = (float) (optional(optional($cart->product)->sku)->additional_shipping ?? 0);
+        if ($additional <= 0) {
+            return 0.0;
+        }
+
+        $syncedExternalId = optional(optional(optional($cart->product)->product)->product)->external_product_id ?? null;
+        if (!empty($syncedExternalId)) {
+            return $additional * (int) $cart->qty;
+        }
+
+        if (sellerWiseShippingConfig($sellerId)['amount_multiply_with_qty']) {
+            return $additional * (int) $cart->qty;
+        }
+
+        return $additional;
+    }
+
     public function getActivePaymentGetways(){
         $methods =  PaymentMethod::where('active_status', 1)->with(['sellerPaymentMethod'])->whereHas('sellerPaymentMethod', function($query){
                 return $query->where('status', 1);
