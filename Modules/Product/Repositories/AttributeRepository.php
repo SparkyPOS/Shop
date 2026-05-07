@@ -180,9 +180,10 @@ class AttributeRepository
                 $q1->where('category_id',$category_id);
             });
         })->pluck('product_sku_id')->toArray();
-        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->where('attribute_id', '!=', 1)->pluck('attribute_id')->toArray();
-        $attribute_list = Attribute::with('values')->whereRaw("id in ('" . implode("','", $attribute_ids)."')")->where('status',1)->take(20)->get();
-        return $attribute_list;
+        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->distinct()->pluck('attribute_id')->toArray();
+        // $attribute_list = Attribute::with('values')->whereRaw("id in ('" . implode("','", $attribute_ids)."')")->where('status',1)->take(20)->get();
+        // return $attribute_list;
+        return $this->getAttributesExceptNames($attribute_ids, ['color', 'size'], 20);
     }
 
     public function getColorAttributeForSpecificCategory($category_id, $category_ids)
@@ -195,9 +196,10 @@ class AttributeRepository
                 $q1->where('category_id',$category_id);
             });
         })->pluck('product_sku_id')->toArray();
-        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->where('attribute_id', 1)->pluck('attribute_id')->toArray();
-        $attribute_list = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids)."')")->where('status', 1)->first();
-        return $attribute_list;
+        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->distinct()->pluck('attribute_id')->toArray();
+        // $attribute_list = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids)."')")->where('status', 1)->first();
+        // return $attribute_list;
+        return $this->findAttributeByName($attribute_ids, 'color');
     }
 
     public function getColorAttributeForSpecificBrand($brand_id)
@@ -205,18 +207,20 @@ class AttributeRepository
         $seller_products = SellerProductSKU::whereHas('mainProduct', function($query) use($brand_id){
             return $query->where('brand_id', $brand_id);
         })->distinct('product_sku_id')->pluck('product_sku_id')->toArray();
-        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->where('attribute_id', 1)->pluck('attribute_id')->toArray();
-        $attribute_list = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids)."')")->where('status', 1)->first();
-        return $attribute_list;
+        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->distinct()->pluck('attribute_id')->toArray();
+        // $attribute_list = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids)."')")->where('status', 1)->first();
+        // return $attribute_list;
+        return $this->findAttributeByName($attribute_ids, 'color');
     }
     public function getAttributeForSpecificBrand($brand_id)
     {
         $seller_products = SellerProductSKU::whereHas('mainProduct', function($query) use($brand_id){
             return $query->where('brand_id',$brand_id)->where('products.status', 1);
         })->distinct('product_sku_id')->pluck('product_sku_id')->toArray();
-        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->where('attribute_id', '!=', 1)->pluck('attribute_id')->toArray();
-        $attribute_list = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids)."')")->where('status', 1)->get();
-        return $attribute_list;
+        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->distinct()->pluck('attribute_id')->toArray();
+        // $attribute_list = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids)."')")->where('status', 1)->get();
+        // return $attribute_list;
+        return $this->getAttributesExceptNames($attribute_ids, ['color', 'size'], 20);
     }
 
     public function getAttributesByAjax($search){
@@ -236,5 +240,109 @@ class AttributeRepository
             ];
         }
         return  $response;
+    }
+
+    public function getSizeAttributeForSpecificCategory($category_id, $category_ids)
+    {
+        $seller_products = SellerProductSKU::whereHas('mainProduct', function($query) use($category_ids, $category_id){
+            return $query->WhereHas('categories',function($q1)use($category_ids,$category_id){
+                $q1->where('category_id',$category_id)->orWhereHas('subCategories', function($q2) use($category_ids){
+                    $q2->whereRaw("id in ('" . implode("','",$category_ids)."')");
+                });
+                $q1->where('category_id',$category_id);
+            });
+        })->pluck('product_sku_id')->toArray();
+
+        if (empty($seller_products)) {
+            return null;
+        }
+
+        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")
+            ->distinct()
+            ->pluck('attribute_id')
+            ->toArray();
+
+        return $this->findAttributeByName($attribute_ids, 'size');
+    }
+
+    public function getSizeAttributeForSpecificBrand($brand_id)
+    {
+        $seller_products = SellerProductSKU::whereHas('mainProduct', function($query) use($brand_id){
+            return $query->where('brand_id', $brand_id);
+        })->distinct('product_sku_id')->pluck('product_sku_id')->toArray();
+
+        if (empty($seller_products)) {
+            return null;
+        }
+
+        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")
+            ->distinct()
+            ->pluck('attribute_id')
+            ->toArray();
+
+        return $this->findAttributeByName($attribute_ids, 'size');
+    }
+
+    private function getAttributePlainName($name)
+    {
+        if (is_array($name)) {
+            return implode(' ', $name);
+        }
+        if (is_string($name)) {
+            $decoded = json_decode($name, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return implode(' ', $decoded);
+            }
+            return $name;
+        }
+        return '';
+    }
+
+    private function findAttributeByName($attribute_ids, $needle)
+    {
+        if (empty($attribute_ids)) {
+            return null;
+        }
+        $attributes = Attribute::with('values')
+            ->whereRaw("id in ('". implode("','", $attribute_ids) ."')")
+            ->where('status', 1)
+            ->get();
+        foreach ($attributes as $attribute) {
+            $attributeName = $this->getAttributePlainName($attribute->name);
+            if (stripos($attributeName, $needle) !== false) {
+                return $attribute;
+            }
+        }
+        return null;
+    }
+
+    private function getAttributesExceptNames($attribute_ids, $excluded_names = [], $limit = 20)
+    {
+        if (empty($attribute_ids)) {
+            return collect();
+        }
+        $attributes = Attribute::with('values')
+            ->whereRaw("id in ('". implode("','", $attribute_ids) ."')")
+            ->where('status', 1)
+            ->get();
+        $attribute_list = [];
+        foreach ($attributes as $attribute) {
+            $attributeName = $this->getAttributePlainName($attribute->name);
+            $skip = false;
+            foreach ($excluded_names as $excluded_name) {
+                if (stripos($attributeName, $excluded_name) !== false) {
+                    $skip = true;
+                    break;
+                }
+            }
+            if ($skip) {
+                continue;
+            }
+            $attribute_list[] = $attribute;
+            if (count($attribute_list) >= $limit) {
+                break;
+            }
+        }
+        return collect($attribute_list);
     }
 }

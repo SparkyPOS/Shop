@@ -70,7 +70,7 @@
                         <div class="checkout_shiped_box mb_20">
                             @if(!isModuleActive('INTShipping'))
                                 <div class="checout_shiped_head package_head flex-wrap d-flex align-items-center ">
-                                    <span class="vendor_name text-nowrap f_w_600">{{ __('vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
+                                    <span class="vendor_name text-nowrap f_w_600">{{ __('Vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
                                     <span class="package_text flex-fill">{{__('common.package')}} {{getNumberTranslate($current_pkg)}} {{__('common.of')}} {{getNumberTranslate($total_package)}}</span>
                                     <span class="Shipped_text">{{__('defaultTheme.shipping')}} :</span>
                                     <span class="name_text text-nowrap">
@@ -85,7 +85,7 @@
                                 </div>
                             @else
                                 <div class="checout_shiped_head package_head flex-wrap d-flex align-items-center ">
-                                    <span class="vendor_name text-nowrap f_w_600">{{ __('vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
+                                    <span class="vendor_name text-nowrap f_w_600">{{ __('Vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
                                     <span class="package_text flex-fill">{{__('common.package')}} {{getNumberTranslate($current_pkg)}} {{__('common.of')}} {{getNumberTranslate($total_package)}}</span>
                                 </div>
                             @endif

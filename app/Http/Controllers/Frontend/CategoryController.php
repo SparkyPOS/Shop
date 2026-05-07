@@ -80,13 +80,14 @@ class CategoryController extends Controller
     public function filterIndexByType(Request $request)
     {
 
-        $sort_by = null;
-        $paginate = null;
-        if ($request->has('sort_by')) {
-            $data['sort_by'] = $request->sort_by;
+        $sort_by = $request->get('sort_by');
+        $paginate = $request->get('paginate');
+        $data = [];
+        if($sort_by) {
+            $data['sort_by'] = $sort_by;
         }
-        if ($request->has('paginate')) {
-            $data['paginate'] = $request->paginate;
+        if($paginate) {
+            $data['paginate'] = $paginate;
         }
         $data['products'] = $this->filterService->filterProductBlade($request->except("_token"), $sort_by, $paginate);
         if ($request->requestItemType == "category") {
@@ -239,9 +240,10 @@ class CategoryController extends Controller
                 $q->on('seller_products.product_id','=','products.id');
             })->whereRaw("seller_products.product_id in ('". implode("','",$main_product_ids). "')")->orWhere('products.product_name','LIKE', "%{$slug}%")->where('seller_products.status', 1)->activeSeller()->orWhere('seller_products.product_name', 'LIKE', "%{$slug}%")->activeSeller()->where('seller_products.status', 1)->take(100)->get();
             $data['brandList'] = Brand::whereRaw("id in ('". implode("','",$main_product_ids)."')")->where('status', 1)->take(10)->get();
-            $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$main_product_ids). "')")->distinct()->pluck('attribute_id')->toArray();
-            $data['attributeLists'] =  Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id','>',1)->where('status', 1)->take(2)->get();
-            $data['color'] = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('status', 1)->first();
+            // $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$main_product_ids). "')")->distinct()->pluck('attribute_id')->toArray();
+            // $data['attributeLists'] =  Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id','>',1)->where('status', 1)->take(2)->get();
+            // $data['color'] = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('status', 1)->first();
+            $this->appendVariationFilters($data, $main_product_ids, 2);
             $product_min_price = $this->filterService->filterProductMinPrice($products->pluck('id')->toArray());
             $product_max_price = $this->filterService->filterProductMaxPrice($products->pluck('id')->toArray());
             $giftcard_min_price = $giftCards->min('selling_price')??0;
@@ -307,6 +309,7 @@ class CategoryController extends Controller
                 $data['attributeLists'] = $attributeRepo->getAttributeForSpecificCategory($category_id, $category_ids);
                 $data['category_id'] = $category_id;
                 $data['color'] = $attributeRepo->getColorAttributeForSpecificCategory($category_id, $category_ids);
+                $data['size'] = $attributeRepo->getSizeAttributeForSpecificCategory($category_id, $category_ids);
             }else{
                 return abort(404);
             }
@@ -329,6 +332,7 @@ class CategoryController extends Controller
                 $attributeRepo = new AttributeRepository;
                 $data['attributeLists'] = $attributeRepo->getAttributeForSpecificBrand($brand_id);
                 $data['color'] = $attributeRepo->getColorAttributeForSpecificBrand($brand_id);
+                $data['size'] = $attributeRepo->getSizeAttributeForSpecificBrand($brand_id);
             }else{
                 return abort(404);
             }
@@ -351,9 +355,10 @@ class CategoryController extends Controller
             $category_ids = CategoryProduct::whereRaw("product_id in ('". implode("','",$main_product_ids)."')")->distinct()->pluck('category_id')->toArray();
             $data['CategoryList'] = Category::whereRaw("id in ('". implode("','",$category_ids). "')")->where('parent_id',0)->where('status', 1)->take(10)->get();
             $data['brandList'] = Brand::whereRaw("id in ('". implode("','",$brand_ids). "')")->where('status', 1)->take(10)->get();
-            $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$main_product_ids)."')")->distinct()->pluck('attribute_id')->toArray();
-            $data['attributeLists'] =  Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id','>',1)->where('status', 1)->take(1)->get();
-            $data['color'] = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id',1)->where('status', 1)->first();
+            // $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$main_product_ids)."')")->distinct()->pluck('attribute_id')->toArray();
+            // $data['attributeLists'] =  Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id','>',1)->where('status', 1)->take(1)->get();
+            // $data['color'] = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id',1)->where('status', 1)->first();
+            $this->appendVariationFilters($data, $main_product_ids, 1);
             $data['products'] = $this->filterService->sortAndPaginate($products, $sort_by, $paginate);
             $product_min_price = $this->filterService->filterProductMinPrice($products->pluck('id')->toArray());
             $product_max_price = $this->filterService->filterProductMaxPrice($products->pluck('id')->toArray());
@@ -373,9 +378,10 @@ class CategoryController extends Controller
             $category_ids = CategoryProduct::whereRaw("product_id in ('". implode("','",$main_product_ids). "')")->distinct()->pluck('category_id')->toArray();
             $data['CategoryList'] = Category::whereRaw("id in ('". implode("','",$category_ids). "')")->where('status', 1)->take(20)->get();
             $data['brandList'] = Brand::whereRaw("id in ('". implode("','",$brand_ids). "')")->where('status', 1)->take(20)->get();
-            $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$main_product_ids). "')")->distinct()->pluck('attribute_id')->toArray();
-            $data['attributeLists'] =  Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id','>',1)->where('status', 1)->take(2)->get();
-            $data['color'] = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('status', 1)->first();
+            // $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$main_product_ids). "')")->distinct()->pluck('attribute_id')->toArray();
+            // $data['attributeLists'] =  Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id','>',1)->where('status', 1)->take(2)->get();
+            // $data['color'] = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('status', 1)->first();
+            $this->appendVariationFilters($data, $main_product_ids, 2);
             $products = SellerProduct::with('product')->whereRaw("product_id in ('". implode("','", $main_product_ids). "')")->activeSeller()->get();
             $giftCards = GiftCard::where('status', 1)->whereHas('tags', function($q) use($tag){
                 return $q->where('tag_id', $tag->id);
@@ -428,9 +434,10 @@ class CategoryController extends Controller
                 $q->on('seller_products.product_id','=','products.id');
             })->whereRaw("seller_products.product_id in ('". implode("','",$main_product_ids). "')")->orWhere('products.product_name','LIKE', "%{$slug}%")->where('seller_products.status', 1)->activeSeller()->orWhere('seller_products.product_name', 'LIKE', "%{$slug}%")->activeSeller()->where('seller_products.status', 1)->take(100)->get();
             $data['brandList'] = Brand::whereRaw("id in ('". implode("','",$main_product_ids)."')")->where('status', 1)->take(10)->get();
-            $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$main_product_ids). "')")->distinct()->pluck('attribute_id')->toArray();
-            $data['attributeLists'] =  Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id','>',1)->where('status', 1)->take(2)->get();
-            $data['color'] = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('status', 1)->first();
+            // $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$main_product_ids). "')")->distinct()->pluck('attribute_id')->toArray();
+            // $data['attributeLists'] =  Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id','>',1)->where('status', 1)->take(2)->get();
+            // $data['color'] = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('status', 1)->first();
+            $this->appendVariationFilters($data, $main_product_ids, 2);
             $product_min_price = $this->filterService->filterProductMinPrice($products->pluck('id')->toArray());
             $product_max_price = $this->filterService->filterProductMaxPrice($products->pluck('id')->toArray());
             $giftcard_min_price = $giftCards->min('selling_price')??0;
@@ -500,5 +507,61 @@ class CategoryController extends Controller
         return view(theme('partials.attributes'), $data);
     }
 
+    private function appendVariationFilters(&$data, $mainProductIds, $attributeLimit = 2) {
+        $data['color'] = null;
+        $data['size'] = null;
+        $data['attributeLists'] = [];
+        if(empty($mainProductIds)) {
+            return;
+        }
+        $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$mainProductIds). "')")->distinct()->pluck('attribute_id')->toArray();
+        if(empty($attribute_ids)) {
+            return;
+        }
+        $attributes = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('status', 1)->get();
+        $color = null;
+        $size = null;
+        $attributeLists = [];
+        foreach($attributes as $attribute) {
+            $attributeName = $this->getAttributePlainName($attribute->name);
+            if($color == null && stripos($attributeName, 'color') !== false) {
+                $color = $attribute;
+                continue;
+            }
+            if($size == null && stripos($attributeName, 'size') !== false) {
+                $size = $attribute;
+                continue;
+            }
+        }
+        foreach($attributes as $attribute) {
+            if($color != null && $attribute->id == $color->id) {
+                continue;
+            }
+            if($size != null && $attribute->id == $size->id) {
+                continue;
+            }
+            $attributeLists[] = $attribute;
+            if(count($attributeLists) >= $attributeLimit) {
+                break;
+            }
+        }
+        $data['color'] = $color;
+        $data['size'] = $size;
+        $data['attributeLists'] = $attributeLists;
+    }
+
+    private function getAttributePlainName($name) {
+        if(is_array($name)) {
+            return implode(' ', $name);
+        }
+        if(is_string($name)) {
+            $decoded = json_decode($name, true);
+            if(json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return implode(' ', $decoded);
+            }
+            return $name;
+        }
+        return '';
+    }
 
 }

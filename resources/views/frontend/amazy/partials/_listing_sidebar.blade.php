@@ -7,6 +7,120 @@
         background-color: #fff;
         border-color: #fff;
     }
+    .filter_accordion_block {
+        border-top: 1px solid #d8dde6;
+    }
+
+    .filter_accordion_head {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        padding: 18px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        color: #111827;
+        cursor: pointer;
+    }
+
+    .filter_accordion_head h4 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    .filter_accordion_icon {
+        font-size: 22px;
+        line-height: 1;
+        font-weight: 300;
+    }
+
+    .filter_accordion_body {
+        display: none;
+        padding: 0 0 22px;
+    }
+
+    .filter_accordion_block.is-open .filter_accordion_body {
+        display: block;
+    }
+
+    .filter_accordion_block.is-open .filter_accordion_icon::before {
+        content: "−";
+    }
+
+    .filter_accordion_block:not(.is-open) .filter_accordion_icon::before {
+        content: "+";
+    }
+
+    .filter_check_list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .filter_option_label {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+        cursor: pointer;
+        color: #667085;
+        font-size: 14px;
+        font-weight: 400;
+    }
+
+    .filter_option_label input {
+        display: none;
+    }
+
+    .filter_fake_checkbox {
+        width: 22px;
+        height: 22px;
+        border: 1px solid #d6dce5;
+        border-radius: 4px;
+        background: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 22px;
+        position: relative;
+    }
+
+    .filter_option_label input:checked + .filter_fake_checkbox {
+        border-color: #081225;
+        background: #081225;
+    }
+
+    .filter_option_label input:checked + .filter_fake_checkbox::after {
+        content: "";
+        width: 6px;
+        height: 11px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+        margin-top: -2px;
+    }
+
+    .filter_color_dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1px solid #d6dce5;
+        flex: 0 0 16px;
+        display: inline-block;
+    }
+
+    .filter_color_dot.is-white {
+        background: #ffffff;
+    }
+
+    .filter_color_dot.is-multi {
+        background: linear-gradient(135deg, #ef4444 0%, #f59e0b 20%, #facc15 40%, #22c55e 60%, #3b82f6 80%, #8b5cf6 100%);
+    }
 </style>
 <div class="col-lg-4 col-xl-3">
     <div id="product_category_chose" class="product_category_chose mb_30 mt-1">
@@ -121,7 +235,7 @@
                     });
                 })(jQuery);
             </script>
-            @isset($color)
+            <!-- @isset($color)
                 @if ($color != null && $color->id == 1)
                     <div class="single_pro_categry">
                         <h4 class="font_18 f_w_700">
@@ -136,6 +250,122 @@
                                     </label>
                                 </div>
                             @endforeach
+                        </div>
+                    </div>
+                @endif
+            @endisset -->
+            @isset($size)
+                @if($size != null && $size->values && $size->values->count() > 0)
+                    <div class="filter_accordion_block is-open" data-filter-accordion>
+                        <button type="button" class="filter_accordion_head">
+                            <h4>{{ is_array($size->name) ? ($size->name['en'] ?? reset($size->name)) : (json_decode($size->name, true)['en'] ?? $size->name) }}</h4>
+                            <span class="filter_accordion_icon"></span>
+                        </button>
+
+                        <div class="filter_accordion_body">
+                            <ul class="filter_check_list">
+                                @foreach($size->values as $sizeValue)
+                                    <li class="filter_check_item">
+                                        <label class="filter_option_label">
+                                            <input
+                                                type="checkbox"
+                                                name="size[]"
+                                                class="getProductByChoice filter_attr_checkbox"
+                                                data-id="{{ $size->id }}"
+                                                data-value="{{ $sizeValue->id }}"
+                                                value="{{ $sizeValue->value }}"
+                                            >
+                                            <span class="filter_fake_checkbox"></span>
+                                            <span>{{ $sizeValue->value }}</span>
+                                        </label>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endif
+            @endisset
+
+            @isset($color)
+                @if($color != null && $color->values && $color->values->count() > 0)
+                    <div class="filter_accordion_block" data-filter-accordion>
+                        <button type="button" class="filter_accordion_head">
+                            <h4>{{ is_array($color->name) ? ($color->name['en'] ?? reset($color->name)) : (json_decode($color->name, true)['en'] ?? $color->name) }}</h4>
+                            <span class="filter_accordion_icon"></span>
+                        </button>
+
+                        <div class="filter_accordion_body">
+                            <ul class="filter_check_list">
+                                @foreach($color->values as $colorValue)
+                                    @php
+                                        $colorName = $colorValue->value;
+                                        $normalizedColorName = strtolower(trim($colorName));
+
+                                        $knownColorMap = [
+                                            'white' => '#ffffff',
+                                            'neutral' => '#e8c3a2',
+                                            'grey' => '#bfc3c0',
+                                            'gray' => '#bfc3c0',
+                                            'black' => '#2b2b33',
+                                            'pink' => '#f472a6',
+                                            'red' => '#d72d3a',
+                                            'burgundy' => '#7d0019',
+                                            'yellow' => '#ffd760',
+                                            'orange' => '#ff8a2a',
+                                            'green' => '#778d2d',
+                                            'blue' => '#0079c8',
+                                            'purple' => '#7654b8',
+                                            'brown' => '#744537',
+                                            'olive' => '#7c8a3a',
+                                            'peach' => '#f3c6a7',
+                                            'plum' => '#673147',
+                                            'seafoam' => '#93d4c2',
+                                            'taupe' => '#9f8f83',
+                                            'coral orange' => '#ff7f50',
+                                            'hot pink' => '#ff69b4',
+                                            'mauve' => '#b784a7',
+                                            'dk.indigo' => '#263b5e',
+                                            'dark indigo' => '#263b5e',
+                                            'indigo' => '#2f4f7f',
+                                            'vintage wash' => '#6f7f8f',
+                                            'black wash' => '#2b2b2b',
+                                            'rose light wash' => '#b8c3cf',
+                                            'rose stone wash' => '#8d99a6',
+                                        ];
+
+                                        if (substr($normalizedColorName, 0, 1) == '#') {
+                                            $colorCode = $colorName;
+                                        } else {
+                                            $colorCode = $knownColorMap[$normalizedColorName] ?? '#d1d5db';
+                                        }
+
+                                        $isWhite = in_array($normalizedColorName, ['white', '#fff', '#ffffff']);
+                                        $isMulti = in_array($normalizedColorName, ['multi-colored', 'multicolored', 'multi color', 'multi-color']);
+                                    @endphp
+
+                                    <li class="filter_check_item">
+                                        <label class="filter_option_label">
+                                            <input
+                                                type="checkbox"
+                                                name="color[]"
+                                                class="getProductByChoice filter_attr_checkbox"
+                                                color="color"
+                                                data-id="{{ $color->id }}"
+                                                data-value="{{ $colorValue->id }}"
+                                                value="{{ $colorName }}"
+                                            >
+                                            <span class="filter_fake_checkbox"></span>
+                                            <span
+                                                class="filter_color_dot {{ $isWhite ? 'is-white' : '' }} {{ $isMulti ? 'is-multi' : '' }}"
+                                                @if(!$isMulti)
+                                                    style="background: {{ $colorCode }};"
+                                                @endif
+                                            ></span>
+                                            <span>{{ $colorName }}</span>
+                                        </label>
+                                    </li>
+                                @endforeach
+                            </ul>
                         </div>
                     </div>
                 @endif
@@ -233,3 +463,12 @@
         </div>
     </div>
 </div>
+<script>
+    (function($) {
+        $(document)
+            .off('click.filterAccordion')
+            .on('click.filterAccordion', '[data-filter-accordion] .filter_accordion_head', function() {
+                $(this).closest('[data-filter-accordion]').toggleClass('is-open');
+            });
+    })(jQuery);
+</script>

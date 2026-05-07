@@ -631,31 +631,36 @@ class FilterRepository
     }
     public function productThroughAttribute($typeId, $typeVal, $products, $requestType, $requestItem)
     {
-        if ($requestType ==  "category") {
-            if(!in_array('product_variations',$this->joins)){
-                $products->join('product_variations', function($q3){
-                    return $q3->on('products.id', '=', 'product_variations.product_id');
-                });
-                array_push($this->joins,'product_variations');
-            }
-            $products = $products->where('products.status', 1)->where('category_product.category_id', $requestItem)->whereRaw("product_variations.attribute_id in ('". implode("','",[$typeId])."')")->whereRaw("product_variations.attribute_value_id in ('". implode("','",$typeVal)."')");
-        } elseif ($requestType ==  "brand") {
-            if(!in_array('product_variations',$this->joins)){
-                $products->join('product_variations', function($q3){
-                    return $q3->on('products.id', '=', 'product_variations.product_id');
-                });
-                array_push($this->joins,'product_variations');
-            }
-            $products = $products->where('products.status', 1)->whereRaw("products.brand_id in ('". implode("','",[$requestItem])."')")->whereRaw("product_variations.attribute_id in ('". implode("','",[$typeId])."')")->whereRaw("product_variations.attribute_value_id in ('". implode("','",$typeVal)."')");
-        } else {
-            if(!in_array('product_variations',$this->joins)){
-                $products->join('product_variations', function($q3){
-                    return $q3->on('products.id', '=', 'product_variations.product_id');
-                });
-                array_push($this->joins,'product_variations');
-            }
-            $products = $products->where('products.status', 1)->whereRaw("product_variations.attribute_id in ('". implode("','",[$typeId])."')")->whereRaw("product_variations.attribute_value_id in ('". implode("','",$typeVal)."')");
+        $typeId = intval($typeId);
+
+        if (!is_array($typeVal)) {
+            $typeVal = [$typeVal];
         }
+
+        $typeVal = array_filter(array_map('intval', $typeVal));
+
+        if (empty($typeVal)) {
+            return $products;
+        }
+
+        if ($requestType == "category") {
+            $products = $products->where('products.status', 1)
+                ->where('category_product.category_id', $requestItem);
+        } elseif ($requestType == "brand") {
+            $products = $products->where('products.status', 1)
+                ->whereRaw("products.brand_id in ('". implode("','", [$requestItem]) ."')");
+        } else {
+            $products = $products->where('products.status', 1);
+        }
+
+        $products = $products->whereExists(function ($query) use ($typeId, $typeVal) {
+            $query->select(DB::raw(1))
+                ->from('product_variations')
+                ->whereColumn('product_variations.product_id', 'products.id')
+                ->where('product_variations.attribute_id', $typeId)
+                ->whereRaw("product_variations.attribute_value_id in ('". implode("','", $typeVal) ."')");
+        });
+
         return $products;
     }
     public function productThroughPriceRange($min_price, $max_price, $requestType, $requestItem, $products)
@@ -743,6 +748,7 @@ class FilterRepository
             $data['attributeLists'] = $attributeRepo->getAttributeForSpecificCategory($category_id, $category_ids);
             $data['category_id'] = $category_id;
             $data['color'] = $attributeRepo->getColorAttributeForSpecificCategory($category_id, $category_ids);
+            $data['size'] = $attributeRepo->getSizeAttributeForSpecificCategory($category_id, $category_ids);
         }
         if ($item == 'brand') {
             $brand_id = $id;
@@ -754,6 +760,7 @@ class FilterRepository
             $attributeRepo = new AttributeRepository;
             $data['attributeLists'] = $attributeRepo->getAttributeForSpecificBrand($brand_id);
             $data['color'] = $attributeRepo->getColorAttributeForSpecificBrand($brand_id);
+            $data['size'] = $attributeRepo->getSizeAttributeForSpecificBrand($brand_id);    
         }
         if ($item == 'tag') {
             $tag = Tag::where('name',$id)->first();
