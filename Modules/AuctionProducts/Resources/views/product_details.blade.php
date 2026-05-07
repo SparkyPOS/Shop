@@ -383,6 +383,7 @@
     @endif
     <input type="hidden" id="isWholeSaleActive" value="{{isModuleActive('WholeSale')}}">
     <input type="hidden" id="isMultiVendorActive" value="{{isModuleActive('MultiVendor')}}">
+    <input type="hidden" id="cart_success_store_name" value="{{ parentStoreName($product->seller ?? null) }}">
 
     <div id="showHistor"></div>
 @endsection
@@ -520,17 +521,7 @@
                         ?? @$product->seller->id
                         ?? ''
                     ),
-                    'store': @json(
-                        @$product->seller->SellerAccount->seller_shop_display_name
-                        ?? @$product->seller->SellerAccount->seller_shop_name
-                        ?? @$product->seller->SellerAccount->shop_name
-                        ?? @$product->seller->SellerAccount->business_name
-                        ?? @$product->seller->seller_shop_display_name
-                        ?? @$product->seller->seller_shop_name
-                        ?? @$product->seller->shop_name
-                        ?? @$product->seller->name
-                        ?? ''
-                    ),
+                    'store': $('#cart_success_store_name').val(),
                     'qty' : selectedQty,
                     'variations': getCartSuccessVariations()
                 };
