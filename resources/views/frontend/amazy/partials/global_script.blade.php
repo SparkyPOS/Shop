@@ -99,7 +99,7 @@
                             } else if(String(prod_info.variations).trim() !== '') {
                                 variantText = String(prod_info.variations).trim();
                             }
-                        } else if(typeof prod_info.variant !== 'undefined' && prod_info.variant !== null && String(prod_info.variant).trim() !== '') { {
+                        } else if(typeof prod_info.variant !== 'undefined' && prod_info.variant !== null && String(prod_info.variant).trim() !== '') {
                             variantText = String(prod_info.variant).trim();
                         }
                         if(variantText === '') {
