@@ -347,6 +347,7 @@ class FilterRepository
             });
             $this->joins = ['products','category_product','categories'];
         }
+        $attributeFilters = [];
         foreach ($session_data['filterType'] as $key => $filter) {
             if ($filter['filterTypeId'] == "cat" && !empty($filter['filterTypeValue'])) {
                 $typeVal = $filter['filterTypeValue'];
@@ -473,6 +474,7 @@ class FilterRepository
             $q->on('seller_products.product_id', '=', 'products.id')->where('products.status', 1);
         });
         $this->joins = ['products'];
+        $attributeFilters = [];
         foreach ($data['filterType'] as $key => $filter) {
             if ($filter['filterTypeId'] == "parent_cat" && !empty($filter['filterTypeValue'])) {
                 $typeVal = $filter['filterTypeValue'];

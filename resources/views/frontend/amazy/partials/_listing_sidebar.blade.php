@@ -338,6 +338,22 @@
                             'orchid light' => '#b9a6c8',
                             'orchid stone wash' => '#9d8ca9',
                             'silver grey' => '#b8bec4',
+                            'dk.indigowash' => '#263b5e',
+                            'dk indigo wash' => '#263b5e',
+                            'indigowash' => '#2f4f7f',
+                            'indigo wash' => '#2f4f7f',
+                            'vintagewash' => '#6f7f8f',
+                            'vintage wash' => '#6f7f8f',
+                            'lt.indigowash' => '#7892ad',
+                            'lt indigo wash' => '#7892ad',
+                            'classicblue' => '#315f92',
+                            'classic blue' => '#315f92',
+                            'blueblush' => '#5e7fa7',
+                            'blue blush' => '#5e7fa7',
+                            'snowwash' => '#d6dde5',
+                            'snow wash' => '#d6dde5',
+                            'camo' => '#6b705c',
+                            'orange' => '#ff8a2a',
                         ];
 
                         $hexNameMap = [
