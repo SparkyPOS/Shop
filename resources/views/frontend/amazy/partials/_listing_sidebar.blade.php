@@ -304,42 +304,47 @@
                         }
 
                         $knownColorMap = [
-                            'white' => '#ffffff',
-                            'neutral' => '#e8c3a2',
-                            'grey' => '#bfc3c0',
-                            'gray' => '#bfc3c0',
                             'black' => '#000000',
-                            'pink' => '#f472a6',
-                            'red' => '#d72d3a',
-                            'burgundy' => '#7d0019',
-                            'yellow' => '#ffd760',
-                            'orange' => '#ff8a2a',
+                            'coral orange' => '#ff7f50',
+                            'ecru' => '#cdb891',
                             'green' => '#778d2d',
-                            'blue' => '#0079c8',
-                            'purple' => '#7654b8',
-                            'brown' => '#744537',
-                            'olive' => '#7c8a3a',
+                            'hot pink' => '#ff69b4',
+                            'mauve' => '#b784a7',
+                            'olive' => '#808000',
                             'peach' => '#f3c6a7',
+                            'pink' => '#f472a6',
                             'plum' => '#673147',
                             'seafoam' => '#93d4c2',
                             'taupe' => '#9f8f83',
-                            'coral orange' => '#ff7f50',
-                            'hot pink' => '#ff69b4',
-                            'mauve' => '#b784a7',
+                            'dk indigo' => '#263b5e',
                             'dk.indigo' => '#263b5e',
                             'dark indigo' => '#263b5e',
                             'indigo' => '#2f4f7f',
-                            'vintage wash' => '#6f7f8f',
-                            'black wash' => '#2b2b2b',
-                            'rose light wash' => '#b8c3cf',
-                            'rose stone wash' => '#8d99a6',
+                            'lt.indigo wash' => '#7892ad',
+                            'lt indigo wash' => '#7892ad',
+                            'indigo blush' => '#536f8f',
+                            'raw denim' => '#1f334d',
+                            'tied wash light' => '#9caec0',
+                            'daisy light wash' => '#aab9c6',
+                            'geometric light' => '#a7b3be',
+                            'geometric indigo' => '#314c73',
+                            'lily light' => '#a8b8c5',
+                            'lily stone wash' => '#7f8d99',
+                            'dark clove' => '#4a3730',
+                            'carbenet' => '#5d1f2f',
+                            'cabernet' => '#5d1f2f',
+                            'greenfinch' => '#6f7f2a',
+                            'caramel' => '#b7793f',
+                            'orchid light' => '#b9a6c8',
+                            'orchid stone wash' => '#9d8ca9',
+                            'silver grey' => '#b8bec4',
                         ];
 
-                        $hexLabelMap = [
-                            '#ffffff' => 'White',
-                            '#fff' => 'White',
+                        $hexNameMap = [
                             '#000000' => 'Black',
                             '#000' => 'Black',
+                            '#ffffff' => 'White',
+                            '#fff' => 'White',
                             '#ff0000' => 'Red',
                             '#00ff00' => 'Green',
                             '#0000ff' => 'Blue',
@@ -355,11 +360,13 @@
 
                         foreach ($color->values as $colorValue) {
                             $rawColorName = trim((string) $colorValue->value);
-                            $normalizedColorName = strtolower($rawColorName);
 
-                            if ($normalizedColorName == '') {
+                            if ($rawColorName == '') {
                                 continue;
                             }
+
+                            $normalizedColorName = strtolower($rawColorName);
+                            $normalizedColorName = str_replace(['  '], ' ', $normalizedColorName);
 
                             $isHexColor = substr($normalizedColorName, 0, 1) == '#';
                             $isMulti = in_array($normalizedColorName, ['multi-colored', 'multicolored', 'multi color', 'multi-color']);
@@ -369,13 +376,24 @@
                                 $colorCode = '';
                                 $dedupeKey = 'multi-colored';
                             } elseif ($isHexColor) {
-                                $colorCode = $normalizedColorName;
-                                $displayName = $hexLabelMap[$normalizedColorName] ?? strtoupper($rawColorName);
-                                $dedupeKey = 'hex_' . $normalizedColorName;
+                                $normalizedHex = strtolower($rawColorName);
+
+                                if (strlen($normalizedHex) == 4) {
+                                    $normalizedHex = '#' . $normalizedHex[1] . $normalizedHex[1] . $normalizedHex[2] . $normalizedHex[2] . $normalizedHex[3] . $normalizedHex[3];
+                                }
+
+                                $displayName = $hexNameMap[$normalizedHex] ?? strtoupper($rawColorName);
+                                $colorCode = $normalizedHex;
+                                $dedupeKey = 'hex_' . $normalizedHex;
                             } else {
-                                $colorCode = $knownColorMap[$normalizedColorName] ?? '#d1d5db';
                                 $displayName = $rawColorName;
-                                $dedupeKey = 'color_' . strtolower($colorCode);
+                                $colorCode = $knownColorMap[$normalizedColorName] ?? '#d1d5db';
+
+                                if (isset($knownColorMap[$normalizedColorName])) {
+                                    $dedupeKey = 'color_' . strtolower($normalizedColorName);
+                                } else {
+                                    $dedupeKey = 'name_' . preg_replace('/[^a-z0-9]+/', '_', $normalizedColorName);
+                                }
                             }
 
                             if (!isset($colorOptions[$dedupeKey])) {
@@ -390,6 +408,39 @@
 
                             $colorOptions[$dedupeKey]['ids'][] = $colorValue->id;
                         }
+
+                        $colorSortOrder = [
+                            'White' => 1,
+                            'Ecru' => 2,
+                            'Silver Grey' => 3,
+                            'Black' => 4,
+                            'Pink' => 5,
+                            'Hot Pink' => 6,
+                            'Coral Orange' => 7,
+                            'Peach' => 8,
+                            'Green' => 9,
+                            'Olive' => 10,
+                            'Seafoam' => 11,
+                            'Dk Indigo' => 12,
+                            'Lt.Indigo Wash' => 13,
+                            'Indigo Blush' => 14,
+                            'Raw Denim' => 15,
+                            'Plum' => 16,
+                            'Mauve' => 17,
+                            'Taupe' => 18,
+                            'Multi-Colored' => 99,
+                        ];
+
+                        uasort($colorOptions, function ($a, $b) use ($colorSortOrder) {
+                            $aOrder = $colorSortOrder[$a['display_name']] ?? 500;
+                            $bOrder = $colorSortOrder[$b['display_name']] ?? 500;
+
+                            if ($aOrder == $bOrder) {
+                                return strcmp($a['display_name'], $b['display_name']);
+                            }
+
+                            return $aOrder <=> $bOrder;
+                        });
                     @endphp
 
                     @if(count($colorOptions) > 0)

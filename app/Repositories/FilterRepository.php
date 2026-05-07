@@ -637,9 +637,23 @@ class FilterRepository
             $typeVal = [$typeVal];
         }
 
-        $typeVal = array_filter(array_map('intval', $typeVal));
+        $attributeValueIds = [];
 
-        if (empty($typeVal)) {
+        foreach ($typeVal as $value) {
+            $valueParts = explode(',', $value);
+
+            foreach ($valueParts as $valuePart) {
+                $valuePart = trim($valuePart);
+
+                if ($valuePart !== '') {
+                    $attributeValueIds[] = intval($valuePart);
+                }
+            }
+        }
+
+        $attributeValueIds = array_unique(array_filter($attributeValueIds));
+
+        if (empty($attributeValueIds)) {
             return $products;
         }
 
@@ -653,12 +667,12 @@ class FilterRepository
             $products = $products->where('products.status', 1);
         }
 
-        $products = $products->whereExists(function ($query) use ($typeId, $typeVal) {
+        $products = $products->whereExists(function ($query) use ($typeId, $attributeValueIds) {
             $query->select(DB::raw(1))
                 ->from('product_variations')
                 ->whereColumn('product_variations.product_id', 'products.id')
                 ->where('product_variations.attribute_id', $typeId)
-                ->whereRaw("product_variations.attribute_value_id in ('". implode("','", $typeVal) ."')");
+                ->whereRaw("product_variations.attribute_value_id in ('". implode("','", $attributeValueIds) ."')");
         });
 
         return $products;
