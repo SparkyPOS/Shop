@@ -65,7 +65,9 @@
                             $('#cart_success_vendor').text('');
                             $('#cart_success_vendor_wrap').hide();
                         }
-                        let storeText = prod_info.store || $('#cart_success_store_name').val() || $('#store_name_modal').val() || '';
+                        let storeText = $.trim(
+                            prod_info.store || (window.cartSuccessProductMeta && window.cartSuccessProductMeta.store ? window.cartSuccessProductMeta.store : '') || $('#cart_success_store_name').val() || $('#store_name_modal').val() || ''
+                        );
                         if (storeText !== '') {
                             $('#cart_success_store').text(storeText);
                             $('#cart_success_store_wrap').show();
