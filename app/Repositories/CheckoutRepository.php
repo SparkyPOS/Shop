@@ -470,7 +470,7 @@ class CheckoutRepository{
                                 }
                             }
                         }
-                        $additional_shipping += $cart->product->sku->additional_shipping;
+                        $additional_shipping += $this->resolveCartItemAdditionalShipping($cart, (int) $seller_id);
                         if($cart->product->product->product->is_physical == 0){
                             $is_digital_product  = 1;
                         }else{
@@ -910,11 +910,22 @@ class CheckoutRepository{
     private function resolveCartItemAdditionalShipping($cart, int $sellerId): float
     {
         $additional = (float) (optional(optional($cart->product)->sku)->additional_shipping ?? 0);
+        $usedProductLevelFallback = false;
+
+        if ($additional <= 0) {
+            $additional = (float) (optional(optional(optional($cart->product)->product)->product)->shipping_cost ?? 0);
+            $usedProductLevelFallback = $additional > 0;
+        }
+
         if ($additional <= 0) {
             return 0.0;
         }
 
         $syncedExternalId = optional(optional(optional($cart->product)->product)->product)->external_product_id ?? null;
+        if ($usedProductLevelFallback) {
+            return $additional * max((int) $cart->qty, 1);
+        }
+
         if (!empty($syncedExternalId)) {
             return $additional * (int) $cart->qty;
         }

@@ -882,11 +882,22 @@ class CheckoutController extends Controller
     private function resolveCartItemAdditionalShipping($item, int $sellerId): float
     {
         $additional = (float) (optional(optional($item->product)->sku)->additional_shipping ?? 0);
+        $usedProductLevelFallback = false;
+
+        if ($additional <= 0) {
+            $additional = (float) (optional(optional(optional($item->product)->product)->product)->shipping_cost ?? 0);
+            $usedProductLevelFallback = $additional > 0;
+        }
+
         if ($additional <= 0) {
             return 0.0;
         }
 
         $syncedExternalId = optional(optional(optional($item->product)->product)->product)->external_product_id ?? null;
+        if ($usedProductLevelFallback) {
+            return $additional * max((int) $item->qty, 1);
+        }
+
         if (!empty($syncedExternalId)) {
             return $additional * (int) $item->qty;
         }
