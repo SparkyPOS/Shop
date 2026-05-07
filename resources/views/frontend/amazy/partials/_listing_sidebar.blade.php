@@ -41,16 +41,20 @@
         padding: 0 0 22px;
     }
 
-    .filter_accordion_block.is-open .filter_accordion_body {
+    .filter_accordion_block.is-open > .filter_accordion_body {
         display: block;
+    }
+
+    .filter_accordion_icon::before {
+        content: "+";
+        display: inline-block;
+        font-size: 22px;
+        line-height: 1;
+        font-weight: 300;
     }
 
     .filter_accordion_block.is-open .filter_accordion_icon::before {
         content: "−";
-    }
-
-    .filter_accordion_block:not(.is-open) .filter_accordion_icon::before {
-        content: "+";
     }
 
     .filter_check_list {
@@ -464,11 +468,22 @@
     </div>
 </div>
 <script>
-    (function($) {
-        $(document)
-            .off('click.filterAccordion')
-            .on('click.filterAccordion', '[data-filter-accordion] .filter_accordion_head', function() {
-                $(this).closest('[data-filter-accordion]').toggleClass('is-open');
-            });
-    })(jQuery);
+    document.addEventListener('click', function (event) {
+        var accordionHead = event.target.closest('.filter_accordion_head');
+
+        if (!accordionHead) {
+            return;
+        }
+
+        var accordionBlock = accordionHead.closest('[data-filter-accordion]');
+
+        if (!accordionBlock) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        accordionBlock.classList.toggle('is-open');
+    });
 </script>
