@@ -35,6 +35,8 @@
                                     <input type="hidden" value="home_delivery" name="delivery_type">
                                 @php
                                     $can_process = [];
+                                    $intShippingProfileClassAvailable = isModuleActive('INTShipping') && class_exists('\\Modules\\INTShipping\\Entities\\SellerProductShippingProfile');
+                                    $intShippingZoneClassAvailable = isModuleActive('INTShipping') && class_exists('\\Modules\\INTShipping\\Entities\\ShippingZone');
                                 @endphp
                                 @if(isModuleActive('INTShipping'))
                                     <div class="col-12">
@@ -62,19 +64,30 @@
                                                         </li>
                                                     </ul>
                                                     @php
-                                                        $products = \Modules\INTShipping\Entities\SellerProductShippingProfile::where('seller_product_id',$shipcart->product->product_id)->get();
+                                                        $products = collect();
+                                                        if ($intShippingProfileClassAvailable) {
+                                                            $products = \Modules\INTShipping\Entities\SellerProductShippingProfile::where('seller_product_id',$shipcart->product->product_id)->get();
+                                                        }
                                                         $rates = [];
                                                         foreach ($products as $product) {
 
                                                             if($shipping_address != null){
-                                                                $zones =  \Modules\INTShipping\Entities\ShippingZone::with('rates')->where('shipping_profile_id',$product->shipping_profile_id)->WhereHas('state_list', function($query) use($address){
-                                                                        return $query->where('state_id', $address->state);
-                                                                    })->get();
+                                                                if ($intShippingZoneClassAvailable) {
+                                                                    $zones =  \Modules\INTShipping\Entities\ShippingZone::with('rates')->where('shipping_profile_id',$product->shipping_profile_id)->WhereHas('state_list', function($query) use($address){
+                                                                            return $query->where('state_id', $address->state);
+                                                                        })->get();
+                                                                } else {
+                                                                    $zones = collect();
+                                                                }
                                                             }else{
 
-                                                                $zones =  \Modules\INTShipping\Entities\ShippingZone::with('rates')->where('shipping_profile_id',$product->shipping_profile_id)->WhereHas('state_list', function($query) use($shipping_address){
-                                                                    return $query->where('state_id', $shipping_address->state);
-                                                                })->get();
+                                                                if ($intShippingZoneClassAvailable) {
+                                                                    $zones =  \Modules\INTShipping\Entities\ShippingZone::with('rates')->where('shipping_profile_id',$product->shipping_profile_id)->WhereHas('state_list', function($query) use($shipping_address){
+                                                                        return $query->where('state_id', $shipping_address->state);
+                                                                    })->get();
+                                                                } else {
+                                                                    $zones = collect();
+                                                                }
                                                             }
 
                                                             if($zones){

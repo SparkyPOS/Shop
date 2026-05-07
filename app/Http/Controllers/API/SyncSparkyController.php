@@ -1041,11 +1041,11 @@ class SyncSparkyController extends Controller
                     Log::info('shop.sync.variants.done', ['product_id'=>$newProduct->id]);
                 }
 
-                // Sync physical/digital mapping and product-level shipping
-                if (!empty($product['type'])) {
-                    $newProduct->is_physical = strtolower($product['type']) === 'tangible' ? 1 : 0;
-                }
-                $newProduct->shipping_type = $this->resolveShopShippingType($shippingPayload);
+                // Enforce POS->Shop rule:
+                // - products synced from SparkyPOS are always physical on Shop
+                // - shipping type is always flat rate (2)
+                $newProduct->is_physical = 1;
+                $newProduct->shipping_type = 2;
                 if ($shippingPayload['shipping_cost'] !== null) $newProduct->shipping_cost = $shippingPayload['shipping_cost'];
                 if (!empty($shippingPayload['shipping_location']) && Schema::hasColumn('products', 'shipping_location')) {
                     $newProduct->shipping_location = $shippingPayload['shipping_location'];

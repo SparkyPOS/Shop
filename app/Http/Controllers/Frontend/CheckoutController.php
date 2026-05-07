@@ -557,14 +557,15 @@ class CheckoutController extends Controller
                     }
                }
                if($physical_count > 0){
+                $fallbackProcessingTime = $this->resolvePackageProcessingTime($packages);
                 if(isModuleActive('INTShipping') && app('theme')->folder_path == 'amazy'){
                     $shipping_id = '';
                     $shipping_method_name = '';
-                    $shipping_time = '';
+                    $shipping_time = $fallbackProcessingTime;
                 }else{
                     $shipping_id = !empty($shipping_method) ? $shipping_method->id:2;
                     $shipping_method_name = !empty($shipping_method) ? $shipping_method->method_name:'Free';
-                    $shipping_time = !empty($shipping_method) ? $shipping_method->shipment_time:'3-5 Days';
+                    $shipping_time = $fallbackProcessingTime;
                 }
                    $session_packages[$seller_id] = [
                        'seller_id'=>$seller_id,
@@ -585,6 +586,7 @@ class CheckoutController extends Controller
                    ];
                }else{
                     $email_shipping = \Modules\Shipping\Entities\ShippingMethod::first();
+                    $fallbackProcessingTime = $this->resolvePackageProcessingTime($packages);
                     $session_packages[$seller_id] = [
                         'seller_id'=>$seller_id,
                         'shipping_cost'=> 0,
@@ -595,8 +597,8 @@ class CheckoutController extends Controller
                         'totalItemLength'=> 0,
                         'totalItemBreadth'=> 0,
                         'shipping_id'=> 1,
-                        'shipping_method'=>$email_shipping->method_name,
-                        'shipping_time'=>$email_shipping->shipment_time,
+                        'shipping_method'=> optional($email_shipping)->method_name ?? 'Free',
+                        'shipping_time'=> optional($email_shipping)->shipment_time ?? $fallbackProcessingTime,
                         'physical_count' => $physical_count,
                         'item_incart' => $item_in_cart,
                         'pos_synced_shipping' => false,
@@ -606,6 +608,8 @@ class CheckoutController extends Controller
            }
            session()->forget('package_wise_shipping');
            session(['package_wise_shipping'=>$session_packages]);
+           // Recalculate summary using the refreshed package-wise shipping session.
+           $shipping_cost = $this->checkoutService->totalAmountForPayment($cartData,null,null)['shipping_cost'];
        }else{
             session()->forget('single_package_height_weight_info');
             $totalItemWeight = 0;
@@ -670,6 +674,9 @@ class CheckoutController extends Controller
             $package_wise_shippings = session()->get('package_wise_shipping');
             $new_package_wise_shipping = [];
             foreach ($package_wise_shippings as $package_wise_shipping){
+                $packageProcessingTime = isset($cartData[$package_wise_shipping['seller_id']])
+                    ? $this->resolvePackageProcessingTime($cartData[$package_wise_shipping['seller_id']])
+                    : ($package_wise_shipping['shipping_time'] ?? '3-5 days');
                 if($package_wise_shipping['seller_id'] == $request->seller){
                     $isPosSyncedShipping = !empty($package_wise_shipping['pos_synced_shipping']);
                     $shipping_method = ShippingMethod::with(['carrier'])->findOrFail($request->shipping_method);
@@ -705,7 +712,7 @@ class CheckoutController extends Controller
                         'totalItemWeight'=>$package_wise_shipping['totalItemWeight'],
                         'shipping_id'=> !empty($shipping_method) ? $shipping_method->id:'2',
                         'shipping_method'=> !empty($shipping_method) ? $shipping_method->method_name:'Free',
-                        'shipping_time'=> !empty($shipping_method) ? $shipping_method->shipment_time:'3-5 Days',
+                        'shipping_time'=> $packageProcessingTime,
                         'totalItemHeight'=>$package_wise_shipping['totalItemHeight'],
                         'totalItemLength'=>$package_wise_shipping['totalItemLength'],
                         'totalItemBreadth'=>$package_wise_shipping['totalItemBreadth'],
@@ -723,7 +730,7 @@ class CheckoutController extends Controller
                         'totalItemWeight'=>$package_wise_shipping['totalItemWeight'],
                         'shipping_id'=>$package_wise_shipping['shipping_id'],
                         'shipping_method'=>$package_wise_shipping['shipping_method'],
-                        'shipping_time'=>$package_wise_shipping['shipping_time'],
+                        'shipping_time'=>$packageProcessingTime,
                         'totalItemHeight'=>$package_wise_shipping['totalItemHeight'],
                         'totalItemLength'=>$package_wise_shipping['totalItemLength'],
                         'totalItemBreadth'=>$package_wise_shipping['totalItemBreadth'],
@@ -736,6 +743,8 @@ class CheckoutController extends Controller
             }
             session()->forget('package_wise_shipping');
             session(['package_wise_shipping'=>$new_package_wise_shipping]);
+            // Recalculate summary after package-wise shipping changes.
+            $shipping_cost = $this->checkoutService->totalAmountForPayment($cartData,null,null)['shipping_cost'];
         }
         $checkoutField = CheckoutFieldVisibility::all();
         return view(theme('partials._checkout_details'),compact('shipping_methods','cartData','shipping_address',
@@ -946,6 +955,37 @@ class CheckoutController extends Controller
             'is_synced' => $isSynced,
             'shipping_cost' => $isSynced ? $shippingCost : 0,
         ];
+    }
+
+    private function resolvePackageProcessingTime($packages): string
+    {
+        foreach ($packages as $item) {
+            $processing = optional(optional(optional($item->product)->product)->product)->processing_time ?? null;
+            $normalized = $this->normalizeProcessingTime($processing);
+            if ($normalized !== null) {
+                return $normalized;
+            }
+        }
+
+        return '3-5 days';
+    }
+
+    private function normalizeProcessingTime($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $raw = trim((string) $value);
+        if ($raw === '') {
+            return null;
+        }
+
+        if (preg_match('/^\d+$/', $raw)) {
+            return $raw . ' days';
+        }
+
+        return $raw;
     }
 
 

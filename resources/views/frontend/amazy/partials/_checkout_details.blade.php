@@ -180,6 +180,9 @@
 
                     @php
                         $package_wise_shipping = session()->get('package_wise_shipping');
+                        $intShippingProfileMainClassAvailable = isModuleActive('INTShipping') && class_exists('\\Modules\\INTShipping\\Entities\\ShippingProfile');
+                        $intShippingProfileClassAvailable = isModuleActive('INTShipping') && class_exists('\\Modules\\INTShipping\\Entities\\SellerProductShippingProfile');
+                        $intShippingZoneClassAvailable = isModuleActive('INTShipping') && class_exists('\\Modules\\INTShipping\\Entities\\ShippingZone');
                     @endphp
                     
                     @foreach($cartData as $seller_id => $packages)
@@ -192,7 +195,10 @@
                         @endphp
                         @if(isModuleActive('INTShipping'))
                             @php
-                                $profiles = \Modules\INTShipping\Entities\ShippingProfile::where('user_id',$seller_id)->get();
+                                $profiles = collect();
+                                if ($intShippingProfileMainClassAvailable) {
+                                    $profiles = \Modules\INTShipping\Entities\ShippingProfile::where('user_id',$seller_id)->get();
+                                }
                             @endphp
                         @endif
                         <div class="checkout_shiped_box mb_20">
@@ -484,26 +490,36 @@
 
                                                 @if($item->product_type == 'product' && @$item->product->product->product->is_physical)
                                                     @php
-                                                        $isIntselected = \Modules\INTShipping\Entities\SellerProductShippingProfile::where('seller_product_id', $item->product->product->product->id)->first();
+                                                        $isIntselected = null;
+                                                        if ($intShippingProfileClassAvailable) {
+                                                            $isIntselected = \Modules\INTShipping\Entities\SellerProductShippingProfile::where('seller_product_id', $item->product->product->product->id)->first();
+                                                        }
                                                     @endphp
 
-                                                    @if(!empty($isIntselected) && isModuleActive('INTShipping') && !empty($shipping_address))
+                                                    @if(!empty($isIntselected) && $intShippingProfileClassAvailable && $intShippingZoneClassAvailable && !empty($shipping_address))
                                                         <tr class="custom-tr">
                                                             <td colspan="4" class="p-0 border-0">
                                                                 @php
-                                                                    $products = \Modules\INTShipping\Entities\SellerProductShippingProfile::whereHas('profile', function($query) use ($seller_id) {
-                                                                        return $query->where('user_id', $seller_id);
-                                                                    })->where('seller_product_id', $item->product->product_id)->get();
+                                                                    $products = collect();
+                                                                    if ($intShippingProfileClassAvailable) {
+                                                                        $products = \Modules\INTShipping\Entities\SellerProductShippingProfile::whereHas('profile', function($query) use ($seller_id) {
+                                                                            return $query->where('user_id', $seller_id);
+                                                                        })->where('seller_product_id', $item->product->product_id)->get();
+                                                                    }
 
                                                                     $rates = [];
 
                                                                     foreach ($products as $product) {
                                                                         if($shipping_address != null) {
-                                                                            $zones = \Modules\INTShipping\Entities\ShippingZone::where('shipping_profile_id', $product->shipping_profile_id)->WhereHas('state_list', function($query) use($shipping_address) {
-                                                                                return $query->where('state_id', $shipping_address->state);
-                                                                            })->get();
+                                                                            if ($intShippingZoneClassAvailable) {
+                                                                                $zones = \Modules\INTShipping\Entities\ShippingZone::where('shipping_profile_id', $product->shipping_profile_id)->WhereHas('state_list', function($query) use($shipping_address) {
+                                                                                    return $query->where('state_id', $shipping_address->state);
+                                                                                })->get();
+                                                                            } else {
+                                                                                $zones = collect();
+                                                                            }
                                                                         } else {
-                                                                            $zones = [];
+                                                                            $zones = collect();
                                                                         }
 
                                                                         foreach($zones as $zone) {
