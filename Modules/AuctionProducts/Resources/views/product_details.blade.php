@@ -535,9 +535,6 @@
                     'qty' : selectedQty,
                     'variations': getCartSuccessVariations()
                 };
-                console.log($('#cart_success_store_name').val(), 'cart success hidden store')
-                console.log(window.cartSuccessProductMeta ? window.cartSuccessProductMeta.store : '', 'cart success window store')
-                console.log(showData, 'cart success data');
                 addToCart($('#product_sku_id').val(),$('#seller_id').val(),$('#qty').data('value'),$('#base_sku_price').val().trim(),$('#shipping_type').val(),'product',showData);
             });
             $(document).on('click', '#both_buy_btn', function (event){
