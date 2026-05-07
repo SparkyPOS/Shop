@@ -427,7 +427,6 @@
                                         </p>
 
                                         <p class="cart-added-meta-row" id="cart_success_variant_wrap">
-                                            <span>Variant: </span>
                                             <strong id="cart_success_variant"></strong>
                                         </p>
     
