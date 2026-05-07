@@ -388,8 +388,11 @@
     @endphp
     <input type="hidden" id="cart_success_store_name" value="{{ $cartSuccessStoreName }}">
     <script>
-        window,cartSuccessProductMeta = window.cartSuccessProductMeta || {};
+        console.log(window.cartSuccessProductMeta, 'cart success product meta origin')
+        window.cartSuccessProductMeta = window.cartSuccessProductMeta || {};
         window.cartSuccessProductMeta.store = @json($cartSuccessStoreName);
+        console.log(window.cartSuccessProductMeta, 'cart success product meta after setting store');
+
     </script>
 
     <div id="showHistor"></div>
