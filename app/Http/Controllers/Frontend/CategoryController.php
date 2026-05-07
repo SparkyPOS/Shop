@@ -243,7 +243,10 @@ class CategoryController extends Controller
             // $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$main_product_ids). "')")->distinct()->pluck('attribute_id')->toArray();
             // $data['attributeLists'] =  Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id','>',1)->where('status', 1)->take(2)->get();
             // $data['color'] = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('status', 1)->first();
-            $this->appendVariationFilters($data, $main_product_ids, 2);
+            $attributeRepo = new AttributeRepository;
+            $data['attributeLists'] = $attributeRepo->getAttributeForSpecificProducts($main_product_ids, 2);
+            $data['color'] = $attributeRepo->getColorAttributeForSpecificProducts($main_product_ids);
+            $data['size'] = $attributeRepo->getSizeAttributeForSpecificProducts($main_product_ids);
             $product_min_price = $this->filterService->filterProductMinPrice($products->pluck('id')->toArray());
             $product_max_price = $this->filterService->filterProductMaxPrice($products->pluck('id')->toArray());
             $giftcard_min_price = $giftCards->min('selling_price')??0;
@@ -358,7 +361,10 @@ class CategoryController extends Controller
             // $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$main_product_ids)."')")->distinct()->pluck('attribute_id')->toArray();
             // $data['attributeLists'] =  Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id','>',1)->where('status', 1)->take(1)->get();
             // $data['color'] = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id',1)->where('status', 1)->first();
-            $this->appendVariationFilters($data, $main_product_ids, 1);
+            $attributeRepo = new AttributeRepository;
+            $data['attributeLists'] = $attributeRepo->getAttributeForSpecificProducts($main_product_ids, 1);
+            $data['color'] = $attributeRepo->getColorAttributeForSpecificProducts($main_product_ids);
+            $data['size'] = $attributeRepo->getSizeAttributeForSpecificProducts($main_product_ids);
             $data['products'] = $this->filterService->sortAndPaginate($products, $sort_by, $paginate);
             $product_min_price = $this->filterService->filterProductMinPrice($products->pluck('id')->toArray());
             $product_max_price = $this->filterService->filterProductMaxPrice($products->pluck('id')->toArray());
@@ -381,7 +387,10 @@ class CategoryController extends Controller
             // $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$main_product_ids). "')")->distinct()->pluck('attribute_id')->toArray();
             // $data['attributeLists'] =  Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id','>',1)->where('status', 1)->take(2)->get();
             // $data['color'] = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('status', 1)->first();
-            $this->appendVariationFilters($data, $main_product_ids, 2);
+            $attributeRepo = new AttributeRepository;
+            $data['attributeLists'] = $attributeRepo->getAttributeForSpecificProducts($main_product_ids, 2);
+            $data['color'] = $attributeRepo->getColorAttributeForSpecificProducts($main_product_ids);
+            $data['size'] = $attributeRepo->getSizeAttributeForSpecificProducts($main_product_ids);
             $products = SellerProduct::with('product')->whereRaw("product_id in ('". implode("','", $main_product_ids). "')")->activeSeller()->get();
             $giftCards = GiftCard::where('status', 1)->whereHas('tags', function($q) use($tag){
                 return $q->where('tag_id', $tag->id);
@@ -437,7 +446,10 @@ class CategoryController extends Controller
             // $attribute_ids = ProductVariations::whereRaw("product_id in ('". implode("','",$main_product_ids). "')")->distinct()->pluck('attribute_id')->toArray();
             // $data['attributeLists'] =  Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('id','>',1)->where('status', 1)->take(2)->get();
             // $data['color'] = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids). "')")->where('status', 1)->first();
-            $this->appendVariationFilters($data, $main_product_ids, 2);
+            $attributeRepo = new AttributeRepository;
+            $data['attributeLists'] = $attributeRepo->getAttributeForSpecificProducts($main_product_ids, 2);
+            $data['color'] = $attributeRepo->getColorAttributeForSpecificProducts($main_product_ids);
+            $data['size'] = $attributeRepo->getSizeAttributeForSpecificProducts($main_product_ids);
             $product_min_price = $this->filterService->filterProductMinPrice($products->pluck('id')->toArray());
             $product_max_price = $this->filterService->filterProductMaxPrice($products->pluck('id')->toArray());
             $giftcard_min_price = $giftCards->min('selling_price')??0;
@@ -472,10 +484,12 @@ class CategoryController extends Controller
             $category_ids = $catRepo->getAllSubSubCategoryID($request->id);
             $attributeRepo = new AttributeRepository;
             $data['color'] = $attributeRepo->getColorAttributeForSpecificCategory($request->id, $category_ids);
+            $data['size'] = $attributeRepo->getSizeAttributeForSpecificCategory($request->id, $category_ids);
         }
         if ($request->type == "brand") {
             $attributeRepo = new AttributeRepository;
             $data['color'] = $attributeRepo->getColorAttributeForSpecificBrand($request->id);
+            $data['size'] = $attributeRepo->getSizeAttributeForSpecificBrand($request->id);
         }
         return view(theme('partials.color_attribute'), $data);
     }

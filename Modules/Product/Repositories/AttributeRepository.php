@@ -180,10 +180,10 @@ class AttributeRepository
                 $q1->where('category_id',$category_id);
             });
         })->pluck('product_sku_id')->toArray();
-        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->distinct()->pluck('attribute_id')->toArray();
+        // $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->distinct()->pluck('attribute_id')->toArray();
         // $attribute_list = Attribute::with('values')->whereRaw("id in ('" . implode("','", $attribute_ids)."')")->where('status',1)->take(20)->get();
         // return $attribute_list;
-        return $this->getAttributesExceptNames($attribute_ids, ['color', 'size'], 20);
+        return $this->getAttributesExceptNamesWithUsedValues("product_sku_id", $seller_products, ['color', 'size'], 20);
     }
 
     public function getColorAttributeForSpecificCategory($category_id, $category_ids)
@@ -196,10 +196,10 @@ class AttributeRepository
                 $q1->where('category_id',$category_id);
             });
         })->pluck('product_sku_id')->toArray();
-        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->distinct()->pluck('attribute_id')->toArray();
+        // $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->distinct()->pluck('attribute_id')->toArray();
         // $attribute_list = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids)."')")->where('status', 1)->first();
         // return $attribute_list;
-        return $this->findAttributeByName($attribute_ids, 'color');
+        return $this->getAttributeWithUsedValuesByName("product_sku_id", $seller_products, 'color');
     }
 
     public function getColorAttributeForSpecificBrand($brand_id)
@@ -207,20 +207,20 @@ class AttributeRepository
         $seller_products = SellerProductSKU::whereHas('mainProduct', function($query) use($brand_id){
             return $query->where('brand_id', $brand_id);
         })->distinct('product_sku_id')->pluck('product_sku_id')->toArray();
-        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->distinct()->pluck('attribute_id')->toArray();
+        // $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->distinct()->pluck('attribute_id')->toArray();
         // $attribute_list = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids)."')")->where('status', 1)->first();
         // return $attribute_list;
-        return $this->findAttributeByName($attribute_ids, 'color');
+        return $this->getAttributeWithUsedValuesByName("product_sku_id", $seller_products, 'color');
     }
     public function getAttributeForSpecificBrand($brand_id)
     {
         $seller_products = SellerProductSKU::whereHas('mainProduct', function($query) use($brand_id){
             return $query->where('brand_id',$brand_id)->where('products.status', 1);
         })->distinct('product_sku_id')->pluck('product_sku_id')->toArray();
-        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->distinct()->pluck('attribute_id')->toArray();
+        // $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")->distinct()->pluck('attribute_id')->toArray();
         // $attribute_list = Attribute::with('values')->whereRaw("id in ('". implode("','", $attribute_ids)."')")->where('status', 1)->get();
         // return $attribute_list;
-        return $this->getAttributesExceptNames($attribute_ids, ['color', 'size'], 20);
+        return $this->getAttributesExceptNamesWithUsedValues("product_sku_id", $seller_products, ['color', 'size'], 20);
     }
 
     public function getAttributesByAjax($search){
@@ -253,16 +253,16 @@ class AttributeRepository
             });
         })->pluck('product_sku_id')->toArray();
 
-        if (empty($seller_products)) {
-            return null;
-        }
+        // if (empty($seller_products)) {
+        //     return null;
+        // }
 
-        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")
-            ->distinct()
-            ->pluck('attribute_id')
-            ->toArray();
+        // $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")
+        //     ->distinct()
+        //     ->pluck('attribute_id')
+        //     ->toArray();
 
-        return $this->findAttributeByName($attribute_ids, 'size');
+        return $this->getAttributeWithUsedValuesByName("product_sku_id", $seller_products, 'size');
     }
 
     public function getSizeAttributeForSpecificBrand($brand_id)
@@ -271,16 +271,16 @@ class AttributeRepository
             return $query->where('brand_id', $brand_id);
         })->distinct('product_sku_id')->pluck('product_sku_id')->toArray();
 
-        if (empty($seller_products)) {
-            return null;
-        }
+        // if (empty($seller_products)) {
+        //     return null;
+        // }
 
-        $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")
-            ->distinct()
-            ->pluck('attribute_id')
-            ->toArray();
+        // $attribute_ids = ProductVariations::whereRaw("product_sku_id in ('". implode("','", $seller_products)."')")
+        //     ->distinct()
+        //     ->pluck('attribute_id')
+        //     ->toArray();
 
-        return $this->findAttributeByName($attribute_ids, 'size');
+        return $this->getAttributeWithUsedValuesByName("product_sku_id", $seller_products, 'size');
     }
 
     private function getAttributePlainName($name)
@@ -344,5 +344,116 @@ class AttributeRepository
             }
         }
         return collect($attribute_list);
+    }
+
+    private function getAttributeIdsByVariationScope($column, $ids) {
+        if(empty($ids)) {
+            return [];
+        }
+        return ProductVariations::whereRaw($column . " in ('". implode("','", $ids) ."')")->distinct()->pluck('attribute_id')->toArray();
+    }
+
+    private function getUsedValueIdsByVariationScope($column, $ids, $attribute_id) {
+        if(empty($ids)) {
+            return [];
+        }
+        return ProductVariations::whereRaw($column . " in ('". implode("','", $ids) ."')")
+            ->where('attribute_id', $attribute_id)
+            ->distinct()
+            ->pluck('attribute_value_id')
+            ->toArray();
+    }
+
+    private function getAttributeWithUsedValuesByName($column, $ids, $needle) {
+        if(empty($ids)) {
+            return null;
+        }
+        $attribute_ids = $this->getAttributeIdsByVariationScope($column, $ids);
+        if (empty($attribute_ids)) {
+            return null;
+        }
+        $attributes = Attribute::whereRaw("id in ('". implode("','", $attribute_ids) ."')")
+            ->where('status', 1)
+            ->get();
+        $targetAttribute = null;
+        foreach($attributes as $attribute) {
+            $attributeName = $this->getAttributePlainName($attribute->name);
+            if(stripos($attributeName, $needle) !== false) {
+                $targetAttribute = $attribute;
+                break;
+            }
+        }
+        if($targetAttribute == null) {
+            return null;
+        }
+        $used_value_ids = $this->getUsedValueIdsByVariationScope($column, $ids, $targetAttribute->id);
+        if(empty($used_value_ids)) {
+            return null;
+        }
+        $values = $targetAttribute->values()->whereRaw("id in ('". implode("','", $used_value_ids) ."')")->orderBy('id', 'asc')->get();
+        if($values->count() < 1) {
+            return null;
+        }
+        $targetAttribute->setRelation('values', $values);
+        return $targetAttribute;
+    }
+
+    private function getAttributesExceptNamesWithUsedValues($column, $ids, $excluded_names = [], $limit = 20) {
+        if(empty($ids)) {
+            return collect();
+        }
+        $attribute_ids = $this->getAttributeIdsByVariationScope($column, $ids);
+        if (empty($attribute_ids)) {
+            return collect();
+        }
+        $attributes = Attribute::whereRaw("id in ('". implode("','", $attribute_ids) ."')")
+            ->where('status', 1)
+            ->get();
+        $attribute_list = [];
+        foreach ($attributes as $attribute) {
+            $attributeName = $this->getAttributePlainName($attribute->name);
+            $skip = false;
+            foreach ($excluded_names as $excluded_name) {
+                if (stripos($attributeName, $excluded_name) !== false) {
+                    $skip = true;
+                    break;
+                }
+            }
+            if ($skip) {
+                continue;
+            }
+            if(count($attribute_list) >= $limit) {
+                break;
+            }
+            $used_value_ids = $this->getUsedValueIdsByVariationScope($column, $ids, $attribute->id);
+            if(empty($used_value_ids)) {
+                continue;
+            }
+            $values = $attribute->values()->whereRaw("id in ('". implode("','", $used_value_ids) ."')")->orderBy('id', 'asc')->get();
+            if($values->count() < 1) {
+                continue;
+            }
+            $attribute->setRelation('values', $values);
+            $attribute_list[] = $attribute;
+            if(count($attribute_list) >= $limit) {
+                break;
+            }
+        }
+        return collect($attribute_list);
+    }
+
+    public function getAttributeForSpecificProducts($product_ids, $limit = 20)
+    {
+        return $this->getAttributesExceptNamesWithUsedValues('product_id', $product_ids, ['color', 'size'], $limit);
+    }
+
+    public function getColorAttributeForSpecificProducts($product_ids)
+    {
+        return $this->getAttributeWithUsedValuesByName('product_id', $product_ids, 'color');
+    }
+
+    public function getSizeAttributeForSpecificProducts($product_ids)
+    {
+        return $this->getAttributeWithUsedValuesByName('product_id', $product_ids, 'size');
     }
 }
