@@ -694,8 +694,12 @@
                         toastr.warning("{{__('defaultTheme.please_select_product_first')}}","{{__('common.warning')}}");
                     }
                     else{
-                        var base_url = $('#url').val();
-                        window.location.href = base_url + "/checkout?owner=" + seller_id;
+                        @auth
+                            var base_url = $('#url').val();
+                            window.location.href = base_url + "/checkout?owner=" + seller_id;
+                        @else
+                            window.location.href = @json(route('sso.redirect', ['redirect_to' => request()->fullUrl()]));
+                        @endauth
                     }
                 });
 

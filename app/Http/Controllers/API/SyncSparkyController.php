@@ -585,7 +585,12 @@ class SyncSparkyController extends Controller
                     if (isset($product['length'])) $newProductSku->length = (float) $product['length'];
                     if (isset($product['breadth'])) $newProductSku->breadth = (float) $product['breadth'];
                     if (isset($product['height'])) $newProductSku->height = (float) $product['height'];
-                    if (isset($product['additional_shipping'])) $newProductSku->additional_shipping = (float) $product['additional_shipping'];
+                    // SparkyPOS shipping cost should be reflected in Shop SKU additional shipping.
+                    if (array_key_exists('additional_shipping', $product) && $product['additional_shipping'] !== null) {
+                        $newProductSku->additional_shipping = (float) $product['additional_shipping'];
+                    } elseif (array_key_exists('shipping_cost', $product) && $product['shipping_cost'] !== null) {
+                        $newProductSku->additional_shipping = (float) $product['shipping_cost'];
+                    }
                     $newProductSku->status = ($product['status'] == 'available') ? 1 : 0;
                     $newProductSku->save();
 
@@ -748,7 +753,13 @@ class SyncSparkyController extends Controller
                         if (isset($variant['length'])) $newProductSku->length = (float) $variant['length'];
                         if (isset($variant['breadth'])) $newProductSku->breadth = (float) $variant['breadth'];
                         if (isset($variant['height'])) $newProductSku->height = (float) $variant['height'];
-                        if (isset($variant['additional_shipping'])) $newProductSku->additional_shipping = (float) $variant['additional_shipping'];
+                        if (array_key_exists('additional_shipping', $variant) && $variant['additional_shipping'] !== null) {
+                            $newProductSku->additional_shipping = (float) $variant['additional_shipping'];
+                        } elseif (array_key_exists('additional_shipping', $product) && $product['additional_shipping'] !== null) {
+                            $newProductSku->additional_shipping = (float) $product['additional_shipping'];
+                        } elseif (array_key_exists('shipping_cost', $product) && $product['shipping_cost'] !== null) {
+                            $newProductSku->additional_shipping = (float) $product['shipping_cost'];
+                        }
                         $newProductSku->save();
 
                         // queue seller sku upsert for variant
@@ -993,8 +1004,17 @@ class SyncSparkyController extends Controller
                 }
                 if (isset($product['shipping_type'])) $newProduct->shipping_type = (int) $product['shipping_type'];
                 if (isset($product['shipping_cost'])) $newProduct->shipping_cost = (float) $product['shipping_cost'];
-                if (array_key_exists('processing_time', $product) || array_key_exists('shippingpt', $product)) {
-                    $newProduct->processing_time = (string) ($product['processing_time'] ?? $product['shippingpt'] ?? '');
+                if (
+                    array_key_exists('processing_time', $product)
+                    || array_key_exists('shippingpt', $product)
+                    || (isset($product['shipping']) && is_array($product['shipping']))
+                ) {
+                    $processingTime = $product['processing_time'] ?? $product['shippingpt'] ?? null;
+                    if (($processingTime === null || trim((string) $processingTime) === '') && isset($product['shipping']) && is_array($product['shipping'])) {
+                        $processingTime = $product['shipping']['processing_time'] ?? $product['shipping']['shippingpt'] ?? null;
+                    }
+                    $processingTime = trim((string) ($processingTime ?? ''));
+                    $newProduct->processing_time = $processingTime !== '' ? $processingTime : null;
                 }
                 // Ensure name is up to date as well
                 if (!empty($product['name'])) $newProduct->product_name = $product['name'];
