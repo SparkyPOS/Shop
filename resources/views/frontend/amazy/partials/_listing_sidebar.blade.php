@@ -260,7 +260,7 @@
             @endisset -->
             @isset($size)
                 @if($size != null && $size->values && $size->values->count() > 0)
-                    <div class="filter_accordion_block is-open" data-filter-accordion>
+                    <div class="filter_accordion_block" data-filter-accordion>
                         <button type="button" class="filter_accordion_head">
                             <h4>{{ is_array($size->name) ? ($size->name['en'] ?? reset($size->name)) : (json_decode($size->name, true)['en'] ?? $size->name) }}</h4>
                             <span class="filter_accordion_icon"></span>
@@ -292,86 +292,142 @@
 
             @isset($color)
                 @if($color != null && $color->values && $color->values->count() > 0)
-                    <div class="filter_accordion_block" data-filter-accordion>
-                        <button type="button" class="filter_accordion_head">
-                            <h4>{{ is_array($color->name) ? ($color->name['en'] ?? reset($color->name)) : (json_decode($color->name, true)['en'] ?? $color->name) }}</h4>
-                            <span class="filter_accordion_icon"></span>
-                        </button>
+                    @php
+                        $colorName = $color->name;
 
-                        <div class="filter_accordion_body">
-                            <ul class="filter_check_list">
-                                @foreach($color->values as $colorValue)
-                                    @php
-                                        $colorName = $colorValue->value;
-                                        $normalizedColorName = strtolower(trim($colorName));
+                        if (is_string($colorName)) {
+                            $decodedColorName = json_decode($colorName, true);
 
-                                        $knownColorMap = [
-                                            'white' => '#ffffff',
-                                            'neutral' => '#e8c3a2',
-                                            'grey' => '#bfc3c0',
-                                            'gray' => '#bfc3c0',
-                                            'black' => '#2b2b33',
-                                            'pink' => '#f472a6',
-                                            'red' => '#d72d3a',
-                                            'burgundy' => '#7d0019',
-                                            'yellow' => '#ffd760',
-                                            'orange' => '#ff8a2a',
-                                            'green' => '#778d2d',
-                                            'blue' => '#0079c8',
-                                            'purple' => '#7654b8',
-                                            'brown' => '#744537',
-                                            'olive' => '#7c8a3a',
-                                            'peach' => '#f3c6a7',
-                                            'plum' => '#673147',
-                                            'seafoam' => '#93d4c2',
-                                            'taupe' => '#9f8f83',
-                                            'coral orange' => '#ff7f50',
-                                            'hot pink' => '#ff69b4',
-                                            'mauve' => '#b784a7',
-                                            'dk.indigo' => '#263b5e',
-                                            'dark indigo' => '#263b5e',
-                                            'indigo' => '#2f4f7f',
-                                            'vintage wash' => '#6f7f8f',
-                                            'black wash' => '#2b2b2b',
-                                            'rose light wash' => '#b8c3cf',
-                                            'rose stone wash' => '#8d99a6',
-                                        ];
+                            if (json_last_error() === JSON_ERROR_NONE && is_array($decodedColorName)) {
+                                $colorName = $decodedColorName['en'] ?? reset($decodedColorName);
+                            }
+                        }
 
-                                        if (substr($normalizedColorName, 0, 1) == '#') {
-                                            $colorCode = $colorName;
-                                        } else {
-                                            $colorCode = $knownColorMap[$normalizedColorName] ?? '#d1d5db';
-                                        }
+                        $knownColorMap = [
+                            'white' => '#ffffff',
+                            'neutral' => '#e8c3a2',
+                            'grey' => '#bfc3c0',
+                            'gray' => '#bfc3c0',
+                            'black' => '#000000',
+                            'pink' => '#f472a6',
+                            'red' => '#d72d3a',
+                            'burgundy' => '#7d0019',
+                            'yellow' => '#ffd760',
+                            'orange' => '#ff8a2a',
+                            'green' => '#778d2d',
+                            'blue' => '#0079c8',
+                            'purple' => '#7654b8',
+                            'brown' => '#744537',
+                            'olive' => '#7c8a3a',
+                            'peach' => '#f3c6a7',
+                            'plum' => '#673147',
+                            'seafoam' => '#93d4c2',
+                            'taupe' => '#9f8f83',
+                            'coral orange' => '#ff7f50',
+                            'hot pink' => '#ff69b4',
+                            'mauve' => '#b784a7',
+                            'dk.indigo' => '#263b5e',
+                            'dark indigo' => '#263b5e',
+                            'indigo' => '#2f4f7f',
+                            'vintage wash' => '#6f7f8f',
+                            'black wash' => '#2b2b2b',
+                            'rose light wash' => '#b8c3cf',
+                            'rose stone wash' => '#8d99a6',
+                        ];
 
-                                        $isWhite = in_array($normalizedColorName, ['white', '#fff', '#ffffff']);
-                                        $isMulti = in_array($normalizedColorName, ['multi-colored', 'multicolored', 'multi color', 'multi-color']);
-                                    @endphp
+                        $hexLabelMap = [
+                            '#ffffff' => 'White',
+                            '#fff' => 'White',
+                            '#000000' => 'Black',
+                            '#000' => 'Black',
+                            '#ff0000' => 'Red',
+                            '#00ff00' => 'Green',
+                            '#0000ff' => 'Blue',
+                            '#ffff00' => 'Yellow',
+                            '#ffa500' => 'Orange',
+                            '#ffc0cb' => 'Pink',
+                            '#800080' => 'Purple',
+                            '#808080' => 'Grey',
+                            '#a52a2a' => 'Brown',
+                        ];
 
-                                    <li class="filter_check_item">
-                                        <label class="filter_option_label">
-                                            <input
-                                                type="checkbox"
-                                                name="color[]"
-                                                class="getProductByChoice filter_attr_checkbox"
-                                                color="color"
-                                                data-id="{{ $color->id }}"
-                                                data-value="{{ $colorValue->id }}"
-                                                value="{{ $colorName }}"
-                                            >
-                                            <span class="filter_fake_checkbox"></span>
-                                            <span
-                                                class="filter_color_dot {{ $isWhite ? 'is-white' : '' }} {{ $isMulti ? 'is-multi' : '' }}"
-                                                @if(!$isMulti)
-                                                    style="background: {{ $colorCode }};"
-                                                @endif
-                                            ></span>
-                                            <span>{{ $colorName }}</span>
-                                        </label>
-                                    </li>
-                                @endforeach
-                            </ul>
+                        $colorOptions = [];
+
+                        foreach ($color->values as $colorValue) {
+                            $rawColorName = trim((string) $colorValue->value);
+                            $normalizedColorName = strtolower($rawColorName);
+
+                            if ($normalizedColorName == '') {
+                                continue;
+                            }
+
+                            $isHexColor = substr($normalizedColorName, 0, 1) == '#';
+                            $isMulti = in_array($normalizedColorName, ['multi-colored', 'multicolored', 'multi color', 'multi-color']);
+
+                            if ($isMulti) {
+                                $displayName = 'Multi-Colored';
+                                $colorCode = '';
+                                $dedupeKey = 'multi-colored';
+                            } elseif ($isHexColor) {
+                                $colorCode = $normalizedColorName;
+                                $displayName = $hexLabelMap[$normalizedColorName] ?? strtoupper($rawColorName);
+                                $dedupeKey = 'hex_' . $normalizedColorName;
+                            } else {
+                                $colorCode = $knownColorMap[$normalizedColorName] ?? '#d1d5db';
+                                $displayName = $rawColorName;
+                                $dedupeKey = 'color_' . strtolower($colorCode);
+                            }
+
+                            if (!isset($colorOptions[$dedupeKey])) {
+                                $colorOptions[$dedupeKey] = [
+                                    'ids' => [],
+                                    'display_name' => $displayName,
+                                    'color_code' => $colorCode,
+                                    'is_white' => in_array(strtolower($colorCode), ['#ffffff', '#fff']),
+                                    'is_multi' => $isMulti,
+                                ];
+                            }
+
+                            $colorOptions[$dedupeKey]['ids'][] = $colorValue->id;
+                        }
+                    @endphp
+
+                    @if(count($colorOptions) > 0)
+                        <div class="filter_accordion_block" data-filter-accordion>
+                            <button type="button" class="filter_accordion_head">
+                                <h4>{{ $colorName }}</h4>
+                                <span class="filter_accordion_icon" aria-hidden="true"></span>
+                            </button>
+
+                            <div class="filter_accordion_body">
+                                <ul class="filter_check_list">
+                                    @foreach($colorOptions as $colorOption)
+                                        <li class="filter_check_item">
+                                            <label class="filter_option_label">
+                                                <input
+                                                    type="checkbox"
+                                                    name="color[]"
+                                                    class="getProductByChoice filter_attr_checkbox"
+                                                    color="color"
+                                                    data-id="{{ $color->id }}"
+                                                    data-value="{{ implode(',', array_unique($colorOption['ids'])) }}"
+                                                    value="{{ $colorOption['display_name'] }}"
+                                                >
+                                                <span class="filter_fake_checkbox"></span>
+                                                <span
+                                                    class="filter_color_dot {{ $colorOption['is_white'] ? 'is-white' : '' }} {{ $colorOption['is_multi'] ? 'is-multi' : '' }}"
+                                                    @if(!$colorOption['is_multi'])
+                                                        style="background: {{ $colorOption['color_code'] }};"
+                                                    @endif
+                                                ></span>
+                                                <span>{{ $colorOption['display_name'] }}</span>
+                                            </label>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 @endif
             @endisset
             <div class="single_pro_categry">
