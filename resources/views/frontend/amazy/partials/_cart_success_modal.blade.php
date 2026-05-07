@@ -226,6 +226,44 @@
         text-decoration: none !important;
     }
 
+    #cart_add_modal.cart-added-pro-modal .cart-added-meta {
+        margin: 0 0 10px;
+    }
+
+    #cart_add_modal.cart-added-pro-modal .cart-added-meta-row {
+        margin: 0 0 5px;
+        color: var(--cart-added-muted);
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.35;
+        display: flex;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    #cart_add_modal.cart-added-pro-modal .cart-added-meta-row span {
+        flex: 0 0 auto;
+        color: var(--cart-added-muted);
+    }
+
+    #cart_add_modal.cart-added-pro-modal .cart-added-meta-row strong {
+        color: var(--cart-added-text);
+        font-weight: 700;
+        min-width: 0;
+        word-break: break-word;
+    }
+
+    #cart_add_modal.cart-added-pro-modal #cart_success_vendor {
+        color: var(--cart-added-blue);
+    }
+
+    @media (max-width: 575.98px) {
+        #cart_add_modal.cart-added-pro-modal .cart-added-meta-row {
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+    }
+
     @media (max-width: 575.98px) {
         #cart_add_modal.cart-added-pro-modal .modal-dialog {
             max-width: calc(100% - 22px) !important;
@@ -376,11 +414,28 @@
 
                                 <div class="cart-added-info">
                                     <h5 id="cart_suceess_name" class="cart-added-name"></h5>
+                                    <div class="cart-added-meta">
 
-                                    <p class="cart-added-vendor">
-                                        Vendor:
-                                        <strong id="cart_success_vendor"></strong>
-                                    </p>
+                                        <p class="cart-added-meta-row" id="cart_success_vendor_wrap">
+                                            <span>Vendor: </span>
+                                            <strong id="cart_success_vendor"></strong>
+                                        </p>
+    
+                                        <p class="cart-added-meta-row" id="cart_success_store_wrap">
+                                            <span>Store: </span>
+                                            <strong id="cart_success_store"></strong>
+                                        </p>
+
+                                        <p class="cart-added-meta-row" id="cart_success_variant_wrap">
+                                            <span>Variant: </span>
+                                            <strong id="cart_success_variant"></strong>
+                                        </p>
+    
+                                        <p class="cart-added-meta-row" id="cart_success_qty_wrap">
+                                            <span>Qty: </span>
+                                            <strong id="cart_success_qty"></strong>        
+                                        </p>
+                                    </div>
 
                                     <h5 id="cart_suceess_price" class="cart-added-price"></h5>
                                 </div>

@@ -481,13 +481,49 @@
                 $('.varintImg').addClass('zoom_01');
                 zoom_enable();
             });
+            function getCartSuccessVariations() {
+                let variations = [];
+                $('.product_color_varient').each(function() {
+                    let labelText = $.trim($(this).find('h5').first().text()).replace(/\s+/g, ' ');
+                    if(!labelText || labelTextt.indexOf(':') === -1) {
+                        return;
+                    }
+                    let parts = labelText.split(":");
+                    let name = $.trim(parts.shift());
+                    let value = $.trim(parts.join(':'));
+                    if(name && value) {
+                        variations.push({
+                            name: name,
+                            value: value
+                        });
+                    }
+                });
+                return variations;
+            }
+            function getCartSuccessThumbnail() {
+                let currentMainImage = $('.varintImg').first().attr('src');
+                let activeVariantImage = $('.sku_img_div.active img').first().attr('src');
+                let hiddenThumbImage = $('#thumb_image').val();
+                return currentMainImage || activeVariantImage || hiddenThumbImage;
+            }
             $(document).on('click', '.add_to_cart_btn', function(event){
                 event.preventDefault();
+                let selectedQty = $('#qty').data('value') || $('#qty').val() || 1;
                 let showData = {
                     'name' : "{{ @$product->product_name }}",
                     'url' : "{{singleProductURL(@$product->seller->slug, @$product->slug)}}",
                     'price' : currency_format($('#final_price').val()),
-                    'thumbnail' : $('#thumb_image').val()
+                    'thumbnail' : getCartSuccessThumbnail(),
+                    'vendor_id': @json(@$product->seller->SellerAccount->id ?? ''),
+                    'store': @json(
+                        @$product->seller->SellerAccount->seller_shop_display_name
+                        ?? @$product->seller->SellerAccount->seller_shop_display_name
+                        ?? @$product->seller->SellerAccont->shop_name
+                        ?? @$product->seller->SellerAccount->business_name
+                        ?? ''
+                    ),
+                    'qty' : selectedQty,
+                    'variations': getCartSuccessVariations()
                 };
                 addToCart($('#product_sku_id').val(),$('#seller_id').val(),$('#qty').data('value'),$('#base_sku_price').val().trim(),$('#shipping_type').val(),'product',showData);
             });

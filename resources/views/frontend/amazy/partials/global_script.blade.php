@@ -53,10 +53,52 @@
                         $('#cart_suceess_name').text(prod_info.name);
                         $('#cart_suceess_price').text(numbertrans(prod_info.price));
                         $('#cart_suceess_url').attr('href',prod_info.url);
-                        if (typeof prod_info.vendor_id !== 'undefined' && prod_info.vendor_id !== null) {
+                        if (typeof prod_info.vendor_id !== 'undefined' && prod_info.vendor_id !== null && prod_info.vendor_id !== '') {
                             $('#cart_success_vendor').text(prod_info.vendor_id);
+                            $('#cart_success_vendor_wrap').show();
                         } else {
                             $('#cart_success_vendor').text('');
+                            $('#cart_success_vendor_wrap').hide();
+                        }
+                        if(typeof prod_info.store !== 'undefined' && prod_info.store !== null && prod_info.store !== '') {
+                            $('#cart_success_store').text(prod_info.store);
+                            $('#cart_success_store_wrap').show();
+                        } else {
+                            $('#cart_success_store').text('');
+                            $('#cart_success_store_wrap').hide();
+                        }
+                        if(typeof prod_info.qty !== 'undefined' && prod_info.qty !== null && prod_info.qty !== '') {
+                            $('#cart_success_qty').text(prod_info.qty);
+                            $('#cart_success_qty_wrap').show();
+                        } else {
+                            $('#cart_success_qty').text('');
+                            $('#cart_success_qty_wrap').hide();
+                        }
+
+                        let variationText = '';
+                        if(typeof prod_info.variations !== 'undefined' && prod_info.variations !== null) {
+                            if(Array.isArray(prod_info.variations)) {
+                                variationText = prod_info.variations.map(function(item) {
+                                    if(typeof item === 'string') {
+                                        return item;
+                                    }
+                                    if(item && item.name && item.value) {
+                                        return item.name + ': ' + item.value;
+                                    }
+                                    return '';
+                                }).filter(function(item) {
+                                    return item !== '';
+                                }).join(', ');
+                            }
+                        } else {
+                            variationText = String(prod_info.variation);
+                        }
+                        if(variationText !== '') {
+                            $('#cart_success_variation').text(variationText);
+                            $('#cart_success_variation_wrap').show();
+                        } else {
+                            $('#cart_success_variation').text('');
+                            $('#cart_success_variation_wrap').hide();
                         }
                         $('#cart_add_modal').modal('show');
                     }
