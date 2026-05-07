@@ -55,6 +55,7 @@ return [
     */
 
     'url' => env('APP_URL', 'http://localhost'),
+    'main_app_url' => env('MAIN_APP_URL', 'https://app.sparkypos.com'),
 
     'asset_url' => env('ASSET_URL', null),
 

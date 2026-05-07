@@ -43,6 +43,21 @@ class AuthController extends Controller
         $this->authService = $authService;
     }
 
+    private function getMainAppUrl(): string
+    {
+        return rtrim((string) config('app.main_app_url', env('MAIN_APP_URL', 'https://app.sparkypos.com')), '/');
+    }
+
+    private function getShopBaseUrl(): string
+    {
+        $configured = trim((string) config('app.url', ''));
+        if ($configured !== '' && preg_match('/^https?:\/\//i', $configured)) {
+            return rtrim($configured, '/');
+        }
+
+        return rtrim(url('/'), '/');
+    }
+
     /**
      * Login
      * @bodyParam email string required email or phone from user
@@ -92,7 +107,7 @@ class AuthController extends Controller
      public function ssoLogin(Request $request) {
         $token = $request->get('token', null);
 
-        $mainapp = env('MAIN_APP_URL', 'https://app.sparkypos.com');
+        $mainapp = $this->getMainAppUrl();
         if (empty($token)) {
             return redirect($mainapp.'/sign-in');
         }
@@ -109,7 +124,7 @@ class AuthController extends Controller
             $issuedAt = strtotime((string) ($date ?? ''));
             $timeDifference = $issuedAt ? time() - $issuedAt : null;
 
-            if ($timeDifference !== null && $timeDifference >= 0 && $timeDifference < 600) {
+            if ($timeDifference !== null && abs($timeDifference) < 600) {
                 $user = null;
                 if (Schema::hasColumn('users', 'app_user_id')) {
                     $user = User::where('app_user_id', $userId)->first();
@@ -286,8 +301,8 @@ class AuthController extends Controller
 
     public function ssoRedirectToPos(Request $request)
     {
-        $mainapp = rtrim(env('MAIN_APP_URL', 'https://app.sparkypos.com'), '/');
-        $shopBase = rtrim(url('/'), '/');
+        $mainapp = $this->getMainAppUrl();
+        $shopBase = $this->getShopBaseUrl();
         $target = $request->query('redirect_to');
         if ($target && !preg_match('/^https?:/i', $target)) {
             $target = $mainapp.'/'.ltrim($target, '/');
@@ -314,6 +329,11 @@ class AuthController extends Controller
                 && strtolower($returnParts['host']) === strtolower($shopParts['host']);
             if (!$sameHost) {
                 $shopReturnTarget = $shopBase;
+            } else {
+                $path = isset($returnParts['path']) ? '/'.ltrim((string) $returnParts['path'], '/') : '';
+                $query = isset($returnParts['query']) && $returnParts['query'] !== '' ? '?'.$returnParts['query'] : '';
+                $fragment = isset($returnParts['fragment']) && $returnParts['fragment'] !== '' ? '#'.$returnParts['fragment'] : '';
+                $shopReturnTarget = rtrim($shopBase, '/').$path.$query.$fragment;
             }
         } else {
             $shopReturnTarget = $shopBase;
@@ -387,7 +407,7 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        $mainapp = rtrim(env('MAIN_APP_URL', 'https://app.sparkypos.com'), '/');
+        $mainapp = $this->getMainAppUrl();
         $target = $request->query('redirect_to');
         if ($target && !preg_match('/^https?:/i', $target)) {
             $target = $mainapp.'/'.ltrim($target, '/');
