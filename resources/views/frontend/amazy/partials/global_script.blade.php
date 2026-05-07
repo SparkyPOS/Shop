@@ -94,11 +94,11 @@
                             variationText = String(prod_info.variation);
                         }
                         if(variationText !== '') {
-                            $('#cart_success_variation').text(variationText);
-                            $('#cart_success_variation_wrap').show();
+                            $('#cart_success_variant').text(variationText);
+                            $('#cart_success_variant_wrap').show();
                         } else {
-                            $('#cart_success_variation').text('');
-                            $('#cart_success_variation_wrap').hide();
+                            $('#cart_success_variant').text('');
+                            $('#cart_success_variant_wrap').hide();
                         }
                         $('#cart_add_modal').modal('show');
                     }

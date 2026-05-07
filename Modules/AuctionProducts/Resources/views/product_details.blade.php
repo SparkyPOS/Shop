@@ -485,7 +485,7 @@
                 let variations = [];
                 $('.product_color_varient').each(function() {
                     let labelText = $.trim($(this).find('h5').first().text()).replace(/\s+/g, ' ');
-                    if(!labelText || labelTextt.indexOf(':') === -1) {
+                    if(!labelText || labelText.indexOf(':') === -1) {
                         return;
                     }
                     let parts = labelText.split(":");
@@ -514,12 +514,21 @@
                     'url' : "{{singleProductURL(@$product->seller->slug, @$product->slug)}}",
                     'price' : currency_format($('#final_price').val()),
                     'thumbnail' : getCartSuccessThumbnail(),
-                    'vendor_id': @json(@$product->seller->SellerAccount->id ?? ''),
+                    'vendor_id': @json(
+                        @$product->seller->SellerAccount->vendor_id
+                        ?? @$product->seller->SellerAccount->id
+                        ?? @$product->seller->id
+                        ?? ''
+                    ),
                     'store': @json(
                         @$product->seller->SellerAccount->seller_shop_display_name
-                        ?? @$product->seller->SellerAccount->seller_shop_display_name
-                        ?? @$product->seller->SellerAccont->shop_name
+                        ?? @$product->seller->SellerAccount->seller_shop_name
+                        ?? @$product->seller->SellerAccount->shop_name
                         ?? @$product->seller->SellerAccount->business_name
+                        ?? @$product->seller->seller_shop_display_name
+                        ?? @$product->seller->seller_shop_name
+                        ?? @$product->seller->shop_name
+                        ?? @$product->seller->name
                         ?? ''
                     ),
                     'qty' : selectedQty,
