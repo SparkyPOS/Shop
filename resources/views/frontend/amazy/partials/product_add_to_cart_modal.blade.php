@@ -270,7 +270,8 @@
                             <input type="hidden" value="{{ textLimit($product->product_name, 28) }}" id="product_name_modal">
                             <input type="hidden" value="{{ singleProductURL(@$product->seller->slug, @$product->slug) }}" id="product_url_modal">
                             <input type="hidden" name="thumb_image" id="thumb_image_modal" value="@if ($product->thum_img != null) {{ showImage($product->thum_img) }} @else {{ showImage($product->product->thumbnail_image_source) }} @endif">
-
+                            <input type="hidden" id="store_name_modal" value="{{ parentStoreName($product->seller ?? null) }}">
+                            
                             @if(!empty(trim(strip_tags(@$product->product->description))))
                                 <div class="quick_view_description">
                                     <h4 class="font_14 f_w_700 mb_8">{{ __('common.description') }}</h4>

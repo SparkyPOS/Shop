@@ -125,6 +125,29 @@
     .filter_color_dot.is-multi {
         background: linear-gradient(135deg, #ef4444 0%, #f59e0b 20%, #facc15 40%, #22c55e 60%, #3b82f6 80%, #8b5cf6 100%);
     }
+
+    .filter_color_list {
+        max-height: 420px;
+        overflow-y: auto;
+        padding-right: 6px;
+    }
+
+    .filter_color_list::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .filter_color_list::-webkit-scrollbar-thumb {
+        background: #cfd4df;
+        border-radius: 20px;
+    }
+
+    .filter_color_list::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .filter_color_dot {
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .04);
+    }
 </style>
 <div class="col-lg-4 col-xl-3">
     <div id="product_category_chose" class="product_category_chose mb_30 mt-1">
@@ -303,41 +326,187 @@
                             }
                         }
 
-                        $knownColorMap = [
+                        $normalizeColorKey = function ($value) {
+                            $value = trim((string) $value);
+                            $value = preg_replace('/([a-z])([A-Z])/', '$1 $2', $value);
+                            $value = strtolower($value);
+                            $value = str_replace(['.', '_', '-', '/'], ' ', $value);
+                            $value = preg_replace('/\s+/', ' ', $value);
+                            $value = trim($value);
+
+                            return $value;
+                        };
+
+                        $compactColorKey = function ($value) use ($normalizeColorKey) {
+                            $value = $normalizeColorKey($value);
+                            return preg_replace('/[^a-z0-9#]+/', '', $value);
+                        };
+
+                        $formatColorLabel = function ($value) use ($normalizeColorKey) {
+                            $value = $normalizeColorKey($value);
+
+                            $labelMap = [
+                                'dk indigo' => 'Dk Indigo',
+                                'dk indigo wash' => 'Dk Indigo Wash',
+                                'lt indigo' => 'Lt Indigo',
+                                'lt indigo wash' => 'Lt Indigo Wash',
+                                'med indigo' => 'Med Indigo',
+                                'med wash' => 'Med Wash',
+                                'raw denim' => 'Raw Denim',
+                                'classic blue' => 'Classic Blue',
+                                'classic red' => 'Classic Red',
+                                'blue blush' => 'Blue Blush',
+                                'indigo blush' => 'Indigo Blush',
+                                'indigo wash' => 'Indigo Wash',
+                                'indigo stone wash' => 'Indigo Stone Wash',
+                                'rose light wash' => 'Rose Light Wash',
+                                'rose stone wash' => 'Rose Stone Wash',
+                                'daisy light wash' => 'Daisy Light Wash',
+                                'daisy stone wash' => 'Daisy Stone Wash',
+                                'geometric indigo' => 'Geometric Indigo',
+                                'geometric light' => 'Geometric Light',
+                                'lily light' => 'Lily Light',
+                                'lily stone wash' => 'Lily Stone Wash',
+                                'stone wash' => 'Stone Wash',
+                                'stone wash dark' => 'Stone Wash Dark',
+                                'stone wash indigo' => 'Stone Wash Indigo',
+                                'stone wash light' => 'Stone Wash Light',
+                                'stone wash med' => 'Stone Wash Med',
+                                'tied wash dark' => 'Tied Wash Dark',
+                                'tied wash light' => 'Tied Wash Light',
+                                'tone indigo wash' => 'Tone Indigo Wash',
+                                'two tone' => 'Two Tone',
+                                'zone wash' => 'Zone Wash',
+                                'black blush' => 'Black Blush',
+                                'black snow' => 'Black Snow',
+                                'black wash' => 'Black Wash',
+                                'ebony black' => 'Ebony Black',
+                                'cloud wash' => 'Cloud Wash',
+                                'blush wash' => 'Blush Wash',
+                                'snow wash' => 'Snow Wash',
+                                'dark blue' => 'Dark Blue',
+                                'dark clove' => 'Dark Clove',
+                                'dark snow' => 'Dark Snow',
+                                'dark stone wash' => 'Dark Stone Wash',
+                                'dark wash' => 'Dark Wash',
+                                'light snow' => 'Light Snow',
+                                'light stone wash' => 'Light Stone Wash',
+                                'orchid light' => 'Orchid Light',
+                                'olive green' => 'Olive Green',
+                                'emerald green' => 'Emerald Green',
+                                'jade green' => 'Jade Green',
+                                'spruce green' => 'Spruce Green',
+                                'heather gray' => 'Heather Gray',
+                                'terra cotta' => 'Terra Cotta',
+                                'fire red' => 'Fire Red',
+                                'sand blast' => 'Sand Blast',
+                                'sand blush' => 'Sand Blush',
+                                'sandblast blue wash' => 'Sandblast Blue Wash',
+                            ];
+
+                            if (isset($labelMap[$value])) {
+                                return $labelMap[$value];
+                            }
+
+                            return ucwords($value);
+                        };
+
+                        $colorCodeByKey = [
+                            'white' => '#f7f7f2',
+                            'almond' => '#d8c7a7',
+                            'amber' => '#c47f27',
                             'black' => '#000000',
-                            'coral orange' => '#ff7f50',
-                            'ecru' => '#cdb891',
-                            'green' => '#778d2d',
-                            'hot pink' => '#ff69b4',
-                            'mauve' => '#b784a7',
-                            'olive' => '#808000',
-                            'peach' => '#f3c6a7',
-                            'pink' => '#f472a6',
-                            'plum' => '#673147',
-                            'seafoam' => '#93d4c2',
-                            'taupe' => '#9f8f83',
-                            'dk indigo' => '#263b5e',
-                            'dk.indigo' => '#263b5e',
-                            'dark indigo' => '#263b5e',
-                            'indigo' => '#2f4f7f',
-                            'lt.indigo wash' => '#7892ad',
-                            'lt indigo wash' => '#7892ad',
-                            'indigo blush' => '#536f8f',
-                            'raw denim' => '#1f334d',
-                            'tied wash light' => '#9caec0',
-                            'daisy light wash' => '#aab9c6',
-                            'geometric light' => '#a7b3be',
-                            'geometric indigo' => '#314c73',
-                            'lily light' => '#a8b8c5',
-                            'lily stone wash' => '#7f8d99',
-                            'dark clove' => '#4a3730',
+                            'ebonyblack' => '#101010',
+                            'blackblush' => '#2b2528',
+                            'blacksnow' => '#3b3f45',
+                            'blackwash' => '#2b2b2b',
+                            'blue' => '#2563a8',
+                            'blueblush' => '#5e7fa7',
+                            'burgundy' => '#7d0019',
+                            'caramel' => '#b7793f',
                             'carbenet' => '#5d1f2f',
                             'cabernet' => '#5d1f2f',
+                            'cheetach' => '#b38855',
+                            'chestnut' => '#7a4a2f',
+                            'classicblue' => '#315f92',
+                            'classicred' => '#a32020',
+                            'cloudwash' => '#c4ccd6',
+                            'coral' => '#ff7f6e',
+                            'daisylightwash' => '#aab9c6',
+                            'daisystonewash' => '#8493a0',
+                            'darkblue' => '#183b67',
+                            'darkclove' => '#4a3730',
+                            'darksnow' => '#3b4654',
+                            'darkstonewash' => '#596b7a',
+                            'darkwash' => '#23384f',
+                            'dkindigo' => '#263b5e',
+                            'dkindigowash' => '#263b5e',
+                            'dkindigo' => '#263b5e',
+                            'dkwash' => '#263b5e',
+                            'eggplant' => '#4b274f',
+                            'emeraldgreen' => '#157a4b',
+                            'firered' => '#d12828',
+                            'fuchsia' => '#d9469a',
+                            'geometricindigo' => '#314c73',
+                            'geometriclight' => '#a7b3be',
+                            'gray' => '#9ca3af',
+                            'grey' => '#9ca3af',
+                            'green' => '#778d2d',
                             'greenfinch' => '#6f7f2a',
-                            'caramel' => '#b7793f',
-                            'orchid light' => '#b9a6c8',
-                            'orchid stone wash' => '#9d8ca9',
-                            'silver grey' => '#b8bec4',
+                            'heathergray' => '#a7adb6',
+                            'heathergrey' => '#a7adb6',
+                            'honey' => '#d59b36',
+                            'indigo' => '#2f4f7f',
+                            'indigoblush' => '#536f8f',
+                            'indigostonewash' => '#66798d',
+                            'indigowash' => '#2f4f7f',
+                            'jadegreen' => '#3f8f6b',
+                            'khaki' => '#b6a16b',
+                            'lightsnow' => '#d9e0e7',
+                            'lightstonewash' => '#a0adba',
+                            'lilylight' => '#a8b8c5',
+                            'lilystonewash' => '#7f8d99',
+                            'ltindigo' => '#6f8ead',
+                            'ltindigowash' => '#7892ad',
+                            'ltwash' => '#9baec2',
+                            'medindigo' => '#41698e',
+                            'medwash' => '#7f97ad',
+                            'moss' => '#6d7652',
+                            'mustard' => '#d6a51f',
+                            'navy' => '#172c4f',
+                            'oatmeal' => '#d8cdbb',
+                            'olivegreen' => '#677238',
+                            'orange' => '#ff8a2a',
+                            'orchidlight' => '#b9a6c8',
+                            'red' => '#d72d3a',
+                            'roselightwash' => '#b8c3cf',
+                            'rosestonewash' => '#8d99a6',
+                            'royalblue' => '#1d4ed8',
+                            'sandblast' => '#c5b79d',
+                            'sandblush' => '#d6b2a6',
+                            'sandblastbluewash' => '#8299b5',
+                            'sandstone' => '#a89276',
+                            'shadeswashed' => '#8e9aa8',
+                            'snowwash' => '#d6dde5',
+                            'sprucegreen' => '#315f4b',
+                            'stonewash' => '#7f8d99',
+                            'stonewashdark' => '#4f5f70',
+                            'stonewashindigo' => '#526b86',
+                            'stonewashlight' => '#a8b5c1',
+                            'stonewashmed' => '#738496',
+                            'tan' => '#c8a77a',
+                            'teal' => '#0f766e',
+                            'terracotta' => '#b9603a',
+                            'tiedwashdark' => '#53606c',
+                            'tiedwashlight' => '#9caec0',
+                            'toneindigowash' => '#526f8e',
+                            'twotone' => '#7c8896',
+                            'vintage' => '#6f7f8f',
+                            'vintagewash' => '#6f7f8f',
+                            'wine' => '#6b102c',
+                            'yam' => '#c46f2f',
+                            'yellow' => '#ffd760',
+                            'zonewash' => '#8192a4',
                         ];
 
                         $hexNameMap = [
@@ -352,7 +521,7 @@
                             '#ffa500' => 'Orange',
                             '#ffc0cb' => 'Pink',
                             '#800080' => 'Purple',
-                            '#808080' => 'Grey',
+                            '#808080' => 'Gray',
                             '#a52a2a' => 'Brown',
                         ];
 
@@ -365,16 +534,15 @@
                                 continue;
                             }
 
-                            $normalizedColorName = strtolower($rawColorName);
-                            $normalizedColorName = str_replace(['  '], ' ', $normalizedColorName);
-
+                            $normalizedColorName = $normalizeColorKey($rawColorName);
+                            $compactKey = $compactColorKey($rawColorName);
                             $isHexColor = substr($normalizedColorName, 0, 1) == '#';
-                            $isMulti = in_array($normalizedColorName, ['multi-colored', 'multicolored', 'multi color', 'multi-color']);
+                            $isMulti = in_array($compactKey, ['multicolored', 'multicolor']);
 
                             if ($isMulti) {
                                 $displayName = 'Multi-Colored';
                                 $colorCode = '';
-                                $dedupeKey = 'multi-colored';
+                                $dedupeKey = 'multi_colored';
                             } elseif ($isHexColor) {
                                 $normalizedHex = strtolower($rawColorName);
 
@@ -386,14 +554,9 @@
                                 $colorCode = $normalizedHex;
                                 $dedupeKey = 'hex_' . $normalizedHex;
                             } else {
-                                $displayName = $rawColorName;
-                                $colorCode = $knownColorMap[$normalizedColorName] ?? '#d1d5db';
-
-                                if (isset($knownColorMap[$normalizedColorName])) {
-                                    $dedupeKey = 'color_' . strtolower($normalizedColorName);
-                                } else {
-                                    $dedupeKey = 'name_' . preg_replace('/[^a-z0-9]+/', '_', $normalizedColorName);
-                                }
+                                $displayName = $formatColorLabel($rawColorName);
+                                $colorCode = $colorCodeByKey[$compactKey] ?? '#cfd4df';
+                                $dedupeKey = 'color_' . $compactKey;
                             }
 
                             if (!isset($colorOptions[$dedupeKey])) {
@@ -401,7 +564,7 @@
                                     'ids' => [],
                                     'display_name' => $displayName,
                                     'color_code' => $colorCode,
-                                    'is_white' => in_array(strtolower($colorCode), ['#ffffff', '#fff']),
+                                    'is_white' => in_array(strtolower($colorCode), ['#ffffff', '#fff', '#f7f7f2']),
                                     'is_multi' => $isMulti,
                                 ];
                             }
@@ -409,49 +572,20 @@
                             $colorOptions[$dedupeKey]['ids'][] = $colorValue->id;
                         }
 
-                        $colorSortOrder = [
-                            'White' => 1,
-                            'Ecru' => 2,
-                            'Silver Grey' => 3,
-                            'Black' => 4,
-                            'Pink' => 5,
-                            'Hot Pink' => 6,
-                            'Coral Orange' => 7,
-                            'Peach' => 8,
-                            'Green' => 9,
-                            'Olive' => 10,
-                            'Seafoam' => 11,
-                            'Dk Indigo' => 12,
-                            'Lt.Indigo Wash' => 13,
-                            'Indigo Blush' => 14,
-                            'Raw Denim' => 15,
-                            'Plum' => 16,
-                            'Mauve' => 17,
-                            'Taupe' => 18,
-                            'Multi-Colored' => 99,
-                        ];
-
-                        uasort($colorOptions, function ($a, $b) use ($colorSortOrder) {
-                            $aOrder = $colorSortOrder[$a['display_name']] ?? 500;
-                            $bOrder = $colorSortOrder[$b['display_name']] ?? 500;
-
-                            if ($aOrder == $bOrder) {
-                                return strcmp($a['display_name'], $b['display_name']);
-                            }
-
-                            return $aOrder <=> $bOrder;
+                        uasort($colorOptions, function ($a, $b) {
+                            return strcmp($a['display_name'], $b['display_name']);
                         });
                     @endphp
 
                     @if(count($colorOptions) > 0)
-                        <div class="filter_accordion_block" data-filter-accordion>
+                        <div class="filter_accordion_block is-open" data-filter-accordion>
                             <button type="button" class="filter_accordion_head">
                                 <h4>{{ $colorName }}</h4>
                                 <span class="filter_accordion_icon" aria-hidden="true"></span>
                             </button>
 
                             <div class="filter_accordion_body">
-                                <ul class="filter_check_list">
+                                <ul class="filter_check_list filter_color_list">
                                     @foreach($colorOptions as $colorOption)
                                         <li class="filter_check_item">
                                             <label class="filter_option_label">

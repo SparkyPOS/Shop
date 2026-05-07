@@ -13,21 +13,149 @@
             padding: 10px
         }
     }
-    /* Package-wise grouping tweaks */
+
     .checkout_shiped_box{
         border: 1px solid #ececec;
         border-radius: 8px;
         background: #fff;
         overflow: hidden;
     }
+
     .checout_shiped_head.package_head{
         background: #f9fafb;
         border-bottom: 1px solid #ececec;
         padding: 12px 16px;
         gap: 10px;
     }
-    .checout_shiped_products{ padding: 8px 12px; }
-    </style>
+
+    .checkout_package_store_vendor {
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .checkout_package_store_vendor span {
+        line-height: 1.3;
+    }
+
+    .checkout_package_divider {
+        color: #9ca3af;
+    }
+
+    .checout_shiped_products{
+        padding: 8px 12px;
+    }
+
+    .checkout_package_table {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    .checkout_package_table col.checkout_product_col {
+        width: 58%;
+    }
+
+    .checkout_package_table col.checkout_subtotal_col,
+    .checkout_package_table col.checkout_quantity_col,
+    .checkout_package_table col.checkout_price_col {
+        width: 14%;
+    }
+
+    .checkout_package_table thead th {
+        border: 0;
+        border-bottom: 1px solid #ececec;
+        background: #fbfcfd;
+        color: #111827;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 12px 16px;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .checkout_package_table tbody td {
+        vertical-align: middle;
+    }
+
+    .checkout_package_table .checkout_text_center {
+        text-align: center;
+    }
+
+    .checkout_package_table .checkout_text_right {
+        text-align: right;
+    }
+
+    .checkout_package_table .checkout_product_cell {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .checkout_package_table .checkout_product_link {
+        display: flex !important;
+        align-items: center !important;
+        gap: 18px !important;
+        width: 100%;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .checkout_package_table .checkout_product_thumb {
+        flex: 0 0 76px;
+        width: 76px;
+        height: 96px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .checkout_package_table .checkout_product_thumb img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+
+    .checkout_package_table .checkout_product_info {
+        min-width: 0;
+        flex: 1 1 auto;
+        padding-left: 0 !important;
+    }
+
+    .checkout_package_table .checkout_product_name {
+        display: block;
+        width: 100%;
+        margin: 0 0 6px !important;
+        color: #111827;
+        line-height: 1.25;
+        text-align: left !important;
+        white-space: normal !important;
+    }
+
+    .checkout_package_table .checkout_product_meta {
+        margin: 0 0 4px !important;
+        color: #6b7280;
+        line-height: 1.35;
+        text-align: left !important;
+    }
+
+    .checkout_package_table .checkout_product_processing {
+        margin: 0 !important;
+        color: #6b7280;
+        line-height: 1.35;
+        text-align: left !important;
+    }
+
+    @media (max-width: 767px) {
+        .checkout_package_table {
+            min-width: 700px;
+        }
+
+        .checkout_package_store_vendor {
+            width: 100%;
+        }
+    }
+</style>
 <form action="{{route('frontend.checkout')}}" method="GET" enctype="multipart/form-data" id="mainOrderForm">
     <div class="checkout_v3_area">
         <div class="checkout_v3_left d-flex justify-content-end">
@@ -70,7 +198,11 @@
                         <div class="checkout_shiped_box mb_20">
                             @if(!isModuleActive('INTShipping'))
                                 <div class="checout_shiped_head package_head flex-wrap d-flex align-items-center ">
-                                    <span class="vendor_name text-nowrap f_w_600">{{ __('Vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
+                                    <div class="checkout_package_store_vendor d-flex align-items-center flex-wrap">
+                                        <span class="store_name text-nowrap f_w_600">{{ __('common.store') }}: {{ parentStoreName($seller ?? null) }}</span>
+                                        <span class="checkout_package_divider">|</span>
+                                        <span class="vendor_name text-nowrap f_w_600">{{ __('Vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
+                                    </div>
                                     <span class="package_text flex-fill">{{__('common.package')}} {{getNumberTranslate($current_pkg)}} {{__('common.of')}} {{getNumberTranslate($total_package)}}</span>
                                     <span class="Shipped_text">{{__('defaultTheme.shipping')}} :</span>
                                     <span class="name_text text-nowrap">
@@ -85,424 +217,355 @@
                                 </div>
                             @else
                                 <div class="checout_shiped_head package_head flex-wrap d-flex align-items-center ">
-                                    <span class="vendor_name text-nowrap f_w_600">{{ __('Vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
+                                    <div class="checkout_package_store_vendor d-flex align-items-center flex-wrap">
+                                        <span class="store_name text-nowrap f_w_600">{{ __('common.store') }}: {{ parentStoreName($seller ?? null) }}</span>
+                                        <span class="checkout_package_divider">|</span>
+                                        <span class="vendor_name text-nowrap f_w_600">{{ __('Vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
+                                    </div>
+
                                     <span class="package_text flex-fill">{{__('common.package')}} {{getNumberTranslate($current_pkg)}} {{__('common.of')}} {{getNumberTranslate($total_package)}}</span>
                                 </div>
                             @endif
 
-                            <div class="checout_head_title d-flex align-items-center package_table_head px-3 py-2">
+                            <!-- <div class="checout_head_title d-flex align-items-center package_table_head px-3 py-2">
                                 <span class="flex-fill">{{ getNumberTranslate(count($packages)) }} {{ __('common.items') }}</span>
                                 <span>{{ __('common.subtotal') }}</span>
                                 <span>{{ __('common.quantity') }}</span>
                                 <span>{{ __('common.price') }}</span>
-                            </div>
+                            </div> -->
 
                             <div class="checout_shiped_products">
                                 <div class="table-responsive mb-0">
-                                    <table class="table amazy_table3 style3 mb-0">
+                                    <table class="table amazy_table3 style3 mb-0 checkout_package_table">
+                                        <colgroup>
+                                            <col class="checkout_product_col">
+                                            <col class="checkout_subtotal_col">
+                                            <col class="checkout_quantity_col">
+                                            <col class="checkout_price_col">
+                                        </colgroup>
+
+                                        <thead>
+                                            <tr>
+                                                <th>{{ getNumberTranslate(count($packages)) }} {{ __('common.items') }}</th>
+                                                <th class="checkout_text_center">{{ __('common.subtotal') }}</th>
+                                                <th class="checkout_text_center">{{ __('common.quantity') }}</th>
+                                                <th class="checkout_text_right">{{ __('common.price') }}</th>
+                                            </tr>
+                                        </thead>
+
                                         <tbody>
-                                        @if(isModuleActive('INTShipping'))
                                             @foreach($packages as $key => $item)
                                                 @if($item->product_type == 'product' && @$item->product->product->product->is_physical)
                                                     @php
                                                         $is_physical_count += 1;
                                                     @endphp
                                                 @endif
+
                                                 @if($item->product_type == 'product')
                                                     @php
                                                         $actual_price += $item->total_price;
                                                         $seller_actual_price += $item->total_price;
                                                         $pro_price = 0;
-                                                        if (isModuleActive('WholeSale')){
+
+                                                        if (isModuleActive('WholeSale')) {
                                                             $w_main_price = 0;
                                                             $wholeSalePrices = $item->product->wholeSalePrices;
-                                                            if($wholeSalePrices->count()){
-                                                                foreach ($wholeSalePrices as $w_p){
-                                                                    if ( ($w_p->min_qty<=$item->qty) && ($w_p->max_qty >=$item->qty) ){
+
+                                                            if ($wholeSalePrices->count()) {
+                                                                foreach ($wholeSalePrices as $w_p) {
+                                                                    if (($w_p->min_qty <= $item->qty) && ($w_p->max_qty >= $item->qty)) {
                                                                         $w_main_price = $w_p->sell_price;
-                                                                    }
-                                                                    elseif($w_p->max_qty < $item->qty){
+                                                                    } elseif ($w_p->max_qty < $item->qty) {
                                                                         $w_main_price = $w_p->sell_price;
                                                                     }
                                                                 }
                                                             }
 
-                                                            if ($w_main_price!=0){
+                                                            if ($w_main_price != 0) {
                                                                 $subtotal += $w_main_price * $item->qty;
                                                                 $pro_price = $w_main_price;
-                                                            }else{
+                                                            } else {
                                                                 $subtotal += @$item->product->sell_price * $item->qty;
                                                                 $tax += @$item->product->product->tax * $item->qty;
                                                                 $pro_price = @$item->product->sell_price;
                                                             }
-                                                        }else{
+                                                        } else {
                                                             $subtotal += @$item->product->sell_price * $item->qty;
                                                             $tax += @$item->product->product->tax * $item->qty;
                                                             $pro_price = @$item->product->sell_price;
                                                         }
                                                     @endphp
+
                                                     <tr>
-                                                        <td>
-                                                            <a href="{{singleProductURL(@$item->seller->slug, @$item->product->product->slug)}}" class="d-flex align-items-center gap_20 cart_thumb_div">
-                                                                <div class="thumb">
-                                                                    <img src="@if(@$item->product->product->product->product_type == 1)
-                                                                                {{showImage(@$item->product->product->product->thumbnail_image_source)}}
+                                                        <td class="checkout_product_cell">
+                                                            <a href="{{ singleProductURL(@$item->seller->slug, @$item->product->product->slug) }}" class="checkout_product_link">
+                                                                <div class="checkout_product_thumb">
+                                                                    <img
+                                                                        src="@if(@$item->product->product->product->product_type == 1)
+                                                                                {{ showImage(@$item->product->product->product->thumbnail_image_source) }}
                                                                             @else
-                                                                                {{showImage(@$item->product->sku->variant_image?@$item->product->sku->variant_image:@$item->product->product->product->thumbnail_image_source)}}
-                                                                            @endif" alt="{{ textLimit(@$item->product->product->product_name, 28) }}" title="{{ textLimit(@$item->product->product->product_name, 28) }}">
+                                                                                {{ showImage(@$item->product->sku->variant_image ? @$item->product->sku->variant_image : @$item->product->product->product->thumbnail_image_source) }}
+                                                                            @endif"
+                                                                        alt="{{ textLimit(@$item->product->product->product_name, 28) }}"
+                                                                        title="{{ textLimit(@$item->product->product->product_name, 28) }}"
+                                                                    >
                                                                 </div>
-                                                                <div class="summery_pro_content">
-                                                                    <h4 class="font_16 f_w_700 text-nowrap m-0 theme_hover">{{ textLimit(@$item->product->product->product_name, 28) }}</h4>
-                                                                    <p class="font_14 f_w_400 m-0 ">
+
+                                                                <div class="checkout_product_info">
+                                                                    <h4 class="font_16 f_w_700 theme_hover checkout_product_name">
+                                                                        {{ textLimit(@$item->product->product->product_name, 28) }}
+                                                                    </h4>
+
+                                                                    <p class="font_14 f_w_400 checkout_product_meta">
                                                                         @if($item->product->product->product->product_type == 2)
                                                                             @php
                                                                                 $countCombinatiion = count(@$item->product->product_variations);
                                                                             @endphp
+
                                                                             @foreach($item->product->product_variations as $key => $combination)
                                                                                 @if($combination->attribute->id == 1)
-                                                                                    {{$combination->attribute->name}}: {{$combination->attribute_value->color->name}}
+                                                                                    {{ $combination->attribute->name }}: {{ $combination->attribute_value->color->name }}
                                                                                 @else
-                                                                                    {{$combination->attribute->name}}: {{$combination->attribute_value->value}}
+                                                                                    {{ $combination->attribute->name }}: {{ $combination->attribute_value->value }}
                                                                                 @endif
 
-                                                                                @if($countCombinatiion > $key +1)
+                                                                                @if($countCombinatiion > $key + 1)
                                                                                     ,
                                                                                 @endif
                                                                             @endforeach
                                                                         @endif
                                                                     </p>
+
                                                                     @if(!empty(@$item->product->product->product->processing_time))
-                                                                        <p class="font_12 f_w_500 m-0 text-nowrap">Processing Time: {{ @$item->product->product->product->processing_time }}</p>
+                                                                        <p class="font_12 f_w_500 checkout_product_processing">
+                                                                            Processing Time: {{ @$item->product->product->product->processing_time }}
+                                                                        </p>
                                                                     @endif
                                                                 </div>
                                                             </a>
                                                         </td>
-                                                        <td class="d-none d-md-table-cell">
-                                                            <div class="d-flex align-items-center gap_7">
-                                                                @if($item->product->product->hasDeal)
-                                                                    @if($item->product->product->hasDeal->discount > 0)
-                                                                        @if($item->product->product->hasDeal->discount_type == 0)
-                                                                            <span class="green_badge text-nowrap">-{{getNumberTranslate($item->product->product->hasDeal->discount)}}%</span>
-                                                                            <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{single_price($pro_price)}}</span>
+
+                                                        <td class="checkout_text_center">
+                                                            @if(!Session::has('auction_type'))
+                                                                <div class="d-flex align-items-center justify-content-center gap_7">
+                                                                    @if($item->product->product->hasDeal)
+                                                                        @if($item->product->product->hasDeal->discount > 0)
+                                                                            @if($item->product->product->hasDeal->discount_type == 0)
+                                                                                <span class="green_badge text-nowrap">-{{ getNumberTranslate($item->product->product->hasDeal->discount) }}%</span>
+                                                                                <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{ single_price($pro_price) }}</span>
+                                                                            @else
+                                                                                <span class="green_badge text-nowrap">-{{ single_price($item->product->product->hasDeal->discount) }}</span>
+                                                                                <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{ single_price($pro_price) }}</span>
+                                                                            @endif
                                                                         @else
-                                                                            <span class="green_badge text-nowrap">-{{single_price($item->product->product->hasDeal->discount)}}</span>
-                                                                            <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{single_price($pro_price)}}</span>
+                                                                            <span class="font_16 f_w_500 mute_text text-nowrap">{{ single_price($pro_price) }}</span>
+                                                                        @endif
+                                                                    @else
+                                                                        @if(@$item->product->product->hasDiscount == 'yes')
+                                                                            @if($item->product->product->discount_type == 0)
+                                                                                <span class="green_badge text-nowrap">-{{ getNumberTranslate($item->product->product->discount) }}%</span>
+                                                                                <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{ single_price($pro_price) }}</span>
+                                                                            @else
+                                                                                <span class="green_badge text-nowrap">-{{ single_price($item->product->product->discount) }}</span>
+                                                                                <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{ single_price($pro_price) }}</span>
+                                                                            @endif
+                                                                        @else
+                                                                            <span class="font_16 f_w_500 mute_text text-nowrap">{{ single_price($pro_price) }}</span>
+                                                                        @endif
+                                                                    @endif
+                                                                </div>
+                                                            @endif
+                                                        </td>
+
+                                                        <td class="checkout_text_center">
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">
+                                                                {{ __('common.qty') }}: {{ getNumberTranslate($item->qty) }}
+                                                            </h4>
+                                                        </td>
+
+                                                        <td class="checkout_text_right">
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">
+                                                                {{ single_price($item->total_price) }}
+                                                            </h4>
+                                                        </td>
+                                                    </tr>
+                                                @else
+                                                    @php
+                                                        $actual_price += $item->total_price;
+                                                        $seller_actual_price += $item->total_price;
+
+                                                        if(isModuleActive('INTShipping')) {
+                                                            if(is_null($item->giftCard->type)) {
+                                                                $subtotal += $item->giftCard->sell_price * $item->qty;
+                                                                $giftCardUnitPrice = $item->giftCard->sell_price;
+                                                            } else {
+                                                                $subtotal += $item->giftCard->addGiftCardInfo->gift_sell_price * $item->qty;
+                                                                $giftCardUnitPrice = $item->giftCard->addGiftCardInfo->gift_selling_price;
+                                                            }
+                                                        } else {
+                                                            $subtotal += $item->giftCard->sell_price * $item->qty;
+                                                            $giftCardUnitPrice = $item->giftCard->sell_price;
+                                                        }
+                                                    @endphp
+
+                                                    <tr>
+                                                        <td>
+                                                            <a href="{{ route('frontend.gift-card.show', $item->giftCard->sku) }}" class="d-flex align-items-center gap_20 cart_thumb_div">
+                                                                <div class="thumb">
+                                                                    <img
+                                                                        src="{{ showImage($item->giftCard->thumbnail_image) }}"
+                                                                        alt="{{ textLimit(@$item->giftCard->name, 28) }}"
+                                                                        title="{{ textLimit(@$item->giftCard->name, 28) }}"
+                                                                    >
+                                                                </div>
+
+                                                                <div class="summery_pro_content">
+                                                                    <h4 class="font_16 f_w_700 text-nowrap m-0 theme_hover">
+                                                                        {{ textLimit(@$item->giftCard->name, 28) }}
+                                                                    </h4>
+                                                                </div>
+                                                            </a>
+                                                        </td>
+
+                                                        <td class="checkout_text_center">
+                                                            <div class="d-flex align-items-center justify-content-center gap_7">
+                                                                @if(isModuleActive('INTShipping'))
+                                                                    @if(is_null($item->giftCard->type))
+                                                                        @if($item->giftCard->hasDiscount())
+                                                                            @if($item->giftCard->discount_type == 0)
+                                                                                <span class="green_badge text-nowrap">-{{ getNumberTranslate($item->giftCard->discount) }}%</span>
+                                                                            @else
+                                                                                <span class="green_badge text-nowrap">-{{ single_price($item->giftCard->discount) }}</span>
+                                                                            @endif
+                                                                            <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{ single_price($item->giftCard->sell_price) }}</span>
+                                                                        @else
+                                                                            <span class="font_16 f_w_500 mute_text text-nowrap">{{ single_price($item->giftCard->sell_price) }}</span>
+                                                                        @endif
+                                                                    @else
+                                                                        @if($item->giftCard->addGiftCardInfo->hasDiscount())
+                                                                            @if($item->giftCard->addGiftCardInfo->gift_discount_type == 0)
+                                                                                <span class="green_badge text-nowrap">-{{ getNumberTranslate($item->giftCard->addGiftCardInfo->gift_discount_amount) }}%</span>
+                                                                            @else
+                                                                                <span class="green_badge text-nowrap">-{{ single_price($item->giftCard->addGiftCardInfo->gift_discount_amount) }}</span>
+                                                                            @endif
+                                                                            <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{ single_price($item->giftCard->addGiftCardInfo->gift_selling_price) }}</span>
+                                                                        @else
+                                                                            <span class="font_16 f_w_500 mute_text text-nowrap">{{ single_price($item->giftCard->addGiftCardInfo->gift_selling_price) }}</span>
                                                                         @endif
                                                                     @endif
                                                                 @else
-                                                                    @if(@$item->product->product->hasDiscount == 'yes')
-                                                                        @if($item->product->product->discount_type == 0)
-                                                                            <span class="green_badge text-nowrap">-{{$item->product->product->discount}}%</span>
-                                                                            <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{single_price($pro_price)}}</span>
-                                                                        @else
-                                                                            <span class="green_badge text-nowrap">-{{single_price($item->product->product->discount)}}</span>
-                                                                            <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{single_price($pro_price)}}</span>
-                                                                        @endif
-                                                                    @else
-                                                                        <span class="font_16 f_w_500 mute_text text-nowrap">{{single_price($pro_price)}}</span>
-                                                                    @endif
-                                                                @endif
-
-                                                            </div>
-                                                        </td>
-                                                        <td>
-                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
-                                                        </td>
-                                                        <td>
-                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{single_price($item->total_price)}}</h4>
-                                                        </td>
-                                                    </tr>
-
-                                                @else
-                                                @php
-                                                    $actual_price += $item->total_price;
-                                                    $seller_actual_price += $item->total_price;
-                                                @endphp
-                                                @if(is_null($item->giftCard->type))
-                                                    @php
-                                                        $subtotal += $item->giftCard->sell_price * $item->qty;
-                                                    @endphp
-                                                @else
-                                                    @php
-                                                        $subtotal += $item->giftCard->addGiftCardInfo->gift_sell_price * $item->qty;
-                                                    @endphp
-                                                @endif
-                                                    <tr>
-                                                        <td>
-                                                            <a href="{{route('frontend.gift-card.show',$item->giftCard->sku)}}" class="d-flex align-items-center gap_20 cart_thumb_div">
-                                                                <div class="thumb">
-                                                                    <img src="{{showImage($item->giftCard->thumbnail_image)}}" alt="{{ textLimit(@$item->giftCard->name, 28) }}" title="{{ textLimit(@$item->giftCard->name, 28) }}">
-                                                                </div>
-                                                                <div class="summery_pro_content">
-                                                                    <h4 class="font_16 f_w_700 text-nowrap m-0 theme_hover">{{ textLimit(@$item->giftCard->name, 28) }}</h4>
-                                                                </div>
-                                                            </a>
-                                                        </td>
-                                                        <td>
-                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{$item->seller->sellerAccount->vendor_id}}</h4>
-                                                        </td>
-                                                        <td>
-                                                            <div class="d-flex align-items-center gap_7">
-                                                                @if(is_null($item->giftCard->type))
                                                                     @if($item->giftCard->hasDiscount())
                                                                         @if($item->giftCard->discount_type == 0)
-                                                                            <span class="green_badge text-nowrap">-{{$item->giftCard->discount}}%</span>
+                                                                            <span class="green_badge text-nowrap">-{{ getNumberTranslate($item->giftCard->discount) }}%</span>
                                                                         @else
-                                                                            <span class="green_badge text-nowrap">-{{single_price($item->giftCard->discount)}}</span>
+                                                                            <span class="green_badge text-nowrap">-{{ single_price($item->giftCard->discount) }}</span>
                                                                         @endif
-                                                                        <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{single_price($item->giftCard->sell_price)}}</span>
+                                                                        <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{ single_price($item->giftCard->sell_price) }}</span>
                                                                     @else
-                                                                        <span class="font_16 f_w_500 mute_text text-nowrap">{{single_price($item->giftCard->sell_price)}}</span>
-                                                                    @endif
-                                                                @else
-                                                                    @if($item->giftCard->addGiftCardInfo->hasDiscount())
-                                                                        @if($item->giftCard->addGiftCardInfo->gift_discount_type == 0)
-                                                                            <span class="green_badge text-nowrap">-{{$item->giftCard->addGiftCardInfo->gift_discount_amount}}%</span>
-                                                                        @else
-                                                                            <span class="green_badge text-nowrap">-{{single_price($item->giftCard->addGiftCardInfo->gift_discount_amount)}}</span>
-                                                                        @endif
-                                                                        <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{single_price($item->giftCard->addGiftCardInfo->gift_selling_price)}}</span>
-                                                                    @else
-                                                                        <span class="font_16 f_w_500 mute_text text-nowrap">{{single_price($item->giftCard->addGiftCardInfo->gift_selling_price)}}</span>
+                                                                        <span class="font_16 f_w_500 mute_text text-nowrap">{{ single_price($item->giftCard->sell_price) }}</span>
                                                                     @endif
                                                                 @endif
                                                             </div>
                                                         </td>
-                                                        <td>
-                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{$item->qty}}</h4>
+
+                                                        <td class="checkout_text_center">
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">
+                                                                {{ __('common.qty') }}: {{ getNumberTranslate($item->qty) }}
+                                                            </h4>
                                                         </td>
-                                                        <td>
-                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{single_price($item->total_price)}}</h4>
+
+                                                        <td class="checkout_text_right">
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">
+                                                                {{ single_price($item->total_price) }}
+                                                            </h4>
                                                         </td>
                                                     </tr>
                                                 @endif
+
                                                 @if($item->product_type == 'product' && @$item->product->product->product->is_physical)
-                                                @php
-                                                    $isIntselected = \Modules\INTShipping\Entities\SellerProductShippingProfile::where('seller_product_id',$item->product->product->product->id)->first();
-                                                @endphp
-                                                @if(!empty($isIntselected) && isModuleActive('INTShipping') && !empty($shipping_address))
-                                                    <tr class="custom-tr" >
-                                                        <td colspan="4" class="p-0 border-0">
-                                                        @php
-                                                            $products = \Modules\INTShipping\Entities\SellerProductShippingProfile::whereHas('profile',function($query) use ($seller_id){
-                                                                return $query->where('user_id',$seller_id);
-                                                            })->where('seller_product_id',$item->product->product_id)->get();
-                                                            $rates = [];
+                                                    @php
+                                                        $isIntselected = \Modules\INTShipping\Entities\SellerProductShippingProfile::where('seller_product_id', $item->product->product->product->id)->first();
+                                                    @endphp
 
-                                                            foreach ($products as $product) {
-                                                                if($shipping_address != null){
-                                                                    $zones =  \Modules\INTShipping\Entities\ShippingZone::where('shipping_profile_id',$product->shipping_profile_id)->WhereHas('state_list', function($query) use($shipping_address){
-                                                                        return $query->where('state_id', $shipping_address->state);
-                                                                    })->get();
-                                                                }else{
-                                                                    $zones = [];
-                                                                }
-
-                                                                foreach($zones as $zone){
-                                                                    foreach($zone->rates as $rate){
-                                                                        $rates[] = $rate;
-                                                                    }
-                                                                }
-                                                            }
-                                                        @endphp
-
-                                                        <select name="intshipping_cartItem[]" id="uniqueCartId{{$item->id}}" class="theme_select w-100 ck-select intshiping border-top-0" data-id="{{$item->id}}">
-                                                            <option value="0" selected disabled>{{__('defaultTheme.select_shipping')}}</option>
-                                                            @foreach ($rates as $rate)
+                                                    @if(!empty($isIntselected) && isModuleActive('INTShipping') && !empty($shipping_address))
+                                                        <tr class="custom-tr">
+                                                            <td colspan="4" class="p-0 border-0">
                                                                 @php
-                                                                    $product_shipping_cost = 0;
-                                                                @endphp
-                                                                @if ($rate->base_on_item == 1)
-                                                                    @if ($rate->minimum * 1000 <= $item->product->sku->weight && $rate->maximum * 1000 >= $item->product->sku->weight)
-                                                                        @php
-                                                                            $product_shipping_cost = ($item->product->sku->weight * $item->qty / 100) * $rate->rate_cost + ($item->product->sku->additional_shipping * $item->qty);
-                                                                        @endphp
-                                                                        <option value="{{($product_shipping_cost)}} {{$rate->id}}">{{$rate->rate_name}} - {{single_price($product_shipping_cost)}} - {{$rate->shipment_time}}</option>
-                                                                    @endif
-                                                                @elseif ($rate->base_on_item == 2)
-                                                                    @if ($rate->minimum <= $item->price && $rate->maximum >= $item->price)
-                                                                        @php
-                                                                            $product_shipping_cost = ($item->total_price / 100) * $rate->rate_cost + ($item->product->sku->additional_shipping * $item->qty);
-                                                                        @endphp
-                                                                        <option value="{{($product_shipping_cost)}} {{$rate->id}}">{{$rate->rate_name}} - {{single_price($product_shipping_cost)}} - {{$rate->shipment_time}}</option>
-                                                                    @endif
-                                                                @else
-                                                                    @if ($rate->minimum <= $item->price && $rate->maximum >= $item->price)
-                                                                        @php
-                                                                            if(sellerWiseShippingConfig($seller_id)['amount_multiply_with_qty']){
-                                                                                $product_shipping_cost = ($rate->rate_cost + $item->product->sku->additional_shipping) * $item->qty;
-                                                                            }else{
-                                                                                $product_shipping_cost = $rate->rate_cost + ($item->product->sku->additional_shipping * $item->qty);
+                                                                    $products = \Modules\INTShipping\Entities\SellerProductShippingProfile::whereHas('profile', function($query) use ($seller_id) {
+                                                                        return $query->where('user_id', $seller_id);
+                                                                    })->where('seller_product_id', $item->product->product_id)->get();
+
+                                                                    $rates = [];
+
+                                                                    foreach ($products as $product) {
+                                                                        if($shipping_address != null) {
+                                                                            $zones = \Modules\INTShipping\Entities\ShippingZone::where('shipping_profile_id', $product->shipping_profile_id)->WhereHas('state_list', function($query) use($shipping_address) {
+                                                                                return $query->where('state_id', $shipping_address->state);
+                                                                            })->get();
+                                                                        } else {
+                                                                            $zones = [];
+                                                                        }
+
+                                                                        foreach($zones as $zone) {
+                                                                            foreach($zone->rates as $rate) {
+                                                                                $rates[] = $rate;
                                                                             }
+                                                                        }
+                                                                    }
+                                                                @endphp
+
+                                                                <select name="intshipping_cartItem[]" id="uniqueCartId{{ $item->id }}" class="theme_select w-100 ck-select intshiping border-top-0" data-id="{{ $item->id }}">
+                                                                    <option value="0" selected disabled>{{ __('defaultTheme.select_shipping') }}</option>
+
+                                                                    @foreach ($rates as $rate)
+                                                                        @php
+                                                                            $product_shipping_cost = 0;
                                                                         @endphp
-                                                                        <option value="{{$product_shipping_cost}} {{$rate->id}}">{{$rate->rate_name}} - {{single_price($product_shipping_cost)}} - {{$rate->shipment_time}}</option>
-                                                                    @endif
-                                                                @endif
-                                                            @endforeach
-                                                        </select>
-                                                        <span class="text-danger" id="error_intship_cart_item_{{$item->id}}"></span>
 
-                                                        </td>
-                                                    </tr>
-                                                @endif
+                                                                        @if ($rate->base_on_item == 1)
+                                                                            @if ($rate->minimum * 1000 <= $item->product->sku->weight && $rate->maximum * 1000 >= $item->product->sku->weight)
+                                                                                @php
+                                                                                    $product_shipping_cost = ($item->product->sku->weight * $item->qty / 100) * $rate->rate_cost + ($item->product->sku->additional_shipping * $item->qty);
+                                                                                @endphp
+
+                                                                                <option value="{{ $product_shipping_cost }} {{ $rate->id }}">
+                                                                                    {{ $rate->rate_name }} - {{ single_price($product_shipping_cost) }} - {{ $rate->shipment_time }}
+                                                                                </option>
+                                                                            @endif
+                                                                        @elseif ($rate->base_on_item == 2)
+                                                                            @if ($rate->minimum <= $item->price && $rate->maximum >= $item->price)
+                                                                                @php
+                                                                                    $product_shipping_cost = ($item->total_price / 100) * $rate->rate_cost + ($item->product->sku->additional_shipping * $item->qty);
+                                                                                @endphp
+
+                                                                                <option value="{{ $product_shipping_cost }} {{ $rate->id }}">
+                                                                                    {{ $rate->rate_name }} - {{ single_price($product_shipping_cost) }} - {{ $rate->shipment_time }}
+                                                                                </option>
+                                                                            @endif
+                                                                        @else
+                                                                            @if ($rate->minimum <= $item->price && $rate->maximum >= $item->price)
+                                                                                @php
+                                                                                    if(sellerWiseShippingConfig($seller_id)['amount_multiply_with_qty']) {
+                                                                                        $product_shipping_cost = ($rate->rate_cost + $item->product->sku->additional_shipping) * $item->qty;
+                                                                                    } else {
+                                                                                        $product_shipping_cost = $rate->rate_cost + ($item->product->sku->additional_shipping * $item->qty);
+                                                                                    }
+                                                                                @endphp
+
+                                                                                <option value="{{ $product_shipping_cost }} {{ $rate->id }}">
+                                                                                    {{ $rate->rate_name }} - {{ single_price($product_shipping_cost) }} - {{ $rate->shipment_time }}
+                                                                                </option>
+                                                                            @endif
+                                                                        @endif
+                                                                    @endforeach
+                                                                </select>
+
+                                                                <span class="text-danger" id="error_intship_cart_item_{{ $item->id }}"></span>
+                                                            </td>
+                                                        </tr>
+                                                    @endif
                                                 @endif
                                             @endforeach
-                                        @else
-                                            @foreach($packages as $key => $item)
-                                                @if($item->product_type == 'product' && @$item->product->product->product->is_physical)
-                                                    @php
-                                                        $is_physical_count += 1;
-                                                    @endphp
-                                                @endif
-                                                @if($item->product_type == 'product')
-                                                    @php
-                                                        $actual_price += $item->total_price;
-                                                        $seller_actual_price += $item->total_price;
-                                                        $pro_price = 0;
-                                                        if (isModuleActive('WholeSale')){
-                                                            $w_main_price = 0;
-                                                            $wholeSalePrices = $item->product->wholeSalePrices;
-                                                            if($wholeSalePrices->count()){
-                                                                foreach ($wholeSalePrices as $w_p){
-                                                                    if ( ($w_p->min_qty<=$item->qty) && ($w_p->max_qty >=$item->qty) ){
-                                                                        $w_main_price = $w_p->sell_price;
-                                                                    }
-                                                                    elseif($w_p->max_qty < $item->qty){
-                                                                        $w_main_price = $w_p->sell_price;
-                                                                    }
-                                                                }
-                                                            }
-
-                                                            if ($w_main_price!=0){
-                                                                $subtotal += $w_main_price * $item->qty;
-                                                                $pro_price = $w_main_price;
-                                                            }else{
-                                                                $subtotal += @$item->product->sell_price * $item->qty;
-                                                                $tax += @$item->product->product->tax * $item->qty;
-                                                                $pro_price = @$item->product->sell_price;
-                                                            }
-                                                        }else{
-                                                            $subtotal += @$item->product->sell_price * $item->qty;
-                                                            $tax += @$item->product->product->tax * $item->qty;
-                                                            $pro_price = @$item->product->sell_price;
-                                                        }
-                                                    @endphp
-                                                    <tr>
-                                                        <td>
-                                                            <a href="{{singleProductURL(@$item->seller->slug, @$item->product->product->slug)}}" class="d-flex align-items-center gap_20 cart_thumb_div">
-                                                                <div class="thumb">
-                                                                    <img src="@if(@$item->product->product->product->product_type == 1)
-                                                                                {{showImage(@$item->product->product->product->thumbnail_image_source)}}
-                                                                            @else
-                                                                                {{showImage(@$item->product->sku->variant_image?@$item->product->sku->variant_image:@$item->product->product->product->thumbnail_image_source)}}
-                                                                            @endif" alt="{{ textLimit(@$item->product->product->product_name, 28) }}" title="{{ textLimit(@$item->product->product->product_name, 28) }}">
-                                                                </div>
-                                                                <div class="summery_pro_content">
-                                                                    <h4 class="font_16 f_w_700 text-nowrap m-0 theme_hover">{{ textLimit(@$item->product->product->product_name, 28) }}</h4>
-                                                                    <p class="font_14 f_w_400 m-0 ">
-                                                                        @if($item->product->product->product->product_type == 2)
-                                                                            @php
-                                                                                $countCombinatiion = count(@$item->product->product_variations);
-                                                                            @endphp
-                                                                            @foreach($item->product->product_variations as $key => $combination)
-                                                                                @if($combination->attribute->id == 1)
-                                                                                    {{$combination->attribute->name}}: {{$combination->attribute_value->color->name}}
-                                                                                @else
-                                                                                    {{$combination->attribute->name}}: {{$combination->attribute_value->value}}
-                                                                                @endif
-
-                                                                                @if($countCombinatiion > $key +1)
-                                                                                    ,
-                                                                                @endif
-                                                                            @endforeach
-                                                                        @endif
-                                                                    </p>
-                                                                    @if(!empty(@$item->product->product->product->processing_time))
-                                                                        <p class="font_12 f_w_500 m-0 text-nowrap">Processing Time: {{ @$item->product->product->product->processing_time }}</p>
-                                                                    @endif
-                                                                </div>
-                                                            </a>
-                                                        </td>
-                                                        <td>
-
-                                                            @if(!Session::has('auction_type'))
-                                                            <div class="d-flex align-items-center gap_7">
-                                                                @if($item->product->product->hasDeal)
-                                                                    @if($item->product->product->hasDeal->discount > 0)
-                                                                        @if($item->product->product->hasDeal->discount_type == 0)
-                                                                            <span class="green_badge text-nowrap">-{{$item->product->product->hasDeal->discount}}%</span>
-                                                                            <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{single_price($pro_price)}}</span>
-                                                                        @else
-                                                                            <span class="green_badge text-nowrap">-{{single_price($item->product->product->hasDeal->discount)}}</span>
-                                                                            <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{single_price($pro_price)}}</span>
-                                                                        @endif
-                                                                    @endif
-                                                                @else
-                                                                    @if(@$item->product->product->hasDiscount == 'yes')
-                                                                        @if($item->product->product->discount_type == 0)
-                                                                            <span class="green_badge text-nowrap">-{{$item->product->product->discount}}%</span>
-                                                                            <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{single_price($pro_price)}}</span>
-                                                                        @else
-                                                                            <span class="green_badge text-nowrap">-{{single_price($item->product->product->discount)}}</span>
-                                                                            <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{single_price($pro_price)}}</span>
-                                                                        @endif
-                                                                    @else
-                                                                        <span class="font_16 f_w_500 mute_text text-nowrap">{{single_price($pro_price)}}</span>
-                                                                    @endif
-                                                                @endif
-
-                                                            </div>
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
-                                                        </td>
-                                                        <td>
-                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">{{single_price($item->total_price)}}</h4>
-                                                        </td>
-                                                    </tr>
-
-                                                @else
-                                                @php
-                                                    $actual_price += $item->total_price;
-                                                    $seller_actual_price += $item->total_price;
-                                                    $subtotal += $item->giftCard->sell_price * $item->qty;
-                                                @endphp
-                                                <tr>
-                                                    <td>
-                                                        <a href="{{route('frontend.gift-card.show',$item->giftCard->sku)}}" class="d-flex align-items-center gap_20 cart_thumb_div">
-                                                            <div class="thumb">
-                                                                <img src="{{showImage($item->giftCard->thumbnail_image)}}" alt="{{ textLimit(@$item->giftCard->name, 28) }}" title="{{ textLimit(@$item->giftCard->name, 28) }}">
-                                                            </div>
-                                                            <div class="summery_pro_content">
-                                                                <h4 class="font_16 f_w_700 text-nowrap m-0 theme_hover">{{ textLimit(@$item->giftCard->name, 28) }}</h4>
-                                                            </div>
-                                                        </a>
-                                                    </td>
-                                                    <td>
-                                                        <div class="d-flex align-items-center gap_7">
-                                                            @if($item->giftCard->hasDiscount())
-                                                                @if($item->giftCard->discount_type == 0)
-                                                                    <span class="green_badge text-nowrap">-{{$item->giftCard->discount}}%</span>
-                                                                @else
-                                                                    <span class="green_badge text-nowrap">-{{single_price($item->giftCard->discount)}}</span>
-                                                                @endif
-                                                                <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{single_price($item->giftCard->sell_price)}}</span>
-                                                            @else
-                                                                <span class="font_16 f_w_500 mute_text text-nowrap">{{single_price($item->giftCard->sell_price)}}</span>
-                                                            @endif
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <h4 class="font_16 f_w_500 m-0 text-nowrap">{{__('common.qty')}}: {{getNumberTranslate($item->qty)}}</h4>
-                                                    </td>
-                                                    <td>
-                                                        <h4 class="font_16 f_w_500 m-0 text-nowrap">{{single_price($item->total_price)}}</h4>
-                                                    </td>
-                                                </tr>
-                                                @endif
-                                            @endforeach
-                                        @endif
                                         </tbody>
                                     </table>
                                 </div>

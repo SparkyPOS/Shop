@@ -99,10 +99,22 @@ class FilterRepository
                 $giftCards = collect();
             }
             if (is_numeric($filter['filterTypeId']) && !empty($filter['filterTypeValue'])) {
-                $typeId = $filter['filterTypeId'];
+                $typeId = intval($filter['filterTypeId']);
                 $typeVal = $filter['filterTypeValue'];
-                $products = $this->productThroughAttribute($typeId, $typeVal, $products, $requestType, $requestItem);
+
+                $valueIds = $this->normalizeAttributeValueIds($typeVal);
+
+                if (!empty($valueIds)) {
+                    if (!isset($attributeFilters[$typeId])) {
+                        $attributeFilters[$typeId] = [];
+                    }
+
+                    $attributeFilters[$typeId] = array_unique(array_merge($attributeFilters[$typeId], $valueIds));
+                }
+
                 $giftCards = collect();
+
+                continue;
             }
             if ($filter['filterTypeId'] == "price_range") {
                 $min_price = round(end($filter['filterTypeValue'])[0])/$this->getConvertRate();
@@ -188,6 +200,9 @@ class FilterRepository
                 })->activeSeller();
                 $giftCards = collect();
             }
+        }
+        if(!empty($attributeFilters)) {
+            $products = $this->productThroughAttributeGroup($attributeFilters, $products, $requestType, $requestItem);
         }
         session()->put('filterDataFromCat', $data);
         if($giftCards->count()){
@@ -332,6 +347,7 @@ class FilterRepository
             });
             $this->joins = ['products','category_product','categories'];
         }
+        $attributeFilters = [];
         foreach ($session_data['filterType'] as $key => $filter) {
             if ($filter['filterTypeId'] == "cat" && !empty($filter['filterTypeValue'])) {
                 $typeVal = $filter['filterTypeValue'];
@@ -343,11 +359,25 @@ class FilterRepository
                 $products = $this->productThroughBrand($typeVal, $products, $requestType, $requestItem);
                 $giftCards = collect();
             }
-            if (is_numeric($filter['filterTypeId']) && !empty($filter['filterTypeValue'])) {
-                $typeId = $filter['filterTypeId'];
+            // if (is_numeric($filter['filterTypeId']) && !empty($filter['filterTypeValue'])) {
+            //     $typeId = $filter['filterTypeId'];
+            //     $typeVal = $filter['filterTypeValue'];
+            //     $giftCards = collect();
+            //     $products = $this->productThroughAttribute($typeId, $typeVal, $products, $requestType, $requestItem);
+            // }
+            if(is_numeric($filter['filterTypeId']) && !empty($filter['filterTypeValue'])) {
+                $typeId = intval($filter['filterTypeId']);
                 $typeVal = $filter['filterTypeValue'];
+
+                $valueIds = $this->normalizeAttributeValueIds($typeVal);
+                if(!empty($valueIds)) {
+                    if(!isset($attributeFilters[$typeId])) {
+                        $attributeFilters[$typeId] = [];
+                    }
+                    $attributeFilters[$typeId] = array_unique(array_merge($attributeFilters[$typeId], $valueIds));
+                }
                 $giftCards = collect();
-                $products = $this->productThroughAttribute($typeId, $typeVal, $products, $requestType, $requestItem);
+                continue;
             }
 
             if ($filter['filterTypeId'] == "price_range") {
@@ -381,6 +411,9 @@ class FilterRepository
                 })->activeSeller();
                 $giftCards = collect();
             }
+        }
+        if(!empty($attributeFilters)) {
+            $products = $this->productThroughAttributeGroup($attributeFilters, $products, $requestType, $requestItem);
         }
         if (!empty($data['paginate'])) {
             $paginate = $data['paginate'];
@@ -441,6 +474,7 @@ class FilterRepository
             $q->on('seller_products.product_id', '=', 'products.id')->where('products.status', 1);
         });
         $this->joins = ['products'];
+        $attributeFilters = [];
         foreach ($data['filterType'] as $key => $filter) {
             if ($filter['filterTypeId'] == "parent_cat" && !empty($filter['filterTypeValue'])) {
                 $typeVal = $filter['filterTypeValue'];
@@ -677,6 +711,71 @@ class FilterRepository
 
         return $products;
     }
+
+    private function normalizeAttributeValueIds($typeVal)
+    {
+        if (!is_array($typeVal)) {
+            $typeVal = [$typeVal];
+        }
+
+        $attributeValueIds = [];
+
+        foreach ($typeVal as $value) {
+            $valueParts = explode(',', $value);
+
+            foreach ($valueParts as $valuePart) {
+                $valuePart = trim($valuePart);
+
+                if ($valuePart !== '') {
+                    $attributeValueIds[] = intval($valuePart);
+                }
+            }
+        }
+
+        return array_unique(array_filter($attributeValueIds));
+    }
+
+    public function productThroughAttributeGroup($attributeFilters, $products, $requestType, $requestItem)
+    {
+        if (empty($attributeFilters)) {
+            return $products;
+        }
+
+        if ($requestType == "category") {
+            $products = $products->where('products.status', 1)
+                ->where('category_product.category_id', $requestItem);
+        } elseif ($requestType == "brand") {
+            $products = $products->where('products.status', 1)
+                ->whereRaw("products.brand_id in ('". implode("','", [$requestItem]) ."')");
+        } else {
+            $products = $products->where('products.status', 1);
+        }
+
+        $products = $products->whereExists(function ($query) use ($attributeFilters) {
+            $query->select(DB::raw(1))
+                ->from('product_variations as pv_base')
+                ->whereColumn('pv_base.product_id', 'products.id');
+
+            $index = 0;
+
+            foreach ($attributeFilters as $attributeId => $attributeValueIds) {
+                $index++;
+                $alias = 'pv_attr_' . $index;
+
+                $query->whereExists(function ($subQuery) use ($alias, $attributeId, $attributeValueIds) {
+                    $subQuery->select(DB::raw(1))
+                        ->from('product_variations as ' . $alias)
+                        ->whereColumn($alias . '.product_id', 'pv_base.product_id')
+                        ->whereColumn($alias . '.product_sku_id', 'pv_base.product_sku_id')
+                        ->where($alias . '.attribute_id', intval($attributeId))
+                        ->whereRaw($alias . ".attribute_value_id in ('". implode("','", $attributeValueIds) ."')");
+                });
+            }
+        });
+
+        return $products;
+    }
+
     public function productThroughPriceRange($min_price, $max_price, $requestType, $requestItem, $products)
     {
         if ($requestType ==  "category") {

@@ -5,7 +5,8 @@
         --cart-added-muted: #6b7280;
         --cart-added-border: #e5e7eb;
         --cart-added-soft: #f8fafc;
-        --cart-added-green: #28a765;
+        --cart-added-green: #22a463;
+        --cart-added-green-soft: #eaf8ef;
         --cart-added-blue: #0d6efd;
     }
 
@@ -30,7 +31,6 @@
 
     #cart_add_modal.cart-added-pro-modal .cart-added-shell {
         position: relative;
-        padding: 0;
         background: #ffffff;
     }
 
@@ -126,6 +126,7 @@
         background: #ffffff;
         overflow: hidden;
         margin-bottom: 20px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
     }
 
     #cart_add_modal.cart-added-pro-modal .cart-added-product-link {
@@ -165,10 +166,13 @@
 
     #cart_add_modal.cart-added-pro-modal .cart-added-info {
         min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
 
     #cart_add_modal.cart-added-pro-modal .cart-added-name {
-        margin: 0 0 9px;
+        margin: 0 0 8px;
         color: var(--cart-added-text);
         font-size: 17px;
         font-weight: 800;
@@ -180,17 +184,74 @@
         overflow: hidden;
     }
 
-    #cart_add_modal.cart-added-pro-modal .cart-added-vendor {
-        margin: 0 0 9px;
+    #cart_add_modal.cart-added-pro-modal .cart-added-meta {
+        margin: 0;
+    }
+
+    #cart_add_modal.cart-added-pro-modal .cart-added-meta-row {
+        margin: 0 0 4px;
         color: var(--cart-added-muted);
-        font-size: 14px;
+        font-size: 12.5px;
         font-weight: 500;
+        line-height: 1.35;
+        display: flex;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    #cart_add_modal.cart-added-pro-modal .cart-added-meta-row span {
+        flex: 0 0 auto;
+        color: var(--cart-added-muted);
+    }
+
+    #cart_add_modal.cart-added-pro-modal .cart-added-meta-row strong {
+        color: var(--cart-added-text);
+        font-weight: 800;
+        min-width: 0;
+        word-break: break-word;
+    }
+
+    #cart_add_modal.cart-added-pro-modal #cart_success_vendor {
+        color: var(--cart-added-blue);
+    }
+
+    #cart_add_modal.cart-added-pro-modal #cart_success_variant {
+        color: var(--cart-added-text);
+        font-weight: 800;
         line-height: 1.35;
     }
 
-    #cart_add_modal.cart-added-pro-modal .cart-added-vendor strong {
-        color: var(--cart-added-blue);
-        font-weight: 800;
+    #cart_add_modal.cart-added-pro-modal .cart-added-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #eef2f6;
+    }
+
+    #cart_add_modal.cart-added-pro-modal .cart-added-qty-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        min-height: 32px;
+        padding: 6px 11px;
+        border-radius: 10px;
+        background: var(--cart-added-green-soft);
+        color: var(--cart-added-green);
+        font-size: 13px;
+        font-weight: 900;
+        line-height: 1;
+        white-space: nowrap;
+    }
+
+    #cart_add_modal.cart-added-pro-modal .cart-added-qty-badge svg {
+        width: 15px;
+        height: 15px;
+        display: block;
+        flex: 0 0 auto;
     }
 
     #cart_add_modal.cart-added-pro-modal .cart-added-price {
@@ -200,6 +261,8 @@
         font-weight: 900;
         line-height: 1.15;
         letter-spacing: -0.02em;
+        text-align: right;
+        white-space: nowrap;
     }
 
     #cart_add_modal.cart-added-pro-modal .cart-added-view-cart {
@@ -271,16 +334,27 @@
 
         #cart_add_modal.cart-added-pro-modal .cart-added-name {
             font-size: 15.5px;
-            margin-bottom: 8px;
-        }
-
-        #cart_add_modal.cart-added-pro-modal .cart-added-vendor {
-            font-size: 12.5px;
             margin-bottom: 7px;
         }
 
+        #cart_add_modal.cart-added-pro-modal .cart-added-meta-row {
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+
+        #cart_add_modal.cart-added-pro-modal .cart-added-summary {
+            margin-top: 10px;
+            padding-top: 10px;
+        }
+
+        #cart_add_modal.cart-added-pro-modal .cart-added-qty-badge {
+            min-height: 30px;
+            padding: 6px 10px;
+            font-size: 12.5px;
+        }
+
         #cart_add_modal.cart-added-pro-modal .cart-added-price {
-            font-size: 16px;
+            font-size: 16.5px;
         }
 
         #cart_add_modal.cart-added-pro-modal .cart-added-view-cart {
@@ -302,6 +376,16 @@
         #cart_add_modal.cart-added-pro-modal .cart-added-thumb {
             width: 88px;
             height: 122px;
+        }
+
+        #cart_add_modal.cart-added-pro-modal .cart-added-summary {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        #cart_add_modal.cart-added-pro-modal .cart-added-price {
+            text-align: left;
         }
     }
 </style>
@@ -377,12 +461,36 @@
                                 <div class="cart-added-info">
                                     <h5 id="cart_suceess_name" class="cart-added-name"></h5>
 
-                                    <p class="cart-added-vendor">
-                                        Vendor:
-                                        <strong id="cart_success_vendor"></strong>
-                                    </p>
+                                    <div class="cart-added-meta">
+                                        <p class="cart-added-meta-row" id="cart_success_vendor_wrap">
+                                            <span>Vendor:</span>
+                                            <strong id="cart_success_vendor"></strong>
+                                        </p>
 
-                                    <h5 id="cart_suceess_price" class="cart-added-price"></h5>
+                                        <p class="cart-added-meta-row" id="cart_success_store_wrap">
+                                            <span>Store:</span>
+                                            <strong id="cart_success_store"></strong>
+                                        </p>
+
+                                        <p class="cart-added-meta-row" id="cart_success_variant_wrap">
+                                            <strong id="cart_success_variant"></strong>
+                                        </p>
+                                    </div>
+
+                                    <div class="cart-added-summary">
+                                        <span class="cart-added-qty-badge" id="cart_success_qty_wrap">
+                                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                                <path
+                                                    d="M7 8V7a5 5 0 0 1 10 0v1h1.25A2.75 2.75 0 0 1 21 10.75v7.5A2.75 2.75 0 0 1 18.25 21H5.75A2.75 2.75 0 0 1 3 18.25v-7.5A2.75 2.75 0 0 1 5.75 8H7Zm2 0h6V7a3 3 0 0 0-6 0v1Zm-3.25 2A.75.75 0 0 0 5 10.75v7.5c0 .414.336.75.75.75h12.5a.75.75 0 0 0 .75-.75v-7.5a.75.75 0 0 0-.75-.75H5.75Z"
+                                                    fill="currentColor"
+                                                />
+                                            </svg>
+                                            <span>Qty</span>
+                                            <strong id="cart_success_qty"></strong>
+                                        </span>
+
+                                        <h5 id="cart_suceess_price" class="cart-added-price"></h5>
+                                    </div>
                                 </div>
                             </a>
                         </div>

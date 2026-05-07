@@ -3,7 +3,7 @@
         (function($){
             "use strict";
             $(document).ready(function() {
-                $(document).on('click', ".addToCartFromThumnail", function() {
+                $(document).on('click', ".addToCartFromThumnail", function(event) {
                     event.preventDefault();
                     var className = this.className;
                     $("."+className).prop("disabled", true);
@@ -56,16 +56,64 @@
                         toastr.warning("{{__('defaultTheme.please_login_first')}}","{{__('common.warning')}}");
                     }
                 });
+                function getCartSuccessVariationsFromModal() {
+                    let variations = [];
+
+                    $('#theme_modal .product_color_varient').each(function() {
+                        let labelText = $.trim($(this).find('h5').first().text()).replace(/\s+/g, ' ');
+
+                        if (!labelText || labelText.indexOf(':') === -1) {
+                            return;
+                        }
+
+                        let parts = labelText.split(':');
+                        let name = $.trim(parts.shift());
+                        let value = $.trim(parts.join(':'));
+
+                        if (name && value) {
+                            variations.push({
+                                name: name,
+                                value: value
+                            });
+                        }
+                    });
+
+                    return variations;
+                }
+
+                function getCartSuccessStoreFromModal() {
+                    return $('#store_name_modal').val()
+                        || $('#seller_shop_name_modal').val()
+                        || $('#seller_store_name_modal').val()
+                        || $('#shop_name_modal').val()
+                        || $('#cart_success_store_name').val()
+                        || '';
+                }
                 $(document).on('click', '#add_to_cart_btn_modal', function(event){
                     event.preventDefault();
+
+                    let selectedQty = $('#qty_modal').data('value') || $('#qty_modal').val() || 1;
+
                     var showData = {
                         'name' : $('#product_name_modal').val(),
                         'url' : $('#product_url_modal').val(),
                         'price' : currency_format($('#final_price_modal').val()),
                         'thumbnail' : $('#thumb_image_modal').val(),
-                        'vendor_id' : $('#vendor_id_modal').val() || ''
+                        'vendor_id' : $('#vendor_id_modal').val() || '',
+                        'store' : getCartSuccessStoreFromModal(),
+                        'qty' : selectedQty,
+                        'variations' : getCartSuccessVariationsFromModal()
                     };
-                    addToCart($('#product_sku_id_modal').val(),$('#seller_id_modal').val(),$('#qty_modal').data('value'),$('#base_sku_price_modal').val(),$('#shipping_type').val(),'product', showData);
+
+                    addToCart(
+                        $('#product_sku_id_modal').val(),
+                        $('#seller_id_modal').val(),
+                        selectedQty,
+                        $('#base_sku_price_modal').val(),
+                        $('#shipping_type').val(),
+                        'product',
+                        showData
+                    );
                 });
                 $(document).on("click", ".buy_now_btn_modal", function(event){
                     event.preventDefault();
