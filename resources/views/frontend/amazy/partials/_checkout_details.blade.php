@@ -296,53 +296,99 @@
                                                         }
                                                     @endphp
 
-                                                    <td class="checkout_product_cell">
-                                                        <a href="{{ singleProductURL(@$item->seller->slug, @$item->product->product->slug) }}" class="checkout_product_link">
-                                                            <div class="checkout_product_thumb">
-                                                                <img
-                                                                    src="@if(@$item->product->product->product->product_type == 1)
-                                                                            {{ showImage(@$item->product->product->product->thumbnail_image_source) }}
-                                                                        @else
-                                                                            {{ showImage(@$item->product->sku->variant_image ? @$item->product->sku->variant_image : @$item->product->product->product->thumbnail_image_source) }}
-                                                                        @endif"
-                                                                    alt="{{ textLimit(@$item->product->product->product_name, 28) }}"
-                                                                    title="{{ textLimit(@$item->product->product->product_name, 28) }}"
-                                                                >
-                                                            </div>
-
-                                                            <div class="checkout_product_info">
-                                                                <h4 class="font_16 f_w_700 theme_hover checkout_product_name">
-                                                                    {{ textLimit(@$item->product->product->product_name, 28) }}
-                                                                </h4>
-
-                                                                <p class="font_14 f_w_400 checkout_product_meta">
-                                                                    @if($item->product->product->product->product_type == 2)
-                                                                        @php
-                                                                            $countCombinatiion = count(@$item->product->product_variations);
-                                                                        @endphp
-
-                                                                        @foreach($item->product->product_variations as $key => $combination)
-                                                                            @if($combination->attribute->id == 1)
-                                                                                {{ $combination->attribute->name }}: {{ $combination->attribute_value->color->name }}
+                                                    <tr>
+                                                        <td class="checkout_product_cell">
+                                                            <a href="{{ singleProductURL(@$item->seller->slug, @$item->product->product->slug) }}" class="checkout_product_link">
+                                                                <div class="checkout_product_thumb">
+                                                                    <img
+                                                                        src="@if(@$item->product->product->product->product_type == 1)
+                                                                                {{ showImage(@$item->product->product->product->thumbnail_image_source) }}
                                                                             @else
-                                                                                {{ $combination->attribute->name }}: {{ $combination->attribute_value->value }}
-                                                                            @endif
+                                                                                {{ showImage(@$item->product->sku->variant_image ? @$item->product->sku->variant_image : @$item->product->product->product->thumbnail_image_source) }}
+                                                                            @endif"
+                                                                        alt="{{ textLimit(@$item->product->product->product_name, 28) }}"
+                                                                        title="{{ textLimit(@$item->product->product->product_name, 28) }}"
+                                                                    >
+                                                                </div>
 
-                                                                            @if($countCombinatiion > $key + 1)
-                                                                                ,
-                                                                            @endif
-                                                                        @endforeach
-                                                                    @endif
-                                                                </p>
+                                                                <div class="checkout_product_info">
+                                                                    <h4 class="font_16 f_w_700 theme_hover checkout_product_name">
+                                                                        {{ textLimit(@$item->product->product->product_name, 28) }}
+                                                                    </h4>
 
-                                                                @if(!empty(@$item->product->product->product->processing_time))
-                                                                    <p class="font_12 f_w_500 checkout_product_processing">
-                                                                        Processing Time: {{ @$item->product->product->product->processing_time }}
+                                                                    <p class="font_14 f_w_400 checkout_product_meta">
+                                                                        @if($item->product->product->product->product_type == 2)
+                                                                            @php
+                                                                                $countCombinatiion = count(@$item->product->product_variations);
+                                                                            @endphp
+
+                                                                            @foreach($item->product->product_variations as $key => $combination)
+                                                                                @if($combination->attribute->id == 1)
+                                                                                    {{ $combination->attribute->name }}: {{ $combination->attribute_value->color->name }}
+                                                                                @else
+                                                                                    {{ $combination->attribute->name }}: {{ $combination->attribute_value->value }}
+                                                                                @endif
+
+                                                                                @if($countCombinatiion > $key + 1)
+                                                                                    ,
+                                                                                @endif
+                                                                            @endforeach
+                                                                        @endif
                                                                     </p>
-                                                                @endif
-                                                            </div>
-                                                        </a>
-                                                    </td>
+
+                                                                    @if(!empty(@$item->product->product->product->processing_time))
+                                                                        <p class="font_12 f_w_500 checkout_product_processing">
+                                                                            Processing Time: {{ @$item->product->product->product->processing_time }}
+                                                                        </p>
+                                                                    @endif
+                                                                </div>
+                                                            </a>
+                                                        </td>
+
+                                                        <td class="checkout_text_center">
+                                                            @if(!Session::has('auction_type'))
+                                                                <div class="d-flex align-items-center justify-content-center gap_7">
+                                                                    @if($item->product->product->hasDeal)
+                                                                        @if($item->product->product->hasDeal->discount > 0)
+                                                                            @if($item->product->product->hasDeal->discount_type == 0)
+                                                                                <span class="green_badge text-nowrap">-{{ getNumberTranslate($item->product->product->hasDeal->discount) }}%</span>
+                                                                                <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{ single_price($pro_price) }}</span>
+                                                                            @else
+                                                                                <span class="green_badge text-nowrap">-{{ single_price($item->product->product->hasDeal->discount) }}</span>
+                                                                                <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{ single_price($pro_price) }}</span>
+                                                                            @endif
+                                                                        @else
+                                                                            <span class="font_16 f_w_500 mute_text text-nowrap">{{ single_price($pro_price) }}</span>
+                                                                        @endif
+                                                                    @else
+                                                                        @if(@$item->product->product->hasDiscount == 'yes')
+                                                                            @if($item->product->product->discount_type == 0)
+                                                                                <span class="green_badge text-nowrap">-{{ getNumberTranslate($item->product->product->discount) }}%</span>
+                                                                                <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{ single_price($pro_price) }}</span>
+                                                                            @else
+                                                                                <span class="green_badge text-nowrap">-{{ single_price($item->product->product->discount) }}</span>
+                                                                                <span class="font_16 f_w_500 mute_text text-decoration-line-through text-nowrap">{{ single_price($pro_price) }}</span>
+                                                                            @endif
+                                                                        @else
+                                                                            <span class="font_16 f_w_500 mute_text text-nowrap">{{ single_price($pro_price) }}</span>
+                                                                        @endif
+                                                                    @endif
+                                                                </div>
+                                                            @endif
+                                                        </td>
+
+                                                        <td class="checkout_text_center">
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">
+                                                                {{ __('common.qty') }}: {{ getNumberTranslate($item->qty) }}
+                                                            </h4>
+                                                        </td>
+
+                                                        <td class="checkout_text_right">
+                                                            <h4 class="font_16 f_w_500 m-0 text-nowrap">
+                                                                {{ single_price($item->total_price) }}
+                                                            </h4>
+                                                        </td>
+                                                    </tr>
                                                 @else
                                                     @php
                                                         $actual_price += $item->total_price;
