@@ -252,51 +252,59 @@
                             </div> -->
 
                             @php
-                                $checkoutGetFirstValue = function ($item, $paths, $default = null) {
-                                    foreach ($paths as $path) {
-                                        $value = data_get($item, $path);
-
-                                        if (!is_null($value) && $value !== '') {
-                                            return $value;
-                                        }
+                                $checkoutNormalizeTaxType = function ($value) {
+                                    if (is_bool($value)) {
+                                        return $value ? '1' : '0';
                                     }
 
-                                    return $default;
-                                };
-
-                                $checkoutNormalizeTaxType = function ($value) {
                                     $value = strtolower(trim((string) $value));
                                     $value = str_replace([' ', '-', '_'], '', $value);
 
                                     return $value;
                                 };
 
-                                $checkoutIsInclusiveTax = function ($item) use ($checkoutGetFirstValue, $checkoutNormalizeTaxType) {
-                                    $taxType = $checkoutGetFirstValue($item, [
-                                        'tax_type',
-                                        'product.tax_type',
-                                        'product.product.tax_type',
-                                        'product.product.product.tax_type',
-                                    ], '');
+                                $checkoutTaxTypeIsInclusive = function ($value) use ($checkoutNormalizeTaxType) {
+                                    $value = $checkoutNormalizeTaxType($value);
 
-                                    return $checkoutNormalizeTaxType($taxType) == 'inclusive';
+                                    return in_array($value, [
+                                        'inclusive',
+                                        'include',
+                                        'included',
+                                        'including',
+                                        'taxinclusive',
+                                        'pricewithtax',
+                                        'pricewithvat',
+                                        'withtax',
+                                        'withvat',
+                                        '1',
+                                        'yes',
+                                        'true',
+                                    ]);
                                 };
 
-                                $checkoutGetTaxAmount = function ($item) use ($checkoutGetFirstValue) {
-                                    return floatval($checkoutGetFirstValue($item, [
-                                        'tax',
-                                        'product.tax',
-                                        'product.product.tax',
-                                        'product.product.product.tax',
-                                    ], 0));
+                                $checkoutResolveTaxInfo = function ($item) use ($checkoutTaxTypeIsInclusive) {
+                                    $mainProduct = data_get($item, 'product.product.product');
+
+                                    $taxType = data_get($mainProduct, 'tax_type');
+                                    $tax = data_get($mainProduct, 'tax', 0);
+
+                                    return [
+                                        'is_inclusive' => $checkoutTaxTypeIsInclusive($taxType),
+                                        'tax_type' => $taxType,
+                                        'tax' => floatval($tax),
+                                    ];
                                 };
 
                                 $showTaxColumn = false;
 
                                 foreach ($packages as $packageItem) {
-                                    if ($packageItem->product_type == 'product' && $checkoutIsInclusiveTax($packageItem)) {
-                                        $showTaxColumn = true;
-                                        break;
+                                    if ($packageItem->product_type == 'product') {
+                                        $packageTaxInfo = $checkoutResolveTaxInfo($packageItem);
+
+                                        if ($packageTaxInfo['is_inclusive']) {
+                                            $showTaxColumn = true;
+                                            break;
+                                        }
                                     }
                                 }
                             @endphp
