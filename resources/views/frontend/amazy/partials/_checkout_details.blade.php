@@ -431,7 +431,7 @@
 
                                                                     @if(!empty(@$item->product->product->product->processing_time))
                                                                         <p class="font_12 f_w_500 checkout_product_processing">
-                                                                            Processing Time: {{ @$item->product->product->product->processing_time }}
+                                                                            Processing Time: {{ @$item->product->product->product->processing_time }} Days
                                                                         </p>
                                                                     @endif
                                                                 </div>
