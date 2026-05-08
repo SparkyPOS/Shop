@@ -252,22 +252,51 @@
                             </div> -->
 
                             @php
+                                $checkoutGetFirstValue = function ($item, $paths, $default = null) {
+                                    foreach ($paths as $path) {
+                                        $value = data_get($item, $path);
+
+                                        if (!is_null($value) && $value !== '') {
+                                            return $value;
+                                        }
+                                    }
+
+                                    return $default;
+                                };
+
+                                $checkoutNormalizeTaxType = function ($value) {
+                                    $value = strtolower(trim((string) $value));
+                                    $value = str_replace([' ', '-', '_'], '', $value);
+
+                                    return $value;
+                                };
+
+                                $checkoutIsInclusiveTax = function ($item) use ($checkoutGetFirstValue, $checkoutNormalizeTaxType) {
+                                    $taxType = $checkoutGetFirstValue($item, [
+                                        'tax_type',
+                                        'product.tax_type',
+                                        'product.product.tax_type',
+                                        'product.product.product.tax_type',
+                                    ], '');
+
+                                    return $checkoutNormalizeTaxType($taxType) == 'inclusive';
+                                };
+
+                                $checkoutGetTaxAmount = function ($item) use ($checkoutGetFirstValue) {
+                                    return floatval($checkoutGetFirstValue($item, [
+                                        'tax',
+                                        'product.tax',
+                                        'product.product.tax',
+                                        'product.product.product.tax',
+                                    ], 0));
+                                };
+
                                 $showTaxColumn = false;
 
                                 foreach ($packages as $packageItem) {
-                                    if ($packageItem->product_type == 'product') {
-                                        $packageTaxType = data_get($packageItem, 'product.product.tax_type')
-                                            ?? data_get($packageItem, 'product.product.product.tax_type')
-                                            ?? '';
-
-                                        $packageTaxValue = data_get($packageItem, 'product.product.tax')
-                                            ?? data_get($packageItem, 'product.product.product.tax')
-                                            ?? 0;
-
-                                        if (strtolower((string) $packageTaxType) == 'inclusive' && floatval($packageTaxValue) > 0) {
-                                            $showTaxColumn = true;
-                                            break;
-                                        }
+                                    if ($packageItem->product_type == 'product' && $checkoutIsInclusiveTax($packageItem)) {
+                                        $showTaxColumn = true;
+                                        break;
                                     }
                                 }
                             @endphp
@@ -289,9 +318,11 @@
                                             <tr>
                                                 <th>{{ getNumberTranslate(count($packages)) }} {{ __('common.items') }}</th>
                                                 <th class="checkout_text_center">{{ __('common.subtotal') }}</th>
+
                                                 @if($showTaxColumn)
-                                                    <th class="checkout_text_center">{{ __('Tax') }}</th>
+                                                    <th class="checkout_text_center">Tax</th>
                                                 @endif
+
                                                 <th class="checkout_text_center">{{ __('common.quantity') }}</th>
                                                 <th class="checkout_text_right">{{ __('common.price') }}</th>
                                             </tr>
@@ -309,16 +340,8 @@
                                                     @php
                                                         $pro_price = 0;
 
-                                                        $productTaxType = data_get($item, 'product.product.tax_type')
-                                                            ?? data_get($item, 'product.product.product.tax_type')
-                                                            ?? '';
-
-                                                        $productTaxValue = data_get($item, 'product.product.tax')
-                                                            ?? data_get($item, 'product.product.product.tax')
-                                                            ?? 0;
-
-                                                        $productTaxType = strtolower((string) $productTaxType);
-                                                        $productTaxValue = floatval($productTaxValue);
+                                                        $productTaxType = $checkoutIsInclusiveTax($item) ? 'inclusive' : '';
+                                                        $productTaxAmount = $checkoutGetTaxAmount($item);
 
                                                         if (isModuleActive('WholeSale')) {
                                                             $w_main_price = 0;
@@ -346,8 +369,8 @@
                                                         $itemSubtotal = $pro_price * $item->qty;
                                                         $itemTaxTotal = 0;
 
-                                                        if ($productTaxType == 'inclusive' && $productTaxValue > 0) {
-                                                            $itemTaxTotal = $productTaxValue * $item->qty;
+                                                        if ($productTaxType == 'inclusive' && $productTaxAmount > 0) {
+                                                            $itemTaxTotal = $productTaxAmount * $item->qty;
                                                         }
 
                                                         $itemTotalWithTax = $item->total_price + $itemTaxTotal;
@@ -442,7 +465,7 @@
                                                         @if($showTaxColumn)
                                                             <td class="checkout_text_center">
                                                                 <h4 class="font_16 f_w_500 m-0 text-nowrap">
-                                                                    @if($productTaxType == 'inclusive' && $itemTaxTotal > 0)
+                                                                    @if($productTaxType == 'inclusive')
                                                                         {{ single_price($itemTaxTotal) }}
                                                                     @else
                                                                         {{ single_price(0) }}
@@ -483,9 +506,9 @@
                                                     @endphp
 
                                                     <tr>
-                                                        <td>
-                                                            <a href="{{ route('frontend.gift-card.show', $item->giftCard->sku) }}" class="d-flex align-items-center gap_20 cart_thumb_div">
-                                                                <div class="thumb">
+                                                        <td class="checkout_product_cell">
+                                                            <a href="{{ route('frontend.gift-card.show', $item->giftCard->sku) }}" class="checkout_product_link">
+                                                                <div class="checkout_product_thumb">
                                                                     <img
                                                                         src="{{ showImage($item->giftCard->thumbnail_image) }}"
                                                                         alt="{{ textLimit(@$item->giftCard->name, 28) }}"
@@ -493,8 +516,8 @@
                                                                     >
                                                                 </div>
 
-                                                                <div class="summery_pro_content">
-                                                                    <h4 class="font_16 f_w_700 text-nowrap m-0 theme_hover">
+                                                                <div class="checkout_product_info">
+                                                                    <h4 class="font_16 f_w_700 theme_hover checkout_product_name">
                                                                         {{ textLimit(@$item->giftCard->name, 28) }}
                                                                     </h4>
                                                                 </div>
@@ -542,6 +565,14 @@
                                                             </div>
                                                         </td>
 
+                                                        @if($showTaxColumn)
+                                                            <td class="checkout_text_center">
+                                                                <h4 class="font_16 f_w_500 m-0 text-nowrap">
+                                                                    {{ single_price(0) }}
+                                                                </h4>
+                                                            </td>
+                                                        @endif
+
                                                         <td class="checkout_text_center">
                                                             <h4 class="font_16 f_w_500 m-0 text-nowrap">
                                                                 {{ __('common.qty') }}: {{ getNumberTranslate($item->qty) }}
@@ -559,6 +590,7 @@
                                                 @if($item->product_type == 'product' && @$item->product->product->product->is_physical)
                                                     @php
                                                         $isIntselected = null;
+
                                                         if ($intShippingProfileClassAvailable) {
                                                             $isIntselected = \Modules\INTShipping\Entities\SellerProductShippingProfile::where('seller_product_id', $item->product->product->product->id)->first();
                                                         }
@@ -569,6 +601,7 @@
                                                             <td colspan="{{ $showTaxColumn ? 5 : 4 }}" class="p-0 border-0">
                                                                 @php
                                                                     $products = collect();
+
                                                                     if ($intShippingProfileClassAvailable) {
                                                                         $products = \Modules\INTShipping\Entities\SellerProductShippingProfile::whereHas('profile', function($query) use ($seller_id) {
                                                                             return $query->where('user_id', $seller_id);
