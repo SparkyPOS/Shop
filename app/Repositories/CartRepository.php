@@ -256,8 +256,14 @@ class CartRepository{
         $additional_charge = 0;
         foreach($grouped as $key => $item){
             foreach($item as $key => $data){
-                if($data->product_type != "gift_card" && !empty($data->product->sku) && $data->product->sku->additional_shipping > 0){
-                    $additional_charge +=  $data->product->sku->additional_shipping;
+                if($data->product_type != "gift_card"){
+                    $skuAdditional = (float) (optional(optional($data->product)->sku)->additional_shipping ?? 0);
+                    if ($skuAdditional <= 0) {
+                        $skuAdditional = (float) (optional(optional(optional($data->product)->product)->product)->shipping_cost ?? 0);
+                    }
+                    if ($skuAdditional > 0) {
+                        $additional_charge += $skuAdditional * max((int) ($data->qty ?? 1), 1);
+                    }
                 }
             }
         }

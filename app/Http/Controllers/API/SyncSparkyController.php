@@ -8,6 +8,7 @@ use App\Repositories\MediaManagerRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Modules\Product\Entities\Category;
 use Illuminate\Support\Str;
 use Modules\Product\Entities\Attribute;
@@ -77,6 +78,47 @@ class SyncSparkyController extends Controller
         $decoded = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $decoded = preg_replace('/\s+/u', ' ', $decoded ?? '');
         return mb_strtolower(trim($decoded));
+    }
+
+    private function extractShippingPayload(array $product): array
+    {
+        $shipping = isset($product['shipping']) && is_array($product['shipping']) ? $product['shipping'] : [];
+
+        $cost = $product['shipping_cost'] ?? $product['shippingc'] ?? $shipping['shipping_cost'] ?? $shipping['shippingc'] ?? null;
+        $type = $product['shipping_type'] ?? $shipping['shipping_type'] ?? null;
+        $pickup = $product['shipping_pickup'] ?? $shipping['shipping_pickup'] ?? null;
+        $location = $product['shipping_location'] ?? $shipping['shipping_location'] ?? null;
+        $processing = $product['processing_time'] ?? $product['shippingpt'] ?? $shipping['processing_time'] ?? $shipping['shippingpt'] ?? null;
+
+        $weight = $product['weight'] ?? $product['shippingweight'] ?? $shipping['weight'] ?? $shipping['shippingweight'] ?? null;
+        $length = $product['length'] ?? $product['shippinglength'] ?? $shipping['length'] ?? $shipping['shippinglength'] ?? null;
+        $height = $product['height'] ?? $product['shippingheight'] ?? $shipping['height'] ?? $shipping['shippingheight'] ?? null;
+        $width = $product['breadth'] ?? $product['shippingwidth'] ?? $shipping['breadth'] ?? $shipping['shippingwidth'] ?? null;
+
+        return [
+            'shipping_cost' => is_numeric($cost) ? (float) $cost : null,
+            'shipping_type' => is_numeric($type) ? (int) $type : null,
+            'shipping_pickup' => is_string($pickup) ? strtolower(trim($pickup)) : null,
+            'shipping_location' => is_string($location) ? trim($location) : null,
+            'processing_time' => is_string($processing) ? trim($processing) : null,
+            'weight' => is_numeric($weight) ? (float) $weight : null,
+            'length' => is_numeric($length) ? (float) $length : null,
+            'height' => is_numeric($height) ? (float) $height : null,
+            'breadth' => is_numeric($width) ? (float) $width : null,
+        ];
+    }
+
+    private function resolveShopShippingType(array $shippingPayload): int
+    {
+        if ($shippingPayload['shipping_type'] !== null) {
+            return (int) $shippingPayload['shipping_type'];
+        }
+
+        if (in_array($shippingPayload['shipping_pickup'], ['yes', 'y', 'true', '1', 'on', 'enabled'], true)) {
+            return 1;
+        }
+
+        return (($shippingPayload['shipping_cost'] ?? 0) > 0) ? 2 : 1;
     }
 
     /**
@@ -450,6 +492,7 @@ class SyncSparkyController extends Controller
                 } elseif (isset($product['stock_manage'])) {
                     $manageStock = (int) $product['stock_manage'] ? 1 : 0;
                 }
+                $shippingPayload = $this->extractShippingPayload($product);
 
                 // Update Product
                 $newProduct = Product::updateOrCreate(
@@ -583,11 +626,16 @@ class SyncSparkyController extends Controller
                         $newProductSku->product_stock = $incomingQty;
                     }
                     // Optional shipping dimensions from payload
-                    if (isset($product['weight'])) $newProductSku->weight = (float) $product['weight'];
-                    if (isset($product['length'])) $newProductSku->length = (float) $product['length'];
-                    if (isset($product['breadth'])) $newProductSku->breadth = (float) $product['breadth'];
-                    if (isset($product['height'])) $newProductSku->height = (float) $product['height'];
-                    if (isset($product['additional_shipping'])) $newProductSku->additional_shipping = (float) $product['additional_shipping'];
+                    if ($shippingPayload['weight'] !== null) $newProductSku->weight = $shippingPayload['weight'];
+                    if ($shippingPayload['length'] !== null) $newProductSku->length = $shippingPayload['length'];
+                    if ($shippingPayload['breadth'] !== null) $newProductSku->breadth = $shippingPayload['breadth'];
+                    if ($shippingPayload['height'] !== null) $newProductSku->height = $shippingPayload['height'];
+                    // SparkyPOS shipping cost should be reflected in Shop SKU additional shipping.
+                    if (array_key_exists('additional_shipping', $product) && $product['additional_shipping'] !== null) {
+                        $newProductSku->additional_shipping = (float) $product['additional_shipping'];
+                    } elseif ($shippingPayload['shipping_cost'] !== null) {
+                        $newProductSku->additional_shipping = $shippingPayload['shipping_cost'];
+                    }
                     $newProductSku->status = ($product['status'] == 'available') ? 1 : 0;
                     $newProductSku->save();
 
@@ -750,7 +798,13 @@ class SyncSparkyController extends Controller
                         if (isset($variant['length'])) $newProductSku->length = (float) $variant['length'];
                         if (isset($variant['breadth'])) $newProductSku->breadth = (float) $variant['breadth'];
                         if (isset($variant['height'])) $newProductSku->height = (float) $variant['height'];
-                        if (isset($variant['additional_shipping'])) $newProductSku->additional_shipping = (float) $variant['additional_shipping'];
+                        if (array_key_exists('additional_shipping', $variant) && $variant['additional_shipping'] !== null) {
+                            $newProductSku->additional_shipping = (float) $variant['additional_shipping'];
+                        } elseif (array_key_exists('additional_shipping', $product) && $product['additional_shipping'] !== null) {
+                            $newProductSku->additional_shipping = (float) $product['additional_shipping'];
+                        } elseif ($shippingPayload['shipping_cost'] !== null) {
+                            $newProductSku->additional_shipping = $shippingPayload['shipping_cost'];
+                        }
                         $newProductSku->save();
 
                         // queue seller sku upsert for variant
@@ -989,14 +1043,17 @@ class SyncSparkyController extends Controller
                     Log::info('shop.sync.variants.done', ['product_id'=>$newProduct->id]);
                 }
 
-                // Sync physical/digital mapping and product-level shipping
-                if (!empty($product['type'])) {
-                    $newProduct->is_physical = strtolower($product['type']) === 'tangible' ? 1 : 0;
+                // Enforce POS->Shop rule:
+                // - products synced from SparkyPOS are always physical on Shop
+                // - shipping type is always flat rate (2)
+                $newProduct->is_physical = 1;
+                $newProduct->shipping_type = 2;
+                if ($shippingPayload['shipping_cost'] !== null) $newProduct->shipping_cost = $shippingPayload['shipping_cost'];
+                if (!empty($shippingPayload['shipping_location']) && Schema::hasColumn('products', 'shipping_location')) {
+                    $newProduct->shipping_location = $shippingPayload['shipping_location'];
                 }
-                if (isset($product['shipping_type'])) $newProduct->shipping_type = (int) $product['shipping_type'];
-                if (isset($product['shipping_cost'])) $newProduct->shipping_cost = (float) $product['shipping_cost'];
-                if (array_key_exists('processing_time', $product) || array_key_exists('shippingpt', $product)) {
-                    $newProduct->processing_time = (string) ($product['processing_time'] ?? $product['shippingpt'] ?? '');
+                if (($shippingPayload['processing_time'] ?? '') !== '') {
+                    $newProduct->processing_time = $shippingPayload['processing_time'];
                 }
                 // Ensure name is up to date as well
                 if (!empty($product['name'])) $newProduct->product_name = $product['name'];

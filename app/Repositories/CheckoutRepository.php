@@ -375,6 +375,14 @@ class CheckoutRepository{
                 $package_wise_shipping_cost = 0;
                 $package_wise_shipping_method = 0;
                 $shipping_qty = 1;
+                $additional_cost = 0;
+                $totalItemPrice = 0;
+                $totalItemWeight = 0;
+                $totalItemHeight = 0;
+                $totalItemLength = 0;
+                $totalItemBreadth = 0;
+                $physical_count = 0;
+                $item_in_cart = 0;
                 foreach($packages as $cart_key => $cart){
                     $actual_price += ($cart->price * $cart->qty);
                     if($cart->product_type == 'product'){
@@ -470,7 +478,7 @@ class CheckoutRepository{
                                 }
                             }
                         }
-                        $additional_shipping += $cart->product->sku->additional_shipping;
+                        $additional_shipping += $this->resolveCartItemAdditionalShipping($cart, (int) $seller_id);
                         if($cart->product->product->product->is_physical == 0){
                             $is_digital_product  = 1;
                         }else{
@@ -552,26 +560,13 @@ class CheckoutRepository{
                         ];
                     }
                     $number_of_item += $cart->qty;
-
-                    $additional_cost = 0;
-                    $totalItemPrice = 0;
-                    $totalItemWeight = 0;
-                    $totalItemHeight = 0;
-                    $totalItemLength = 0;
-                    $totalItemBreadth = 0;
-                    $physical_count = 0;
-                    $item_in_cart = 0;
                     if($cart->product_type == 'product' && $cart->product->product->product->is_physical == 1){
-                        if(sellerWiseShippingConfig($seller_id)['amount_multiply_with_qty']){
-                            $additional_cost += ($cart->product->sku->additional_shipping * $cart->qty);
-                        }else{
-                            $additional_cost += $cart->product->sku->additional_shipping;
-                        }
-                        $totalItemPrice += $cart->total_price;
-                        $totalItemWeight += !empty($cart->product->sku->weight) ? $cart->qty * $cart->product->sku->weight : 0;
-                        $totalItemHeight += $cart->qty * $cart->product->sku->height;
-                        $totalItemLength += $cart->qty * $cart->product->sku->length;
-                        $totalItemBreadth += $cart->qty * $cart->product->sku->breadth;
+                            $additional_cost += $this->resolveCartItemAdditionalShipping($cart, $seller_id);
+                            $totalItemPrice += $cart->total_price;
+                            $totalItemWeight += !empty($cart->product->sku->weight) ? $cart->qty * $cart->product->sku->weight : 0;
+                            $totalItemHeight += $cart->qty * $cart->product->sku->height;
+                            $totalItemLength += $cart->qty * $cart->product->sku->length;
+                            $totalItemBreadth += $cart->qty * $cart->product->sku->breadth;
                         $physical_count += 1;
                         $item_in_cart += $cart->qty;
                     }
@@ -585,6 +580,8 @@ class CheckoutRepository{
                         $shippingMethod = ShippingMethod::with(['carrier'])->find($package_wise_shipping[$seller_id]['shipping_id']);
                         if($shippingMethod){
                             $shipping_cost[] = $package_wise_shipping[$seller_id]['shipping_cost'];
+                        } else {
+                            $shipping_cost[] = (float) ($package_wise_shipping[$seller_id]['shipping_cost'] ?? 0);
                         }
                     }else{
                         if($is_physical_product){
@@ -634,12 +631,13 @@ class CheckoutRepository{
                         }
                     }
                 }
+                $fallbackProcessingTime = $this->resolvePackageProcessingTime($packages);
                 //generate delivery date
                 if(!isModuleActive('INTShipping') || app('theme')->folder_path == 'default'){
-                    $delivery_date[] = $this->generateDeliveryDate($shippingMethod);
+                    $delivery_date[] = $this->generateDeliveryDate($shippingMethod, $fallbackProcessingTime);
                     $shipping_method[] = !empty($shippingMethod) ? $shippingMethod->id:2;
                 }elseif (isModuleActive('INTShipping') && app('theme')->folder_path == 'amazy' && $shipping) {
-                    $delivery_date[] = $this->generateDeliveryDate($package_wise_shipping_method);
+                    $delivery_date[] = $this->generateDeliveryDate($package_wise_shipping_method, $fallbackProcessingTime);
                     $shipping_method[] = $package_wise_shipping_method->id;
                 }
             }
@@ -754,11 +752,7 @@ class CheckoutRepository{
                     }else{
                         $is_physical_product = 1;
                         $shipping_qty += 1;
-                        if(sellerWiseShippingConfig(1)['amount_multiply_with_qty']){
-                            $additional_shipping += $cart->product->sku->additional_shipping * $cart->qty;
-                        }else{
-                            $additional_shipping += $cart->product->sku->additional_shipping;
-                        }
+                        $additional_shipping += $this->resolveCartItemAdditionalShipping($cart, 1);
                     }
                     $e_items[]=[
                         "item_id"=> $cart->product->sku->sku,
@@ -852,11 +846,12 @@ class CheckoutRepository{
                     }
                 }
                 //delivery_date generate
+                $fallbackProcessingTime = $this->resolvePackageProcessingTime($cartData);
                 if(isModuleActive('INTShipping') && app('theme')->folder_path == 'amazy'){
-                    $delivery_date = $this->generateDeliveryDate($package_wise_shipping_method);
+                    $delivery_date = $this->generateDeliveryDate($package_wise_shipping_method, $fallbackProcessingTime);
                     $shipping_method = $package_wise_shipping_method->id;
                 }else{
-                    $delivery_date = $this->generateDeliveryDate($shipping);
+                    $delivery_date = $this->generateDeliveryDate($shipping, $fallbackProcessingTime);
                     $shipping_method = $shipping->id;
                 }
             }
@@ -914,19 +909,61 @@ class CheckoutRepository{
         ];
         return $result;
     }
+
+    private function resolveCartItemAdditionalShipping($cart, int $sellerId): float
+    {
+        $additional = (float) (optional(optional($cart->product)->sku)->additional_shipping ?? 0);
+        $usedProductLevelFallback = false;
+
+        if ($additional <= 0) {
+            $additional = (float) (optional(optional(optional($cart->product)->product)->product)->shipping_cost ?? 0);
+            $usedProductLevelFallback = $additional > 0;
+        }
+
+        if ($additional <= 0) {
+            return 0.0;
+        }
+
+        $syncedExternalId = optional(optional(optional($cart->product)->product)->product)->external_product_id ?? null;
+        if ($usedProductLevelFallback) {
+            return $additional * max((int) $cart->qty, 1);
+        }
+
+        if (!empty($syncedExternalId)) {
+            return $additional * (int) $cart->qty;
+        }
+
+        if (sellerWiseShippingConfig($sellerId)['amount_multiply_with_qty']) {
+            return $additional * (int) $cart->qty;
+        }
+
+        return $additional;
+    }
+
     public function getActivePaymentGetways(){
         $methods =  PaymentMethod::where('active_status', 1)->with(['sellerPaymentMethod'])->whereHas('sellerPaymentMethod', function($query){
                 return $query->where('status', 1);
             });
         return $methods;
     }
-    private function generateDeliveryDate($shipping){
+    private function generateDeliveryDate($shipping, ?string $fallbackProcessingTime = null){
+        $fallbackProcessingTime = $this->normalizeProcessingTime($fallbackProcessingTime) ?: '3-5 days';
+        if (empty($shipping) || empty($shipping->shipment_time)) {
+            return 'Est arrival time: ' . $fallbackProcessingTime;
+        }
+
         $shipment_time = $shipping->shipment_time;
         $shipment_time = explode(" ", $shipment_time);
-        $dayOrOur = $shipment_time[1];
+        $dayOrOur = $shipment_time[1] ?? null;
+        if (empty($dayOrOur)) {
+            return 'Est arrival time: ' . $fallbackProcessingTime;
+        }
         $shipment_time = explode("-", $shipment_time[0]);
-        $start_ = $shipment_time[0];
-        $end_ = $shipment_time[1];
+        $start_ = $shipment_time[0] ?? null;
+        $end_ = $shipment_time[1] ?? null;
+        if ($start_ === null || $end_ === null) {
+            return 'Est arrival time: ' . $fallbackProcessingTime;
+        }
         $date = date('d-m-Y');
         $start_date = date('d M', strtotime($date. '+ '.$start_.' '.$dayOrOur));
         $end_date = date('d M', strtotime($date. '+ '.$end_.' '.$dayOrOur));
@@ -936,6 +973,37 @@ class CheckoutRepository{
             $delivery_date = 'Est arrival time: '. $shipping->shipment_time;
         }
         return $delivery_date;
+    }
+
+    private function resolvePackageProcessingTime($items): string
+    {
+        foreach ($items as $item) {
+            $processing = optional(optional(optional($item->product)->product)->product)->processing_time ?? null;
+            $normalized = $this->normalizeProcessingTime($processing);
+            if ($normalized !== null) {
+                return $normalized;
+            }
+        }
+
+        return '3-5 days';
+    }
+
+    private function normalizeProcessingTime($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $raw = trim((string) $value);
+        if ($raw === '') {
+            return null;
+        }
+
+        if (preg_match('/^\d+$/', $raw)) {
+            return $raw . ' days';
+        }
+
+        return $raw;
     }
 
     private function cartQuery(){

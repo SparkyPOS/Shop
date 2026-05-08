@@ -936,7 +936,7 @@
                                     </div>
                                     <div class="amazcart_delivery_wiz_content">
                                         <h4 class="font_16 f_w_700 mb_6">Processing Time</h4>
-                                        <p class="delivery_text font_14 f_w_400">Approximately {{ $processingTime }} Days</p>
+                                        <p class="delivery_text font_14 f_w_400">{{ $processingTime }}</p>
                                     </div>
                                 </div>
                             @endif
