@@ -457,6 +457,8 @@ class SyncSparkyController extends Controller
                     [
                         'product_name' => $product['name'],
                         'product_type' => $variant_product ? 2 : 1,
+                        'tax_type' => $product['tax_type'] ?? 'inclusive',
+                        'tax' => isset($product['tax_value']) ? (float) $product['tax_value'] : 0,
                         'variant_sku_prefix' => $product['variant_sku_prefix'] ?? $product['sku'],
                         'barcode_type' => $product['barcode_type'],
                         // Prefer non-empty full description; fallback to shortdescription
@@ -1012,8 +1014,8 @@ class SyncSparkyController extends Controller
                             'status' => 1,
                             'is_approved' => 1,
                             'stock_manage' => $manageStock,
+                            'tax_type' => $newProduct->tax_type ?? 'inclusive',
                             'tax' => $newProduct->tax ?? 0,
-                            'tax_type' => $newProduct->tax_type ?? '0',
                             'discount' => 0,
                             'discount_type' => 1,
                             'slug' => \Illuminate\Support\Str::slug($newProduct->product_name),

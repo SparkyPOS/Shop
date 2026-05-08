@@ -60,6 +60,17 @@
         width: 14%;
     }
 
+    .checkout_package_table.has_tax_column col.checkout_product_col {
+        width: 52%;
+    }
+
+    .checkout_package_table.has_tax_column col.checkout_subtotal_col,
+    .checkout_package_table.has_tax_column col.checkout_tax_col,
+    .checkout_package_table.has_tax_column col.checkout_quantity_col,
+    .checkout_package_table.has_tax_column col.checkout_price_col {
+        width: 12%;
+    }
+
     .checkout_package_table thead th {
         border: 0;
         border-bottom: 1px solid #ececec;
@@ -234,12 +245,36 @@
                                 <span>{{ __('common.price') }}</span>
                             </div> -->
 
+                            @php
+                                $showTaxColumn = false;
+
+                                foreach ($packages as $packageItem) {
+                                    if ($packageItem->product_type == 'product') {
+                                        $packageTaxType = data_get($packageItem, 'product.product.tax_type')
+                                            ?? data_get($packageItem, 'product.product.product.tax_type')
+                                            ?? '';
+
+                                        $packageTaxValue = data_get($packageItem, 'product.product.tax')
+                                            ?? data_get($packageItem, 'product.product.product.tax')
+                                            ?? 0;
+
+                                        if (strtolower((string) $packageTaxType) == 'inclusive' && floatval($packageTaxValue) > 0) {
+                                            $showTaxColumn = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            @endphp
+
                             <div class="checout_shiped_products">
                                 <div class="table-responsive mb-0">
-                                    <table class="table amazy_table3 style3 mb-0 checkout_package_table">
+                                    <table class="table amazy_table3 style3 mb-0 checkout_package_table {{ $showTaxColumn ? 'has_tax_column' : '' }}">
                                         <colgroup>
                                             <col class="checkout_product_col">
                                             <col class="checkout_subtotal_col">
+                                            @if($showTaxColumn)
+                                                <col class="checkout_tax_col">
+                                            @endif
                                             <col class="checkout_quantity_col">
                                             <col class="checkout_price_col">
                                         </colgroup>
@@ -248,6 +283,9 @@
                                             <tr>
                                                 <th>{{ getNumberTranslate(count($packages)) }} {{ __('common.items') }}</th>
                                                 <th class="checkout_text_center">{{ __('common.subtotal') }}</th>
+                                                @if($showTaxColumn)
+                                                    <th class="checkout_text_center">{{ __('Tax') }}</th>
+                                                @endif
                                                 <th class="checkout_text_center">{{ __('common.quantity') }}</th>
                                                 <th class="checkout_text_right">{{ __('common.price') }}</th>
                                             </tr>
@@ -263,9 +301,18 @@
 
                                                 @if($item->product_type == 'product')
                                                     @php
-                                                        $actual_price += $item->total_price;
-                                                        $seller_actual_price += $item->total_price;
                                                         $pro_price = 0;
+
+                                                        $productTaxType = data_get($item, 'product.product.tax_type')
+                                                            ?? data_get($item, 'product.product.product.tax_type')
+                                                            ?? '';
+
+                                                        $productTaxValue = data_get($item, 'product.product.tax')
+                                                            ?? data_get($item, 'product.product.product.tax')
+                                                            ?? 0;
+
+                                                        $productTaxType = strtolower((string) $productTaxType);
+                                                        $productTaxValue = floatval($productTaxValue);
 
                                                         if (isModuleActive('WholeSale')) {
                                                             $w_main_price = 0;
@@ -282,18 +329,27 @@
                                                             }
 
                                                             if ($w_main_price != 0) {
-                                                                $subtotal += $w_main_price * $item->qty;
                                                                 $pro_price = $w_main_price;
                                                             } else {
-                                                                $subtotal += @$item->product->sell_price * $item->qty;
-                                                                $tax += @$item->product->product->tax * $item->qty;
                                                                 $pro_price = @$item->product->sell_price;
                                                             }
                                                         } else {
-                                                            $subtotal += @$item->product->sell_price * $item->qty;
-                                                            $tax += @$item->product->product->tax * $item->qty;
                                                             $pro_price = @$item->product->sell_price;
                                                         }
+
+                                                        $itemSubtotal = $pro_price * $item->qty;
+                                                        $itemTaxTotal = 0;
+
+                                                        if ($productTaxType == 'inclusive' && $productTaxValue > 0) {
+                                                            $itemTaxTotal = $productTaxValue * $item->qty;
+                                                        }
+
+                                                        $itemTotalWithTax = $item->total_price + $itemTaxTotal;
+
+                                                        $subtotal += $itemSubtotal;
+                                                        $tax += $itemTaxTotal;
+                                                        $actual_price += $itemTotalWithTax;
+                                                        $seller_actual_price += $itemTotalWithTax;
                                                     @endphp
 
                                                     <tr>
@@ -377,6 +433,18 @@
                                                             @endif
                                                         </td>
 
+                                                        @if($showTaxColumn)
+                                                            <td class="checkout_text_center">
+                                                                <h4 class="font_16 f_w_500 m-0 text-nowrap">
+                                                                    @if($productTaxType == 'inclusive' && $itemTaxTotal > 0)
+                                                                        {{ single_price($itemTaxTotal) }}
+                                                                    @else
+                                                                        {{ single_price(0) }}
+                                                                    @endif
+                                                                </h4>
+                                                            </td>
+                                                        @endif
+
                                                         <td class="checkout_text_center">
                                                             <h4 class="font_16 f_w_500 m-0 text-nowrap">
                                                                 {{ __('common.qty') }}: {{ getNumberTranslate($item->qty) }}
@@ -385,7 +453,7 @@
 
                                                         <td class="checkout_text_right">
                                                             <h4 class="font_16 f_w_500 m-0 text-nowrap">
-                                                                {{ single_price($item->total_price) }}
+                                                                {{ single_price($itemTotalWithTax) }}
                                                             </h4>
                                                         </td>
                                                     </tr>
@@ -489,7 +557,7 @@
 
                                                     @if(!empty($isIntselected) && isModuleActive('INTShipping') && !empty($shipping_address))
                                                         <tr class="custom-tr">
-                                                            <td colspan="4" class="p-0 border-0">
+                                                            <td colspan="{{ $showTaxColumn ? 5 : 4 }}" class="p-0 border-0">
                                                                 @php
                                                                     $products = \Modules\INTShipping\Entities\SellerProductShippingProfile::whereHas('profile', function($query) use ($seller_id) {
                                                                         return $query->where('user_id', $seller_id);
