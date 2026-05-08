@@ -348,8 +348,9 @@
                                                     @php
                                                         $pro_price = 0;
 
-                                                        $productTaxType = $checkoutIsInclusiveTax($item) ? 'inclusive' : '';
-                                                        $productTaxAmount = $checkoutGetTaxAmount($item);
+                                                        $productTaxInfo = $checkoutResolveTaxInfo($item);
+                                                        $productTaxType = $productTaxInfo['is_inclusive'] ? 'inclusive' : '';
+                                                        $productTaxAmount = $productTaxInfo['tax'];
 
                                                         if (isModuleActive('WholeSale')) {
                                                             $w_main_price = 0;
