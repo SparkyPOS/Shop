@@ -67,7 +67,7 @@
     'pickup_locations' => 'Pickup Locations',
     'pickup_location' => 'Pickup Location',
     'add_new_pickup_location' => 'Add New Pickup Location',
-    'pin_code' => 'Pin Code',
+    'pin_code' => 'Zip Code',
     'address_2' => 'Address 2',
     'latitude' => 'Latitude',
     'longitude' => 'Longitude',

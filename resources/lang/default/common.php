@@ -541,7 +541,7 @@ return [
     'company_rating_review' => 'Company Rating & Review',
     'sms_has_been_sent_successfully' => 'Sms Has Been Sent Successfully.',
     'set_sms_credentials' => 'Set Sms Credentials.',
-    'postal_code_or_pin_code' => 'Postal Code / Pin Code',
+    'postal_code_or_pin_code' => 'Zip Code',
     'commision' => 'Commision',
     'latitude' => 'Latitude',
     'longitude' => 'Longitude',

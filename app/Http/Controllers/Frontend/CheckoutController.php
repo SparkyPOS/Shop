@@ -676,7 +676,7 @@ class CheckoutController extends Controller
             foreach ($package_wise_shippings as $package_wise_shipping){
                 $packageProcessingTime = isset($cartData[$package_wise_shipping['seller_id']])
                     ? $this->resolvePackageProcessingTime($cartData[$package_wise_shipping['seller_id']])
-                    : ($package_wise_shipping['shipping_time'] ?? '3-5 days');
+                    : ($package_wise_shipping['shipping_time'] ?? '3-5 Days');
                 if($package_wise_shipping['seller_id'] == $request->seller){
                     $isPosSyncedShipping = !empty($package_wise_shipping['pos_synced_shipping']);
                     $shipping_method = ShippingMethod::with(['carrier'])->findOrFail($request->shipping_method);
@@ -982,7 +982,7 @@ class CheckoutController extends Controller
         }
 
         if (preg_match('/^\d+$/', $raw)) {
-            return $raw . ' days';
+            return $raw . ' Days';
         }
 
         return $raw;

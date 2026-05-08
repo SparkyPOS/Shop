@@ -1,9 +1,9 @@
 <?php return [
-'pincode' => 'Pin Code',
+'pincode' => 'Zip Code',
 'city' => 'City',
 'state' => 'State',
 'delivery_days' => 'Delivery Days',
-'pincode_list' => 'Pin Code List',
+'pincode_list' => 'Zip Code List',
 'add_new_pincode' => 'Add New Pincode',
 'delete_pincode' => 'Delete Pincode',
 'created_at' => 'Created At',

@@ -408,7 +408,7 @@ return [
     "auction_configuration"=> "Auction Configuration",
     "global_seo_setup"=> "Global SEO Setup",
     "check_pincode"=> "Check Pincode",
-    "pin_code_list"=> "Pin Code List",
+    "pin_code_list"=> "Zip Code List",
     "add_new_pincode"=> "Add New Pincode",
     "bulk_pincode_upload"=> "Bulk Pincode Upload",
     "pincode_configuration"=> "Pincode Configuration",
