@@ -217,11 +217,10 @@
                                 <div class="checout_shiped_head package_head flex-wrap d-flex align-items-center ">
                                     <div class="checkout_package_store_vendor d-flex align-items-center flex-wrap">
                                         <span class="store_name text-nowrap f_w_600">{{ __('common.store') }}: {{ parentStoreName($seller ?? null) }}</span>
-                                        <span class="checkout_package_divider">|</span>
+                                        <span class="checkout_package_divider"></span>
                                         <span class="vendor_name text-nowrap f_w_600">{{ __('Vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
                                     </div>
                                     <span class="package_text flex-fill">{{__('common.package')}} {{getNumberTranslate($current_pkg)}} {{__('common.of')}} {{getNumberTranslate($total_package)}}</span>
-                                    <span class="Shipped_text">{{__('defaultTheme.shipping')}} :</span>
                                     <span class="name_text text-nowrap">
                                         <a class="link_style font_16 f_w_700 text-nowrap m-0 theme_hover text_color" href="javascript:void(0)">
                                             @if($is_physical_count > 0)
@@ -236,7 +235,7 @@
                                 <div class="checout_shiped_head package_head flex-wrap d-flex align-items-center ">
                                     <div class="checkout_package_store_vendor d-flex align-items-center flex-wrap">
                                         <span class="store_name text-nowrap f_w_600">{{ __('common.store') }}: {{ parentStoreName($seller ?? null) }}</span>
-                                        <span class="checkout_package_divider">|</span>
+                                        <span class="checkout_package_divider"></span>
                                         <span class="vendor_name text-nowrap f_w_600">{{ __('Vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
                                     </div>
 
