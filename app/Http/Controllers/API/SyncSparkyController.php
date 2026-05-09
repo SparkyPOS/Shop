@@ -512,6 +512,7 @@ class SyncSparkyController extends Controller
                         'discount_type' => 1,
                         'minimum_order_qty' => 1,
                         'condition' => $product['condition'] ?? 'New',
+                        'selling_price' => isset($product['selling_price']) ? (float) $product['selling_price'] : 0,
                         'is_physical' => 1,
                         'is_approved' => 1,
                         'status' => $product['status'] == 'available' ? 1 : 0 ,

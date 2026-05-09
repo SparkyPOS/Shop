@@ -490,7 +490,8 @@ if (!function_exists('getProductwitoutDiscountPrice')) {
             if($product->hasDeal){
                 if($product->hasDeal->discount > 0){
                     if ($product->product->product_type == 1){
-                        $price = single_price($product->skus[0]->sell_price);
+                        // $price = single_price($product->skus[0]->sell_price);
+                        $price = single_price($product->selling_price);
                     }else{
                         if($product->skus->min('sell_price') === $product->skus->max('sell_price')){
                             $price = single_price($product->skus->min('sell_price'));
