@@ -44,7 +44,7 @@
     @include('frontend.default.partials._breadcrumb')
 
     <!-- policy part here -->
-    <section class="policy_part return_part padding_top bg-white">
+    <section class="policy_part return_part bg-white">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-10">

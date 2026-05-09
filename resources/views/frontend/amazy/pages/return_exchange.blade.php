@@ -11,7 +11,7 @@
 @endsection
 
 @section('content')
-<section class="return_part padding_top bg-white">
+<section class="return_part bg-white">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-lg-10">
