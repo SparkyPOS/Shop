@@ -219,7 +219,7 @@
                             <div class="dashboard_white_box bg-white mb_25 amazy_full_height">
                                 <div class="dashboard_white_box_header d-flex align-items-center gap_15 amazy_bb3 pb_10 mb_5">
                                     <h3 class="font_20 f_w_700 mb-0  flex-fill">{{__('order.recent_order')}}</h3>
-                                    <a href="{{url('/my-purchase-orders')}}" class="amaz_badge_btn2 text-uppercase">{{__('common.see_all')}}</a>
+                                    <a href="{{url('/track-order')}}" class="amaz_badge_btn2 text-uppercase">{{__('common.see_all')}}</a>
                                 </div>
                                 <div class="dashboard_white_box_body">
                                     <div class="dash_product_lists">

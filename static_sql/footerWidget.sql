@@ -3,7 +3,7 @@ INSERT INTO `dynamic_pages` (`id`, `title`, `slug`, `description`, `status`, `is
 (3, '{"en":"Blog"}', 'blog', '{"en":"initial description"}', 1, 1, NOW(), NOW()),
 (4, '{"en":"Become A Merchant"}', 'merchant', '{"en":"initial description"}', 1, 1, NOW(), NOW()),
 (5, '{"en":"My Account"}', 'profile', '{"en":"initial description"}', 1, 1, NOW(), NOW()),
-(6, '{"en":"My Orders"}', 'my-purchase-orders', '{"en":"initial description"}', 1, 1, NOW(), NOW()),
+(6, '{"en":"My Orders"}', 'track-order', '{"en":"initial description"}', 1, 1, NOW(), NOW()),
 (7, '{"en":"My Cart"}', 'cart', '{"en":"initial description"}', 1, 1, NOW(), NOW()),
 (8, '{"en":"My Wish List"}', 'my-wishlist', '{"en":"initial description"}', 1, 1, NOW(), NOW()),
 (9, '{"en":"Refunds & Disputes"}', 'refund/my-refund-list', '{"en":"initial description"}', 1, 1, NOW(), NOW()),

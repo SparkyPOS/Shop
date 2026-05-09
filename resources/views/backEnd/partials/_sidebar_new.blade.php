@@ -223,7 +223,7 @@
 
         @php
             $customer_backkend = false;
-            if(strpos(request()->getUri(),'my-purchase-orders') != false || strpos(request()->getUri(),'purchased-gift-cards') != false || strpos(request()->getUri(),'my-wishlist') != false || request()->is('refund/my-refund-list') || request()->is('digital-products') || request()->is('profile/coupons') || request()->is('profile/referral') || request()->is('profile'))
+            if(strpos(request()->getUri(),'track-order') != false || strpos(request()->getUri(),'purchased-gift-cards') != false || strpos(request()->getUri(),'my-wishlist') != false || request()->is('refund/my-refund-list') || request()->is('digital-products') || request()->is('profile/coupons') || request()->is('profile/referral') || request()->is('profile'))
             {
                 $customer_backkend = true;
             }
@@ -242,7 +242,7 @@
             <ul class="mm-collapse">
                 @if(permissionCheck('frontend.my_purchase_order_list') && menuManagerCheck(2,26,'frontend.my_purchase_order_list')->status == 1)
                 <li data-position="{{ menuManagerCheck(2,26,'frontend.my_purchase_order_list')->position }}">
-                    <a href="{{ route('frontend.my_purchase_order_list') }}" @if (request()->is('my-purchase-orders')) class="active" @endif>{{__('customer_panel.my_purchases')}}</a>
+                    <a href="{{ route('frontend.my_purchase_order_list') }}" @if (request()->is('track-order')) class="active" @endif>{{__('customer_panel.my_purchases')}}</a>
                 </li>
                 @endif
                 @if(permissionCheck('frontend.purchased-gift-card') && menuManagerCheck(2,26,'frontend.purchased-gift-card')->status == 1)

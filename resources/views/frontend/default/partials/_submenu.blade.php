@@ -123,7 +123,7 @@
                                                             <a href="{{ route('frontend.dashboard') }}"><i class="ti-dashboard"></i>{{ __('common.dashboard') }}</a>
                                                         @endif
 
-                                                    @elseif($element->type == 'page' && $element->page->slug == 'my-purchase-orders')
+                                                    @elseif($element->type == 'page' && $element->page->slug == 'track-order')
                                                         @if(isModuleActive('MultiVendor') && auth()->user()->role->type != 'superadmin' || isModuleActive('MultiVendor') && auth()->user()->role->type != 'admin' || isModuleActive('MultiVendor') && auth()->user()->role->type != 'staff' || auth()->user()->role->type == 'customer')
                                                             <a href="{{ route('frontend.my_purchase_order_list') }}"><i
                                                                     class="ti-shopping-cart-full"></i>{{ __('order.my_order') }}</a>
@@ -359,7 +359,7 @@
                                                                 @endif
                                                             @endif
 
-                                                        @elseif($element->type == 'page' && $element->page->slug == 'my-purchase-orders')
+                                                        @elseif($element->type == 'page' && $element->page->slug == 'track-order')
                                                             @if(isModuleActive('MultiVendor') && auth()->user()->role->type != 'superadmin' || isModuleActive('MultiVendor') && auth()->user()->role->type != 'admin' || isModuleActive('MultiVendor') && auth()->user()->role->type != 'staff' || auth()->user()->role->type == 'customer')
                                                                 <a href="{{ route('frontend.my_purchase_order_list') }}"><i class="ti-shopping-cart-full"></i>{{ __('order.my_order') }}</a>
                                                             @endif

@@ -39,7 +39,7 @@ class CreateFooterWidgetsTable extends Migration
 
         FooterWidget::create(['name' => 'Dashboard', 'slug' => 'profile/dashboard', 'category' => 2, 'page' => 17, 'section' => 2, 'status' => 1]);
         FooterWidget::create(['name' => 'My Profile', 'slug' => 'profile', 'category' => 2, 'page' => 5, 'section' => 2, 'status' => 1]);
-        FooterWidget::create(['name' => 'My Order', 'slug' => 'my-purchase-orders', 'category' => 2, 'page' => 6, 'section' => 2, 'status' => 1]);
+        FooterWidget::create(['name' => 'My Order', 'slug' => 'track-order', 'category' => 2, 'page' => 6, 'section' => 2, 'status' => 1]);
 
         FooterWidget::create(['name' => 'Help & Contact', 'slug' => 'contact-us', 'category' => 3, 'page' => 13, 'section' => 3, 'status' => 1]);
         FooterWidget::create(['name' => 'Track Order', 'slug' => 'track-order', 'category' => 3, 'page' => 14, 'section' => 3, 'status' => 1]);

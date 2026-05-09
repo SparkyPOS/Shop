@@ -37,7 +37,7 @@ class ProductReviewController extends Controller
                 DB::commit();
                 Toastr::success(__('review.review_done_thanks_for_review'), __('common.success'));
                 LogActivity::successLog('product review store successful.');
-                return redirect(url('/my-purchase-orders'));
+                return redirect(url('/track-order'));
             }else{
                 Toastr::error(__('review.review_already_exsist'),__('common.error'));
                 return back();
@@ -51,7 +51,7 @@ class ProductReviewController extends Controller
                 DB::commit();
                 Toastr::success(__('review.review_done_thanks_for_review'), __('common.success'));
                 LogActivity::successLog('Review added');
-                return redirect(url('/my-purchase-orders'));
+                return redirect(url('/track-order'));
             }else{
                 Toastr::error(__('review.review_already_exsist'),__('common.error'));
                 return back();

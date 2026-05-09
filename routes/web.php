@@ -130,7 +130,7 @@ Route::get('/get-state',[CountryController::class, 'get_states'])->name('profile
 Route::get('/get-city',[CountryController::class, 'get_cities'])->name('profile.get-city');
 //order
 Route::group(['middleware' => ['auth','customer']], function () {
-    Route::get('/my-purchase-orders',[OrderController::class,'my_purchase_order_index'])->name('frontend.my_purchase_order_list');
+    Route::get('/track-order',[OrderController::class,'my_purchase_order_index'])->name('frontend.my_purchase_order_list');
     Route::post('/my-purchase-order-cancell',[OrderController::class,'my_purchase_order_cancel'])->name('frontend.order_cancel_by_customer');
     Route::post('/my-purchase-package-order-cancell',[OrderController::class,'my_purchase_order_package_cancel'])->name('frontend.my_purchase_order_package_cancel');
 

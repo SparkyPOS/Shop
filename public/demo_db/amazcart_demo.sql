@@ -49940,7 +49940,7 @@ INSERT INTO `dynamic_pages` (`id`, `user_id`, `title`, `slug`, `description`, `s
 (3, NULL, 'Blog', 'blog', 'initial description', 1, 1, '2021-11-23 04:48:07', '2021-11-23 04:48:07'),
 (4, NULL, 'Become A Merchant', 'merchant', 'initial description', 1, 1, '2021-11-23 04:48:07', '2021-11-23 04:48:07'),
 (5, NULL, 'My Account', 'profile', 'initial description', 1, 1, '2021-11-23 04:48:07', '2021-11-23 04:48:07'),
-(6, NULL, 'My Orders', 'my-purchase-orders', 'initial description', 1, 1, '2021-11-23 04:48:07', '2021-11-23 04:48:07'),
+(6, NULL, 'My Orders', 'track-order', 'initial description', 1, 1, '2021-11-23 04:48:07', '2021-11-23 04:48:07'),
 (7, NULL, 'My Cart', 'cart', 'initial description', 1, 1, '2021-11-23 04:48:07', '2021-11-23 04:48:07'),
 (8, NULL, 'My Wish List', 'my-wishlist', 'initial description', 1, 1, '2021-11-23 04:48:07', '2021-11-23 04:48:07'),
 (9, NULL, 'Refunds & Disputes', 'refund/my-refund-list', 'initial description', 1, 1, '2021-11-23 04:48:07', '2021-11-23 04:48:07'),
@@ -50262,7 +50262,7 @@ CREATE TABLE `footer_widgets` (
 
 INSERT INTO `footer_widgets` (`id`, `user_id`, `name`, `slug`, `category`, `page`, `section`, `is_static`, `status`, `created_at`, `updated_at`) VALUES
 (4, 1, 'Profile', 'profile', '2', '5', '2', 0, 1, '2021-11-08 06:14:05', '2021-11-08 06:14:05'),
-(5, 1, 'My Orders', 'my-purchase-orders', '2', '6', '2', 0, 1, '2021-11-08 06:14:28', '2021-11-08 06:14:28'),
+(5, 1, 'My Orders', 'track-order', '2', '6', '2', 0, 1, '2021-11-08 06:14:28', '2021-11-08 06:14:28'),
 (8, 1, 'Contact Us', 'contact-us', '3', '13', '3', 0, 1, '2021-11-08 06:15:55', '2021-11-08 06:15:55'),
 (12, 1, 'Return & Exchange', 'return-exchange', '1', '21', '1', 0, 1, '2021-11-23 15:05:05', '2021-11-23 15:05:05'),
 (13, 1, 'Track Order', 'track-order', '3', '14', '3', 0, 1, '2021-11-23 15:10:29', '2021-11-23 15:10:29'),
