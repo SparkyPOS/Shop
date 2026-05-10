@@ -446,13 +446,28 @@ if (!function_exists('getProductDiscountedPrice')) {
             if($product->hasDeal){
                 if($product->hasDeal->discount > 0){
                     if ($product->product->product_type == 1){
-                        $price = single_price(selling_price(@$product->skus[0]->selling_price,@$product->hasDeal->discount_type,@$product->hasDeal->discount));
+                        $price = single_price(selling_price(@$product->selling_price,@$product->hasDeal->discount_type,@$product->hasDeal->discount));
+                        // $price = single_price(selling_price(@$product->skus[0]->selling_price,@$product->hasDeal->discount_type,@$product->hasDeal->discount));
                     }else{
-                        if (selling_price(@$product->skus->min('selling_price'),@$product->hasDeal->discount_type,@$product->hasDeal->discount) === selling_price(@$product->skus->max('selling_price'),@$product->hasDeal->discount_type,@$product->hasDeal->discount)){
-                            $price = single_price(selling_price(@$product->skus->min('selling_price'),@$product->hasDeal->discount_type,@$product->hasDeal->discount));
-                        }else{
-                            $price = single_price(selling_price(@$product->skus->min('selling_price'),@$product->hasDeal->discount_type,@$product->hasDeal->discount)).' - '.single_price(selling_price($product->skus->max('selling_price'),@$product->hasDeal->discount_type,@$product->hasDeal->discount));
+                        $originalSku = $product->skus->sortBy(fn($sku) => strlen($sku->sku))->first();
+                        $adjustedSkus = $product->skus->filter(fn($sku) => $sku->id != $originalSku->id);
+                        if($adjustedSkus->isNotEmpty()) {
+                            $minPrice = $adjustedSkus->min('sell_price');
+                            $maxPrice = $adjustedSkus->max('sell_price');
+                            if (selling_price(@$minPrice,@$product->hasDeal->discount_type,@$product->hasDeal->discount) === selling_price(@$maxPrice,@$product->hasDeal->discount_type,@$product->hasDeal->discount)){
+                                $price = single_price(selling_price(@$minPrice,@$product->hasDeal->discount_type,@$product->hasDeal->discount));
+                            }else{
+                                $price = single_price(selling_price(@$minPrice,@$product->hasDeal->discount_type,@$product->hasDeal->discount)).' - '.single_price(selling_price(@$maxPrice,@$product->hasDeal->discount_type,@$product->hasDeal->discount));
+                            }
+                        } else {
+                            $price = single_price(selling_price(@$product->selling_price,@$product->hasDeal->discount_type,@$product->hasDeal->discount));
+                            // $price = single_price($originalSku->sell_price);
                         }
+                        // if (selling_price(@$product->skus->min('selling_price'),@$product->hasDeal->discount_type,@$product->hasDeal->discount) === selling_price(@$product->skus->max('selling_price'),@$product->hasDeal->discount_type,@$product->hasDeal->discount)){
+                        //     $price = single_price(selling_price(@$product->skus->min('selling_price'),@$product->hasDeal->discount_type,@$product->hasDeal->discount));
+                        // }else{
+                        //     $price = single_price(selling_price(@$product->skus->min('selling_price'),@$product->hasDeal->discount_type,@$product->hasDeal->discount)).' - '.single_price(selling_price($product->skus->max('selling_price'),@$product->hasDeal->discount_type,@$product->hasDeal->discount));
+                        // }
                     }
                 }
             }else{
