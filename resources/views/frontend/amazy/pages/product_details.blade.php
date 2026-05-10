@@ -409,14 +409,25 @@
 
                                     @if(isGuestAddtoCart() == true && (!isset($auction) || !$auction))
                                     <h5 class="mb-0">{{__('common.total')}}:
+                                        @php
+                                            $activeSkus = $product->skus->where('status', 1);
+                                            $originalSku = $activeSkus
+                                                ->sortBy(fn($sku) => strlen($sku->sku))
+                                                ->first();
+                                            $adjustedSkus = $activeSkus
+                                                ->filter(fn($sku) => $sku->id != optional($originalSku)->id);
+                                            $targetSku = $adjustedSkus->sortBy('sell_price')->first()
+                                                        ?? $originalSku;
+                                            $basePrice = optional($targetSku)->sell_price ?? 0;
+                                        @endphp
                                         <span id="total_price">
                                             @if(@$product->hasDeal)
-                                                {{single_price(selling_price(@$product->skus->where('status',1)->first()->sell_price,@$product->hasDeal->discount_type,@$product->hasDeal->discount) * $product->product->minimum_order_qty)}}
+                                                {{single_price(selling_price($basePrice,@$product->hasDeal->discount_type,@$product->hasDeal->discount) * $product->product->minimum_order_qty)}}
                                             @else
                                                 @if($product->hasDiscount == 'yes')
-                                                    {{single_price(selling_price(@$product->skus->where('status',1)->first()->sell_price,@$product->discount_type,@$product->discount) * $product->product->minimum_order_qty)}}
+                                                    {{single_price(selling_price($basePrice,@$product->discount_type,@$product->discount) * $product->product->minimum_order_qty)}}
                                                 @else
-                                                    {{single_price(@$product->skus->where('status',1)->first()->sell_price * $product->product->minimum_order_qty)}}
+                                                    {{single_price($basePrice * $product->product->minimum_order_qty)}}
                                                 @endif
                                             @endif
                                         </span>
