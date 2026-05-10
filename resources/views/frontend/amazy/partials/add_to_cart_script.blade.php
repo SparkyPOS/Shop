@@ -58,11 +58,12 @@
                 });
                 function getCartSuccessVariationsFromModal() {
                     let variations = [];
+                    let addedKeys = {};
 
-                    $('#theme_modal .product_color_varient').each(function() {
+                    $('#theme_modal .product_content_details .product_color_varient').each(function() {
                         let $variantBlock = $(this);
                         let labelText = $.trim($variantBlock.find('h5').first().text()).replace(/\s+/g, ' ');
-                        let name = $.trim(labelText.split(':')[0]);
+                        let name = $.trim(labelText.replace(':', ''));
                         let value = '';
 
                         let $checkedColor = $variantBlock.find('input.attr_val_name[color="color"]:checked').first();
@@ -73,19 +74,29 @@
                         } else if ($selectedSize.length) {
                             value = $.trim($selectedSize.text());
                         } else {
-                            let hiddenValue = $.trim($variantBlock.find('.attr_value_name').first().val());
-
-                            if (hiddenValue && hiddenValue.indexOf('-') === -1) {
-                                value = hiddenValue;
-                            }
+                            value = $.trim($variantBlock.find('.attr_value_name').first().val());
                         }
 
-                        if (name && value) {
-                            variations.push({
-                                name: name,
-                                value: value
-                            });
+                        if (!name || !value) {
+                            return;
                         }
+
+                        if (value.indexOf('-') !== -1 && $.isNumeric(value.split('-')[0])) {
+                            return;
+                        }
+
+                        let uniqueKey = name.toLowerCase() + ':' + value.toLowerCase();
+
+                        if (addedKeys[uniqueKey]) {
+                            return;
+                        }
+
+                        addedKeys[uniqueKey] = true;
+
+                        variations.push({
+                            name: name,
+                            value: value
+                        });
                     });
 
                     return variations;
