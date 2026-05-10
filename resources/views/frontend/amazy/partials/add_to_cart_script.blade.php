@@ -60,15 +60,25 @@
                     let variations = [];
 
                     $('#theme_modal .product_color_varient').each(function() {
-                        let labelText = $.trim($(this).find('h5').first().text()).replace(/\s+/g, ' ');
+                        let $variantBlock = $(this);
+                        let labelText = $.trim($variantBlock.find('h5').first().text()).replace(/\s+/g, ' ');
+                        let name = $.trim(labelText.split(':')[0]);
+                        let value = '';
 
-                        if (!labelText || labelText.indexOf(':') === -1) {
-                            return;
+                        let $checkedColor = $variantBlock.find('input.attr_val_name[color="color"]:checked').first();
+                        let $selectedSize = $variantBlock.find('.attr_val_name.size_btn.selected_btn').first();
+
+                        if ($checkedColor.length) {
+                            value = $.trim($checkedColor.val());
+                        } else if ($selectedSize.length) {
+                            value = $.trim($selectedSize.text());
+                        } else {
+                            let hiddenValue = $.trim($variantBlock.find('.attr_value_name').first().val());
+
+                            if (hiddenValue && hiddenValue.indexOf('-') === -1) {
+                                value = hiddenValue;
+                            }
                         }
-
-                        let parts = labelText.split(':');
-                        let name = $.trim(parts.shift());
-                        let value = $.trim(parts.join(':'));
 
                         if (name && value) {
                             variations.push({
@@ -120,15 +130,23 @@
                     buyNow($('#product_sku_id_modal').val(),$('#seller_id_modal').val(),$('#qty_modal').data('value'),$('#base_sku_price_modal').val(),$('#shipping_type').val(),'product',$('#owner_modal').val());
                 });
                 $(document).on('click', '.attr_val_name', function(){
-                    $(this).parent().parent().find('.attr_value_name').val($(this).attr('data-value')+'-'+$(this).attr('data-value-key'));
-                    $(this).parent().parent().find('.attr_value_id').val($(this).attr('data-value')+'-'+$(this).attr('data-value-key'));
-                    if ($(this).attr('color') == "color") {
-                        $(this).closest('.color_List').find('.attr_clr').removeClass('selected_btn');
+                    let selectedId = $(this).attr('data-value') + '-' + $(this).attr('data-value-key');
+                    let selectedName = '';
+
+                    if ($(this).is('input')) {
+                        selectedName = $.trim($(this).val());
+                    } else {
+                        selectedName = $.trim($(this).text());
                     }
+
+                    $(this).closest('.color_List').find('.attr_value_name').val(selectedName);
+                    $(this).closest('.color_List').find('.attr_value_id').val(selectedId);
+
                     if ($(this).attr('color') == "not") {
                         $(this).closest('.color_List').find('.not_111').removeClass('selected_btn');
+                        $(this).addClass('selected_btn');
                     }
-                    $(this).addClass('selected_btn');
+
                     get_price_accordint_to_sku();
                 });
                 function qtyChange(val){
