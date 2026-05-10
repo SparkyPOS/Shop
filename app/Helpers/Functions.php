@@ -493,11 +493,24 @@ if (!function_exists('getProductwitoutDiscountPrice')) {
                         // $price = single_price($product->skus[0]->sell_price);
                         $price = single_price($product->selling_price);
                     }else{
-                        if($product->skus->min('sell_price') === $product->skus->max('sell_price')){
-                            $price = single_price($product->skus->min('sell_price'));
-                        }else{
-                            $price = single_price($product->skus->min('sell_price')) . ' - ' . single_price($product->skus->max('sell_price'));
+                        $originalSku = $product->skus->sortBy(fn($sku) => strlen($sku->sku))->first();
+                        $adjustedSkus = $product->skus->filter(fn($sku) => $sku->id != $originalSku->id);
+                        if($adjustedSkus->isNotEmpty()) {
+                            $minPrice = $adjustedSkus->min('sell_price');
+                            $maxPrice = $adjustedSkus->max('sell_price');
+                            if($minPrice == $maxPrice) {
+                                $price = single_price($minPrice);
+                            } else {
+                                $price = single_price($minPrice) . ' - ' . single_price($maxPrice);
+                            }
+                        } else {
+                            $price = single_price($originalSku->sell_price);
                         }
+                        // if($product->skus->min('sell_price') === $product->skus->max('sell_price')){
+                        //     $price = single_price($product->skus->min('sell_price'));
+                        // }else{
+                        //     $price = single_price($product->skus->min('sell_price')) . ' - ' . single_price($product->skus->max('sell_price'));
+                        // }
                     }
                 }
             }else{
