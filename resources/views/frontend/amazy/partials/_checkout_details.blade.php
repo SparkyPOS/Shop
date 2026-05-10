@@ -25,20 +25,88 @@
         background: #f9fafb;
         border-bottom: 1px solid #ececec;
         padding: 12px 16px;
-        gap: 10px;
+        gap: 12px;
     }
 
-    .checkout_package_store_vendor {
+    .checkout_package_head_inner {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .checkout_package_head_left,
+    .checkout_package_head_right {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
         gap: 10px;
         min-width: 0;
     }
 
-    .checkout_package_store_vendor span {
-        line-height: 1.3;
+    .checkout_package_head_left {
+        flex: 1 1 auto;
+    }
+
+    .checkout_package_head_right {
+        flex: 0 0 auto;
+        justify-content: flex-end;
+    }
+
+    .checkout_package_label {
+        line-height: 1.35;
+        color: #111827;
     }
 
     .checkout_package_divider {
         color: #9ca3af;
+    }
+
+    .checkout_package_shipping_link {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .checkout_package_shipping_link:hover {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    @media (max-width: 767px) {
+        .checout_shiped_head.package_head {
+            padding: 14px 16px;
+        }
+
+        .checkout_package_head_inner {
+            display: block;
+        }
+
+        .checkout_package_head_left,
+        .checkout_package_head_right {
+            display: block;
+            width: 100%;
+        }
+
+        .checkout_package_label {
+            display: block;
+            width: 100%;
+            margin-bottom: 8px;
+            white-space: normal !important;
+        }
+
+        .checkout_package_label:last-child {
+            margin-bottom: 0;
+        }
+
+        .checkout_package_divider {
+            display: none;
+        }
+
+        .checkout_package_shipping_link {
+            display: inline;
+            white-space: normal !important;
+        }
     }
 
     .checout_shiped_products{
@@ -161,10 +229,6 @@
         .checkout_package_table {
             min-width: 700px;
         }
-
-        .checkout_package_store_vendor {
-            width: 100%;
-        }
     }
 </style>
 <form action="{{route('frontend.checkout')}}" method="GET" enctype="multipart/form-data" id="mainOrderForm">
@@ -214,32 +278,62 @@
                         @endif
                         <div class="checkout_shiped_box mb_20">
                             @if(!isModuleActive('INTShipping'))
-                                <div class="checout_shiped_head package_head flex-wrap d-flex align-items-center ">
-                                    <div class="checkout_package_store_vendor d-flex align-items-center flex-wrap">
-                                        <span class="store_name text-nowrap f_w_600">{{ __('common.store') }}: {{ parentStoreName($seller ?? null) }}</span>
-                                        <span class="checkout_package_divider"></span>
-                                        <span class="vendor_name text-nowrap f_w_600">{{ __('Vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
+                                <div class="checout_shiped_head package_head">
+                                    <div class="checkout_package_head_inner">
+                                        <div class="checkout_package_head_left">
+                                            <span class="checkout_package_label store_name text-nowrap f_w_600">
+                                                {{ __('common.store') }}: {{ parentStoreName($seller ?? null) }}
+                                            </span>
+
+                                            <span class="checkout_package_divider">|</span>
+
+                                            <span class="checkout_package_label vendor_name text-nowrap f_w_600">
+                                                {{ __('Vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}
+                                            </span>
+                                        </div>
+
+                                        <div class="checkout_package_head_right">
+                                            <span class="checkout_package_label package_text text-nowrap f_w_600">
+                                                {{ __('common.package') }} {{ getNumberTranslate($current_pkg) }} {{ __('common.of') }} {{ getNumberTranslate($total_package) }}
+                                            </span>
+
+                                            <span class="checkout_package_divider">|</span>
+
+                                            <span class="checkout_package_label name_text text-nowrap f_w_600">
+                                                @if($is_physical_count > 0)
+                                                    <a class="checkout_package_shipping_link link_style font_16 f_w_700 text-nowrap m-0 theme_hover text_color" href="javascript:void(0)">
+                                                        <span id="shipping_methods" data-target="shipping_methods_{{ $package_wise_shipping[$seller_id]['seller_id'] }}">
+                                                            {{ __('Shipping') }}: {{ single_price($package_wise_shipping[$seller_id]['shipping_cost']) }} {{ __('common.via') }} {{ $package_wise_shipping[$seller_id]['shipping_method'] }} {{ $package_wise_shipping[$seller_id]['shipping_time'] }}
+                                                        </span>
+                                                    </a>
+                                                @else
+                                                    {{ __('Shipping') }}: {{ single_price($package_wise_shipping[$seller_id]['shipping_cost']) }} {{ __('common.via') }} {{ $package_wise_shipping[$seller_id]['shipping_method'] }} {{ $package_wise_shipping[$seller_id]['shipping_time'] }}
+                                                @endif
+                                            </span>
+                                        </div>
                                     </div>
-                                    <span class="package_text flex-fill">{{__('common.package')}} {{getNumberTranslate($current_pkg)}} {{__('common.of')}} {{getNumberTranslate($total_package)}}</span>
-                                    <span class="name_text text-nowrap">
-                                        <a class="link_style font_16 f_w_700 text-nowrap m-0 theme_hover text_color" href="javascript:void(0)">
-                                            @if($is_physical_count > 0)
-                                                <span id="shipping_methods" data-target="shipping_methods_{{$package_wise_shipping[$seller_id]['seller_id']}}">{{single_price($package_wise_shipping[$seller_id]['shipping_cost'])}} {{__('common.via')}} {{$package_wise_shipping[$seller_id]['shipping_method']}}   {{$package_wise_shipping[$seller_id]['shipping_time']}} =></span>
-                                            @else
-                                                {{single_price($package_wise_shipping[$seller_id]['shipping_cost'])}} {{__('common.via')}} {{$package_wise_shipping[$seller_id]['shipping_method']}}   {{$package_wise_shipping[$seller_id]['shipping_time']}}
-                                            @endif
-                                        </a>
-                                    </span>
                                 </div>
                             @else
-                                <div class="checout_shiped_head package_head flex-wrap d-flex align-items-center ">
-                                    <div class="checkout_package_store_vendor d-flex align-items-center flex-wrap">
-                                        <span class="store_name text-nowrap f_w_600">{{ __('common.store') }}: {{ parentStoreName($seller ?? null) }}</span>
-                                        <span class="checkout_package_divider"></span>
-                                        <span class="vendor_name text-nowrap f_w_600">{{ __('Vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}</span>
-                                    </div>
+                                <div class="checout_shiped_head package_head">
+                                    <div class="checkout_package_head_inner">
+                                        <div class="checkout_package_head_left">
+                                            <span class="checkout_package_label store_name text-nowrap f_w_600">
+                                                {{ __('common.store') }}: {{ parentStoreName($seller ?? null) }}
+                                            </span>
 
-                                    <span class="package_text flex-fill">{{__('common.package')}} {{getNumberTranslate($current_pkg)}} {{__('common.of')}} {{getNumberTranslate($total_package)}}</span>
+                                            <span class="checkout_package_divider">|</span>
+
+                                            <span class="checkout_package_label vendor_name text-nowrap f_w_600">
+                                                {{ __('Vendor') }}: {{ data_get($seller, 'sellerAccount.vendor_id', ($seller->name ?? $seller->first_name ?? '')) }}
+                                            </span>
+                                        </div>
+
+                                        <div class="checkout_package_head_right">
+                                            <span class="checkout_package_label package_text text-nowrap f_w_600">
+                                                {{ __('common.package') }} {{ getNumberTranslate($current_pkg) }} {{ __('common.of') }} {{ getNumberTranslate($total_package) }}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             @endif
 
