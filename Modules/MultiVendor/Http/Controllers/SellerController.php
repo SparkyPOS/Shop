@@ -79,7 +79,7 @@ class SellerController extends Controller
             'scope' => 'read_write', // Request read/write access to the connected account
 //            'client_id' => 'ca_RkGpfAEuttYPJ7ldEsxRagYTtmRbIuuj',
 //            'client_id' => 'ca_RkGpNNvpxEUDXsKOCsA12yF51pHOY4Hv', // Test Client ID
-            'client_id' => 'ca_RkGpfAEuttYPJ7ldEsxRagYTtmRbIuuj', // Live Client Id
+            'client_id' => 'ca_UUxzYsrsJ4Vr5lGpmVdHLx8tURNZR76p', // Live Client Id
             'redirect_uri' => url('stripe-connect/callback'),
         ]);
 
