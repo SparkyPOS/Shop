@@ -36,6 +36,8 @@ class SyncVendorController extends Controller
                 'email' => 'nullable|email',
                 'phone' => 'nullable|string',
                 'password' => 'nullable|string|min:6',
+                'stripe_account_id' => 'nullable|string',
+                'stripeAccountId' => 'nullable|string',
                 'address' => 'array',
                 'business' => 'array',
                 'business.owner_name' => 'nullable|string',
@@ -62,6 +64,10 @@ class SyncVendorController extends Controller
             $shopName = $data['shop_name'] ?? null;
             $phone = $data['phone'] ?? null;
             $password = $data['password'] ?? null;
+            $stripeAccountId = trim((string) ($data['stripe_account_id'] ?? $data['stripeAccountId'] ?? $root->get('stripe_account_id') ?? $root->get('stripeAccountId') ?? ''));
+            if ($stripeAccountId === '') {
+                $stripeAccountId = null;
+            }
 
             $sellerAccount = null;
             if ($vendorCode) {
@@ -83,6 +89,7 @@ class SyncVendorController extends Controller
                 if ($email) $user->email = $email;
                 if ($phone) $user->username = $phone; // keep phone in username as system expects
                 if ($password) $user->password = Hash::make($password);
+                if ($stripeAccountId !== null) $user->stripe_account_id = $stripeAccountId;
                 $user->role_id = $role?->id ?: $user->role_id;
                 $user->is_active = 1;
                 $user->save();
@@ -101,6 +108,7 @@ class SyncVendorController extends Controller
                     'currency_id' => app('general_setting')->currency,
                     'lang_code' => app('general_setting')->language_code,
                     'currency_code' => app('general_setting')->currency_code,
+                    'stripe_account_id' => $stripeAccountId,
                 ]);
                 $isNew = true;
             }
@@ -274,6 +282,7 @@ class SyncVendorController extends Controller
                 'user_id' => $user->id,
                 'vendor_code' => $vendorCode,
                 'email' => $user->email,
+                'stripe_account_id' => $user->stripe_account_id,
             ]);
 
             return ['success'=>true,'action'=>$isNew?'created':'updated','id'=>$user->id];
