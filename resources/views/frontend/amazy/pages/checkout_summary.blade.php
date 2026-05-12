@@ -64,16 +64,32 @@
                                                             </div>
                                                             <div class="summery_pro_content">
                                                                 <h4 class="font_16 f_w_700 m-0 theme_hover">{{ textLimit(@$package_product->seller_product_sku->product->product_name, 28) }}</h4>
-                                                                @if($package_product->seller_product_sku->sku->product->product_type == 2)
+                                                                @if(@$package_product->seller_product_sku->sku->product->product_type == 2)
                                                                     <p class="font_14 f_w_400 m-0">
-                                                                    @foreach($package_product->seller_product_sku->product_variations as $key => $combination)
-                                                                        @if($combination->attribute->id == 1)
-                                                                            {{$combination->attribute->name}}: {{$combination->attribute_value->color->name}}
-                                                                        @else
-                                                                            {{$combination->attribute->name}}: {{$combination->attribute_value->value}}
-                                                                        @endif
-                                                                        @if(!$loop->last), @endif
-                                                                    @endforeach
+                                                                        @foreach(@$package_product->seller_product_sku->product_variations as $key => $combination)
+                                                                            @php
+                                                                                $attrName = trim((string) (@$combination->attribute->name ?? ''));
+                                                                                $attrNameLower = strtolower($attrName);
+
+                                                                                $rawValue = trim((string) (@$combination->attribute_value->value ?? ''));
+                                                                                $rawTitle = trim((string) (@$combination->attribute_value->title ?? ''));
+                                                                                $colorName = trim((string) (@$combination->attribute_value->color->name ?? ''));
+
+                                                                                if (str_contains($attrNameLower, 'color')) {
+                                                                                    $displayValue = $colorName !== ''
+                                                                                        ? $colorName
+                                                                                        : ($rawTitle !== '' ? $rawTitle : $rawValue);
+                                                                                } else {
+                                                                                    $displayValue = (preg_match('/^\d+$/', $rawValue) && $rawTitle !== '' && !preg_match('/^\d+$/', $rawTitle))
+                                                                                        ? $rawTitle
+                                                                                        : ($rawValue !== '' ? $rawValue : $rawTitle);
+                                                                                }
+                                                                            @endphp
+
+                                                                            @if($attrName !== '' || $displayValue !== '')
+                                                                                {{ $attrName }}: {{ $displayValue }}@if(!$loop->last), @endif
+                                                                            @endif
+                                                                        @endforeach
                                                                     </p>
                                                                 @endif
                                                             </div>
