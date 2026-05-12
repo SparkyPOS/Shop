@@ -258,7 +258,7 @@ class SyncSparkyController extends Controller
                     // cascade delete skus/variations via DB constraints or manual cleanup
                     foreach ($local->skus as $sku) { $sku->delete(); }
                     foreach ($local->variations as $var) { $var->delete(); }
-                    $local_auction = Auction::where('product_id', $local->id)->first();
+                    $local_auction = Auction::where('seller_product_id', $local->id)->first();
                     if($local_auction instanceof Auction) {
                         $local_auction->delete();
                     }
