@@ -504,20 +504,36 @@
                                                                     </h4>
 
                                                                     <p class="font_14 f_w_400 checkout_product_meta">
-                                                                        @if($item->product->product->product->product_type == 2)
+                                                                        @if(@$item->product->product->product->product_type == 2)
                                                                             @php
-                                                                                $countCombinatiion = count(@$item->product->product_variations);
+                                                                                $productVariations = @$item->product->product_variations ?? [];
+                                                                                $countCombination = count($productVariations);
                                                                             @endphp
 
-                                                                            @foreach($item->product->product_variations as $key => $combination)
-                                                                                @if($combination->attribute->id == 1)
-                                                                                    {{ $combination->attribute->name }}: {{ $combination->attribute_value->color->name }}
-                                                                                @else
-                                                                                    {{ $combination->attribute->name }}: {{ $combination->attribute_value->value }}
-                                                                                @endif
+                                                                            @foreach($productVariations as $key => $combination)
+                                                                                @php
+                                                                                    $attrName = trim((string) (@$combination->attribute->name ?? ''));
+                                                                                    $attrNameLower = strtolower($attrName);
 
-                                                                                @if($countCombinatiion > $key + 1)
-                                                                                    ,
+                                                                                    $rawValue = trim((string) (@$combination->attribute_value->value ?? ''));
+                                                                                    $rawTitle = trim((string) (@$combination->attribute_value->title ?? ''));
+                                                                                    $colorName = trim((string) (@$combination->attribute_value->color->name ?? ''));
+
+                                                                                    $displayValue = $rawValue;
+
+                                                                                    if (str_contains($attrNameLower, 'color')) {
+                                                                                        $displayValue = $colorName !== ''
+                                                                                            ? $colorName
+                                                                                            : ($rawTitle !== '' ? $rawTitle : $rawValue);
+                                                                                    } else {
+                                                                                        $displayValue = (preg_match('/^\d+$/', $rawValue) && $rawTitle !== '' && !preg_match('/^\d+$/', $rawTitle))
+                                                                                            ? $rawTitle
+                                                                                            : ($rawValue !== '' ? $rawValue : $rawTitle);
+                                                                                    }
+                                                                                @endphp
+
+                                                                                @if($attrName !== '' || $displayValue !== '')
+                                                                                    {{ $attrName }}: {{ $displayValue }}@if($countCombination > $key + 1), @endif
                                                                                 @endif
                                                                             @endforeach
                                                                         @endif
