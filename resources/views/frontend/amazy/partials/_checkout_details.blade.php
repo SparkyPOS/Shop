@@ -263,10 +263,53 @@
                     @foreach($cartData as $seller_id => $packages)
                         @php
                             $seller = App\Models\User::where('id',$seller_id)->first();
-                            $is_physical_count = $package_wise_shipping[$seller_id]['physical_count'];
+                            $packageShipping = $package_wise_shipping[$seller_id] ?? [];
+                            $is_physical_count = (int) data_get($packageShipping, 'physical_count', 0);
                             $seller_actual_price = 0;
                             $current_pkg ++;
-                            $total_shipping_charge += $package_wise_shipping[$seller_id]['shipping_cost'];
+                            $total_shipping_charge += (float) data_get($packageShipping, 'shipping_cost', 0);
+
+                            $shippingMethodLabel = data_get($packageShipping, 'shipping_method', '');
+                            if (is_array($shippingMethodLabel)) {
+                                $shippingMethodLabel = $shippingMethodLabel['method_name'] ?? $shippingMethodLabel['name'] ?? json_encode($shippingMethodLabel);
+                            } elseif (is_object($shippingMethodLabel)) {
+                                $shippingMethodLabel = $shippingMethodLabel->method_name ?? $shippingMethodLabel->name ?? '';
+                            }
+                            $shippingMethodLabel = trim((string) $shippingMethodLabel);
+
+                            $shippingTimeLabel = data_get($packageShipping, 'shipping_time', '');
+                            if (is_array($shippingTimeLabel)) {
+                                $shippingTimeLabel = $shippingTimeLabel['shipment_time'] ?? $shippingTimeLabel['shipping_time'] ?? $shippingTimeLabel['time'] ?? json_encode($shippingTimeLabel);
+                            } elseif (is_object($shippingTimeLabel)) {
+                                $shippingTimeLabel = $shippingTimeLabel->shipment_time ?? $shippingTimeLabel->shipping_time ?? $shippingTimeLabel->time ?? '';
+                            }
+                            $shippingTimeLabel = trim((string) $shippingTimeLabel);
+
+                            $shippingLabel = __('Shipping');
+                            if (!is_scalar($shippingLabel)) {
+                                $shippingLabel = 'Shipping';
+                            }
+                            $viaLabel = __('common.via');
+                            if (!is_scalar($viaLabel)) {
+                                $viaLabel = 'via';
+                            }
+                            $shippingCostLabel = single_price((float) data_get($packageShipping, 'shipping_cost', 0));
+                            if (!is_scalar($shippingCostLabel)) {
+                                $shippingCostLabel = (string) ((float) data_get($packageShipping, 'shipping_cost', 0));
+                            }
+                            $packageSellerId = data_get($packageShipping, 'seller_id', $seller_id);
+                            if (!is_scalar($packageSellerId)) {
+                                $packageSellerId = $seller_id;
+                            }
+
+                            $shippingSummaryText = trim(sprintf(
+                                '%s: %s %s %s %s',
+                                (string) $shippingLabel,
+                                (string) $shippingCostLabel,
+                                (string) $viaLabel,
+                                (string) $shippingMethodLabel,
+                                (string) $shippingTimeLabel
+                            ));
                         @endphp
                         @if(isModuleActive('INTShipping'))
                             @php
@@ -302,12 +345,12 @@
                                             <span class="checkout_package_label name_text text-nowrap f_w_600">
                                                 @if($is_physical_count > 0)
                                                     <a class="checkout_package_shipping_link link_style font_16 f_w_700 text-nowrap m-0 theme_hover text_color" href="javascript:void(0)">
-                                                        <span id="shipping_methods" data-target="shipping_methods_{{ $package_wise_shipping[$seller_id]['seller_id'] }}">
-                                                            {{ __('Shipping') }}: {{ single_price($package_wise_shipping[$seller_id]['shipping_cost']) }} {{ __('common.via') }} {{ $package_wise_shipping[$seller_id]['shipping_method'] }} {{ $package_wise_shipping[$seller_id]['shipping_time'] }}
+                                                        <span id="shipping_methods" data-target="shipping_methods_{{ $packageSellerId }}">
+                                                            {{ $shippingSummaryText }}
                                                         </span>
                                                     </a>
                                                 @else
-                                                    {{ __('Shipping') }}: {{ single_price($package_wise_shipping[$seller_id]['shipping_cost']) }} {{ __('common.via') }} {{ $package_wise_shipping[$seller_id]['shipping_method'] }} {{ $package_wise_shipping[$seller_id]['shipping_time'] }}
+                                                    {{ $shippingSummaryText }}
                                                 @endif
                                             </span>
                                         </div>

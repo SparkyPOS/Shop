@@ -1049,10 +1049,12 @@ class SyncSparkyController extends Controller
 
                 // Enforce POS->Shop rule:
                 // - products synced from SparkyPOS are always physical on Shop
-                // - shipping type is always flat rate (2)
                 $newProduct->is_physical = 1;
-                $newProduct->shipping_type = 2;
+                $newProduct->shipping_type = $this->resolveShopShippingType($shippingPayload);
                 if ($shippingPayload['shipping_cost'] !== null) $newProduct->shipping_cost = $shippingPayload['shipping_cost'];
+                if ($shippingPayload['shipping_pickup'] !== null && Schema::hasColumn('products', 'shipping_pickup')) {
+                    $newProduct->shipping_pickup = $shippingPayload['shipping_pickup'];
+                }
                 if (!empty($shippingPayload['shipping_location']) && Schema::hasColumn('products', 'shipping_location')) {
                     $newProduct->shipping_location = $shippingPayload['shipping_location'];
                 }

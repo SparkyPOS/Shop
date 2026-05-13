@@ -146,11 +146,26 @@ class CheckoutRepository{
     }
 
     public function getActivePickup_loactions(){
-        return EntitiesPickupLocation::where('created_by', 1)->where('status', 1)->get();
+        return EntitiesPickupLocation::where('status', 1)
+            ->orderByDesc('is_set')
+            ->orderByDesc('is_default')
+            ->orderBy('id')
+            ->get();
     }
 
     public function freeShippingForPickup(){
-        $free_shipping = ShippingMethod::where('id','>',1)->where('request_by_user', 1)->orderBy('cost')->first();
+        $free_shipping = ShippingMethod::where('is_active', 1)
+            ->where('is_approved', 1)
+            ->where('id', '>', 1)
+            ->orderBy('cost')
+            ->first();
+
+        if (!$free_shipping) {
+            $free_shipping = ShippingMethod::where('is_active', 1)
+                ->where('is_approved', 1)
+                ->orderBy('cost')
+                ->first();
+        }
         return $free_shipping;
     }
 

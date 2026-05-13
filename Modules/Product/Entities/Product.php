@@ -37,6 +37,7 @@ class Product extends Model
         'barcode_type' => 'string',
         'model_number' => 'string',
         'shipping_type' => 'integer',
+        'shipping_pickup' => 'string',
         'shipping_cost' => 'double',
         'shipping_location' => 'string',
         'processing_time' => 'string',
