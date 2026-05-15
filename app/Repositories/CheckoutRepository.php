@@ -379,6 +379,8 @@ class CheckoutRepository{
         $is_physical_product = 0;
         $gstAmount = 0;
         $e_items = [];
+        $isPickupSelected = session()->has('delivery_info')
+            && data_get(session()->get('delivery_info'), 'delivery_type') === 'pickup_location';
 
         if(isModuleActive('MultiVendor')){
             $cart_sl = 0;
@@ -587,7 +589,9 @@ class CheckoutRepository{
                     }
                 }
                 $packagewise_tax[] = $package_tax;
-                if(isModuleActive('INTShipping') && app('theme')->folder_path == 'amazy'){
+                if ($isPickupSelected) {
+                    $shipping_cost[] = 0;
+                } elseif(isModuleActive('INTShipping') && app('theme')->folder_path == 'amazy'){
                     array_push($shipping_cost,$package_wise_shipping_cost);
                 }else{
                     $package_wise_shipping = session()->get('package_wise_shipping');

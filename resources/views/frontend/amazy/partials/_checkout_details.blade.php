@@ -225,6 +225,11 @@
         text-align: left !important;
     }
 
+    .shipping_delivery_div .delivery_type_button {
+        clear: both;
+        margin-bottom: 18px;
+    }
+
     @media (max-width: 767px) {
         .checkout_package_table {
             min-width: 700px;
@@ -232,6 +237,16 @@
     }
 </style>
 <form action="{{route('frontend.checkout')}}" method="GET" enctype="multipart/form-data" id="mainOrderForm">
+    @php
+        $delivery_info = session()->get('delivery_info');
+        $isPickupSelected = is_array($delivery_info) && data_get($delivery_info, 'delivery_type') === 'pickup_location';
+        $selectedPickupLocationName = null;
+        if ($isPickupSelected && !empty($pickup_locations) && !empty($delivery_info['pickup_location'])) {
+            $selectedPickupLocationId = (int) base64_decode($delivery_info['pickup_location']);
+            $selectedPickupLocation = collect($pickup_locations)->firstWhere('id', $selectedPickupLocationId);
+            $selectedPickupLocationName = data_get($selectedPickupLocation, 'pickup_location');
+        }
+    @endphp
     <div class="checkout_v3_area">
         <div class="checkout_v3_left d-flex justify-content-end">
             <div class="checkout_v3_inner">
@@ -267,7 +282,7 @@
                             $is_physical_count = (int) data_get($packageShipping, 'physical_count', 0);
                             $seller_actual_price = 0;
                             $current_pkg ++;
-                            $total_shipping_charge += (float) data_get($packageShipping, 'shipping_cost', 0);
+                            $total_shipping_charge += $isPickupSelected ? 0 : (float) data_get($packageShipping, 'shipping_cost', 0);
 
                             $shippingMethodLabel = data_get($packageShipping, 'shipping_method', '');
                             if (is_array($shippingMethodLabel)) {
@@ -302,14 +317,18 @@
                                 $packageSellerId = $seller_id;
                             }
 
-                            $shippingSummaryText = trim(sprintf(
-                                '%s: %s %s %s %s',
-                                (string) $shippingLabel,
-                                (string) $shippingCostLabel,
-                                (string) $viaLabel,
-                                (string) $shippingMethodLabel,
-                                (string) $shippingTimeLabel
-                            ));
+                            if ($isPickupSelected) {
+                                $shippingSummaryText = trim((string) __('shipping.pickup_location') . ': ' . (string) ($selectedPickupLocationName ?? __('common.selected')));
+                            } else {
+                                $shippingSummaryText = trim(sprintf(
+                                    '%s: %s %s %s %s',
+                                    (string) $shippingLabel,
+                                    (string) $shippingCostLabel,
+                                    (string) $viaLabel,
+                                    (string) $shippingMethodLabel,
+                                    (string) $shippingTimeLabel
+                                ));
+                            }
                         @endphp
                         @if(isModuleActive('INTShipping'))
                             @php
@@ -343,7 +362,7 @@
                                             <span class="checkout_package_divider">|</span>
 
                                             <span class="checkout_package_label name_text text-nowrap f_w_600">
-                                                @if($is_physical_count > 0)
+                                                @if($is_physical_count > 0 && !$isPickupSelected)
                                                     <a class="checkout_package_shipping_link link_style font_16 f_w_700 text-nowrap m-0 theme_hover text_color" href="javascript:void(0)">
                                                         <span id="shipping_methods" data-target="shipping_methods_{{ $packageSellerId }}">
                                                             {{ $shippingSummaryText }}
@@ -897,26 +916,6 @@
                     </div>
                     <div class="billing_address">
                         <div class="shipping_delivery_div">
-                            @php
-                                $delivery_info = null;
-                            @endphp
-                            <h3 class="check_v3_title mb_25"> <span class="address_title">@if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') {{__('shipping.shipping_address')}} @else {{__('common.billing_address')}} @endif</span>
-                                @if($shipping_address)
-                                    <span id="address_btn">
-                                        <a href="javascript:void(0)" class="amaz_badge_btn3 text-uppercase text-nowrap link_btn_design">{{__('common.edit')}}</a>
-                                    </span>
-                                @elseif(isModuleActive('INTShipping') && isModuleActive('MultiVendor'))
-                                    <span id="address_btn">
-                                        <a href="javascript:void(0)" class="amaz_badge_btn3 text-uppercase text-nowrap saveAddress">{{__('common.save')}}</a>
-                                    </span>
-                                @endif
-                            </h3>
-
-                            @php
-                                if(session()->has('delivery_info')){
-                                    $delivery_info = session()->get('delivery_info');
-                                }
-                            @endphp
                             <div class="delivery_type_button">
                                 <label class="primary_bulet_checkbox">
                                     <input type="radio" name="delivery_type" class="payment_method"  value="home_delivery" @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') checked @endif>
@@ -948,6 +947,19 @@
                                     @endif
                                 @endif
                             </div>
+
+                            <h3 class="check_v3_title mb_25"> <span class="address_title">@if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') {{__('shipping.shipping_address')}} @else {{__('common.billing_address')}} @endif</span>
+                                @if($shipping_address)
+                                    <span id="address_btn">
+                                        <a href="javascript:void(0)" class="amaz_badge_btn3 text-uppercase text-nowrap link_btn_design">{{__('common.edit')}}</a>
+                                    </span>
+                                @elseif(isModuleActive('INTShipping') && isModuleActive('MultiVendor'))
+                                    <span id="address_btn">
+                                        <a href="javascript:void(0)" class="amaz_badge_btn3 text-uppercase text-nowrap saveAddress">{{__('common.save')}}</a>
+                                    </span>
+                                @endif
+                            </h3>
+
                         </div>
                         <div class="row shipping_address_div mb_30 {{$shipping_address?'':"d-none"}}">
                             @php
@@ -1263,31 +1275,33 @@
                             @endif
                         </div>
                     </div>
-                    <div class="single_total_list d-flex align-items-center flex-wrap">
-                        <div class="single_total_left flex-fill">
-                            <h4>{{__('common.shipping_charge')}}</h4>
-                            @if(isModuleActive('MultiVendor'))
-                                @if(isModuleActive('INTShipping'))
-                                    <p>{{ __('defaultTheme.product_wise_shipping_charge') }}</p>
-                                @else
-                                    <p>{{ __('defaultTheme.package_wise_shipping_charge') }}</p>
-                                @endif
-                            @endif
-                        </div>
-                        <div class="single_total_right">
-                            <span id="shipping_cost">
+                    @if(!$isPickupSelected)
+                        <div class="single_total_list d-flex align-items-center flex-wrap">
+                            <div class="single_total_left flex-fill">
+                                <h4>{{__('common.shipping_charge')}}</h4>
                                 @if(isModuleActive('MultiVendor'))
                                     @if(isModuleActive('INTShipping'))
-                                    + {{single_price(0)}}
+                                        <p>{{ __('defaultTheme.product_wise_shipping_charge') }}</p>
                                     @else
-                                    + {{single_price($total_shipping_charge)}}
+                                        <p>{{ __('defaultTheme.package_wise_shipping_charge') }}</p>
                                     @endif
-                                @else
-                                {{__('defaultTheme.calculated_at_next_step')}}
                                 @endif
-                            </span>
+                            </div>
+                            <div class="single_total_right">
+                                <span id="shipping_cost">
+                                    @if(isModuleActive('MultiVendor'))
+                                        @if(isModuleActive('INTShipping'))
+                                        + {{single_price(0)}}
+                                        @else
+                                        + {{single_price($total_shipping_charge)}}
+                                        @endif
+                                    @else
+                                    {{__('defaultTheme.calculated_at_next_step')}}
+                                    @endif
+                                </span>
+                            </div>
                         </div>
-                    </div>
+                    @endif
                     @php
                         if(isModuleActive('MultiVendor')){
                             if(isModuleActive('INTShipping')){

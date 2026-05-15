@@ -197,6 +197,9 @@ class OrderRepository
                 $pickup_location = EntitiesPickupLocation::find(base64_decode($delivery_info['pickup_location']));
             }
         }
+        if($delivery_type == 'pickup_location'){
+            $shipping_cost = 0;
+        }
         $order = new Order();
         $order->customer_id =(auth()->check()) ? auth()->user()->id : null;
         if(isModuleActive('ClubPoint')){
@@ -315,7 +318,9 @@ class OrderRepository
                     'seller_id' => $seller_id,
                     'package_code' => date('ymdhsi').rand(11,99),
                     'number_of_product' => count($products),
-                    'shipping_cost' => isModuleActive('INTShipping')?$data['shipping_cost'][$val]:$package_wise_shipping[$seller_id]['shipping_cost'],
+                    'shipping_cost' => $delivery_type == 'pickup_location'
+                        ? 0
+                        : (isModuleActive('INTShipping') ? $data['shipping_cost'][$val] : $package_wise_shipping[$seller_id]['shipping_cost']),
                     'shipping_date' => $data['delivery_date'][$val],
                     'shipping_method' => $package_wise_shipping[$seller_id]['shipping_id'],
                     'carrier_id' => Carrier::carrierId($package_wise_shipping[$seller_id]['shipping_id']),
