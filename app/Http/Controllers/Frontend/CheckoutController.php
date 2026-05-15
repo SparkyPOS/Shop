@@ -240,17 +240,17 @@ class CheckoutController extends Controller
                 }
             }else{
                 // Do not hard-require shipping_method; fallback will handle if missing
-                $request->validate([
-                    'delivery_type' => 'required',
-                    'pickup_location' => 'required_if:delivery_type,==,pickup_location'
-                ]);
+                $deliveryType = $request->input('delivery_type', 'home_delivery');
+                if(!in_array($deliveryType, ['home_delivery', 'pickup_location'], true)){
+                    $deliveryType = 'home_delivery';
+                }
+
                 session()->forget('delivery_info');
-                if($request->delivery_type == 'home_delivery'){
-                    $delivery_info = [
-                        'delivery_type' => 'home_delivery'
-                    ];
-                    session()->put('delivery_info', $delivery_info);
-                }elseif($request->delivery_type == 'pickup_location'){
+                if($deliveryType === 'pickup_location'){
+                    $request->validate([
+                        'pickup_location' => 'required'
+                    ]);
+
                     $delivery_info = [
                         'delivery_type' => 'pickup_location',
                         'pickup_location' => $request->pickup_location
@@ -269,6 +269,10 @@ class CheckoutController extends Controller
                     }else{
                         $this->checkoutService->guestAddressStore($request->only('name','address','email','phone','country','state','city','postal_code'));
                     }
+                }else{
+                    session()->put('delivery_info', [
+                        'delivery_type' => 'home_delivery'
+                    ]);
                 }
             }
             if($request->get('note') != null){

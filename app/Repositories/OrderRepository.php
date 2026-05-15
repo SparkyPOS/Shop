@@ -190,12 +190,15 @@ class OrderRepository
         }
         $delivery_type = 'home_delivery';
         $pickup_location = null;
-        if(!isModuleActive('MultiVendor') && session()->has('delivery_info')){
+        if(session()->has('delivery_info')){
             $delivery_info = session()->get('delivery_info');
             $delivery_type = $delivery_info['delivery_type'];
-            if($delivery_type == 'pickup_location'){
+            if($delivery_type == 'pickup_location' && !empty($delivery_info['pickup_location'])){
                 $pickup_location = EntitiesPickupLocation::find(base64_decode($delivery_info['pickup_location']));
             }
+        }
+        if($delivery_type == 'pickup_location'){
+            $shipping_cost = 0;
         }
         $order = new Order();
         $order->customer_id =(auth()->check()) ? auth()->user()->id : null;
@@ -315,7 +318,9 @@ class OrderRepository
                     'seller_id' => $seller_id,
                     'package_code' => date('ymdhsi').rand(11,99),
                     'number_of_product' => count($products),
-                    'shipping_cost' => isModuleActive('INTShipping')?$data['shipping_cost'][$val]:$package_wise_shipping[$seller_id]['shipping_cost'],
+                    'shipping_cost' => $delivery_type == 'pickup_location'
+                        ? 0
+                        : (isModuleActive('INTShipping') ? $data['shipping_cost'][$val] : $package_wise_shipping[$seller_id]['shipping_cost']),
                     'shipping_date' => $data['delivery_date'][$val],
                     'shipping_method' => $package_wise_shipping[$seller_id]['shipping_id'],
                     'carrier_id' => Carrier::carrierId($package_wise_shipping[$seller_id]['shipping_id']),

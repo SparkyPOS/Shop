@@ -1,4 +1,14 @@
 <form action="{{route('frontend.checkout')}}" method="GET" enctype="multipart/form-data" id="mainOrderForm">
+    @php
+        $delivery_info = session()->get('delivery_info');
+        $isPickupSelected = is_array($delivery_info) && data_get($delivery_info, 'delivery_type') === 'pickup_location';
+        $selectedPickupLocationName = null;
+        if ($isPickupSelected && !empty($pickup_locations) && !empty($delivery_info['pickup_location'])) {
+            $selectedPickupLocationId = (int) base64_decode($delivery_info['pickup_location']);
+            $selectedPickupLocation = collect($pickup_locations)->firstWhere('id', $selectedPickupLocationId);
+            $selectedPickupLocationName = data_get($selectedPickupLocation, 'pickup_location');
+        }
+    @endphp
 
     <div class="checkout_v3_area">
         <div class="checkout_v3_left d-flex justify-content-end">
@@ -29,27 +39,67 @@
                     @foreach($cartData as $seller_id => $packages)
                         @php
                             $seller = App\Models\User::where('id',$seller_id)->first();
-                            $is_physical_count = $package_wise_shipping[$seller_id]['physical_count'];
+                            $packageShipping = $package_wise_shipping[$seller_id] ?? [];
+                            $is_physical_count = (int) data_get($packageShipping, 'physical_count', 0);
                             $seller_actual_price = 0;
+                            $shippingMethodLabel = data_get($packageShipping, 'shipping_method', '');
+                            if (is_array($shippingMethodLabel)) {
+                                $shippingMethodLabel = $shippingMethodLabel['method_name'] ?? $shippingMethodLabel['name'] ?? json_encode($shippingMethodLabel);
+                            } elseif (is_object($shippingMethodLabel)) {
+                                $shippingMethodLabel = $shippingMethodLabel->method_name ?? $shippingMethodLabel->name ?? '';
+                            }
+                            $shippingMethodLabel = trim((string) $shippingMethodLabel);
+
+                            $shippingTimeLabel = data_get($packageShipping, 'shipping_time', '');
+                            if (is_array($shippingTimeLabel)) {
+                                $shippingTimeLabel = $shippingTimeLabel['shipment_time'] ?? $shippingTimeLabel['shipping_time'] ?? $shippingTimeLabel['time'] ?? json_encode($shippingTimeLabel);
+                            } elseif (is_object($shippingTimeLabel)) {
+                                $shippingTimeLabel = $shippingTimeLabel->shipment_time ?? $shippingTimeLabel->shipping_time ?? $shippingTimeLabel->time ?? '';
+                            }
+                            $shippingTimeLabel = trim((string) $shippingTimeLabel);
+
+                            $shippingCostLabel = single_price((float) data_get($packageShipping, 'shipping_cost', 0));
+                            if (!is_scalar($shippingCostLabel)) {
+                                $shippingCostLabel = (string) ((float) data_get($packageShipping, 'shipping_cost', 0));
+                            }
+                            $viaLabel = __('common.via');
+                            if (!is_scalar($viaLabel)) {
+                                $viaLabel = 'via';
+                            }
+                            $packageSellerId = data_get($packageShipping, 'seller_id', $seller_id);
+                            if (!is_scalar($packageSellerId)) {
+                                $packageSellerId = $seller_id;
+                            }
+                            if ($isPickupSelected) {
+                                $shippingSummaryText = trim((string) __('shipping.pickup_location') . ': ' . (string) ($selectedPickupLocationName ?? __('common.selected')));
+                            } else {
+                                $shippingSummaryText = trim(sprintf(
+                                    '%s %s %s %s',
+                                    (string) $shippingCostLabel,
+                                    (string) $viaLabel,
+                                    (string) $shippingMethodLabel,
+                                    (string) $shippingTimeLabel
+                                ));
+                            }
                         @endphp
 
                         @php
                             $current_pkg ++;
-                            $total_shipping_charge += $package_wise_shipping[$seller_id]['shipping_cost'];
+                            $total_shipping_charge += $isPickupSelected ? 0 : (float) data_get($packageShipping, 'shipping_cost', 0);
                         @endphp
                         <div class="checkout_shiped_box mb_10">
                             <div class="checout_shiped_head flex-wrap d-flex align-items-center ">
                                 <span class="package_text flex-fill">{{__('common.package')}} {{$current_pkg}} {{__('common.of')}} {{$total_package}}</span>
                                 <p>
                                     <span class="Shipped_text text-nowrap">
-                                        {{__('defaultTheme.shipping')}} :
+                                        {{ $isPickupSelected ? __('shipping.pickup_location') : __('defaultTheme.shipping') }} :
                                     </span>
                                     <span class="name_text text-nowrap">
                                             <a class="link_style" href="javascript:void(0)">
-                                                @if($is_physical_count > 0)
-                                                <span id="shipping_methods" data-target="shipping_methods_{{$package_wise_shipping[$seller_id]['seller_id']}}">{{single_price($package_wise_shipping[$seller_id]['shipping_cost'])}} via {{$package_wise_shipping[$seller_id]['shipping_method']}}   {{$package_wise_shipping[$seller_id]['shipping_time']}} =></span>
+                                                @if($is_physical_count > 0 && !$isPickupSelected)
+                                                <span id="shipping_methods" data-target="shipping_methods_{{$packageSellerId}}">{{$shippingSummaryText}} =></span>
                                                 @else
-                                                {{single_price($package_wise_shipping[$seller_id]['shipping_cost'])}} via {{$package_wise_shipping[$seller_id]['shipping_method']}}   {{$package_wise_shipping[$seller_id]['shipping_time']}}
+                                                {{$shippingSummaryText}}
                                                 @endif
                                             </a>
                                     </span>
@@ -253,45 +303,35 @@
 
 
                         <div class="shipping_delivery_div">
-                            @php
-                                $delivery_info = null;
-                            @endphp
-                            <h3 class="check_v3_title mb_25"><span class="address_title">@if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') {{__('shipping.shipping_address')}} @else {{__('common.billing_address')}} @endif</span> @if($shipping_address) <a href="javascript:void(0)" class="link_btn_design">{{__('common.edit')}}</a> @endif</h3>
-                            @if(!isModuleActive('MultiVendor'))
-                                @php
-                                    if(session()->has('delivery_info')){
-                                        $delivery_info = session()->get('delivery_info');
-                                    }
-                                @endphp
-                                <div class="delivery_type_button">
-                                    <label class="primary_bulet_checkbox">
-                                        <input type="radio" name="delivery_type" class="payment_method"  value="home_delivery" @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') checked @endif>
+                            <div class="delivery_type_button">
+                                <label class="primary_bulet_checkbox">
+                                    <input type="radio" name="delivery_type" class="payment_method"  value="home_delivery" @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') checked @endif>
+                                    <span class="checkmark"></span>
+                                </label>
+                                <a>Home delivery</a>
+                                @if(session()->has('buy_it_now') && @$cartData->where('is_buy_now', 1)->first()->product_type == 'gift_card')
+                                @else
+                                    <label class="primary_bulet_checkbox ml-20">
+                                        <input type="radio" name="delivery_type" class="payment_method"  value="pickup_location" @if($delivery_info && $delivery_info['delivery_type'] == 'pickup_location') checked @endif>
                                         <span class="checkmark"></span>
                                     </label>
-                                    <a>Home delivery</a>
-                                    @if(session()->has('buy_it_now') && @$cartData->where('is_buy_now', 1)->first()->product_type == 'gift_card')
-                                    @else
-                                        <label class="primary_bulet_checkbox ml-20">
-                                            <input type="radio" name="delivery_type" class="payment_method"  value="pickup_location" @if($delivery_info && $delivery_info['delivery_type'] == 'pickup_location') checked @endif>
-                                            <span class="checkmark"></span>
-                                        </label>
-                                        <a>Pickup location</a>
+                                    <a>Pickup location</a>
 
-                                        <div class="pick_location_list_div @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') d-none @endif">
-                                            <label>{{__('Pickup location')}} <span class="text-red">*</span></label>
-                                            <select class="primary_select nc_select" name="pickup_location" id="pickup_location" autocomplete="off">
-                                                <option value="">{{__('defaultTheme.select_from_options')}}</option>
-                                                @foreach($pickup_locations as $pickup_location)
-                                                    <option value="{{base64_encode($pickup_location->id)}}" @if($delivery_info && $delivery_info['delivery_type'] == 'pickup_location' && $delivery_info['pickup_location'] == base64_encode($pickup_location->id)) selected @endif>
-                                                        {{$pickup_location->pickup_location}}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <span class="text-danger pick_location_list_div @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') d-none @endif" id="error_pickup_location">{{ $errors->first('pickup_location') }}</span>
-                                    @endif
-                                </div>
-                            @endif
+                                    <div class="pick_location_list_div @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') d-none @endif">
+                                        <label>{{__('Pickup location')}} <span class="text-red">*</span></label>
+                                        <select class="primary_select nc_select" name="pickup_location" id="pickup_location" autocomplete="off">
+                                            <option value="">{{__('defaultTheme.select_from_options')}}</option>
+                                            @foreach($pickup_locations as $pickup_location)
+                                                <option value="{{base64_encode($pickup_location->id)}}" @if($delivery_info && $delivery_info['delivery_type'] == 'pickup_location' && $delivery_info['pickup_location'] == base64_encode($pickup_location->id)) selected @endif>
+                                                    {{$pickup_location->pickup_location}}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <span class="text-danger pick_location_list_div @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') d-none @endif" id="error_pickup_location">{{ $errors->first('pickup_location') }}</span>
+                                @endif
+                            </div>
+                            <h3 class="check_v3_title mb_25"><span class="address_title">@if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') {{__('shipping.shipping_address')}} @else {{__('common.billing_address')}} @endif</span> @if($shipping_address) <a href="javascript:void(0)" class="link_btn_design">{{__('common.edit')}}</a> @endif</h3>
                         </div>
 
                         <div class="row shipping_address_div mb_30 {{$shipping_address?'':"d-none"}}">
@@ -565,23 +605,25 @@
                             <span>+ {{single_price($subtotal)}}</span>
                         </div>
                     </div>
-                    <div class="single_total_list d-flex align-items-center flex-wrap">
-                        <div class="single_total_left flex-fill">
-                            <h4>{{__('common.shipping_charge')}}</h4>
-                            @if(isModuleActive('MultiVendor'))
-                              <p>{{ __('defaultTheme.package_wise_shipping_charge') }}</p>
-                            @endif
+                    @if(!$isPickupSelected)
+                        <div class="single_total_list d-flex align-items-center flex-wrap">
+                            <div class="single_total_left flex-fill">
+                                <h4>{{__('common.shipping_charge')}}</h4>
+                                @if(isModuleActive('MultiVendor'))
+                                  <p>{{ __('defaultTheme.package_wise_shipping_charge') }}</p>
+                                @endif
+                            </div>
+                            <div class="single_total_right">
+                                <span>
+                                  @if(isModuleActive('MultiVendor'))
+                                    + {{single_price($total_shipping_charge)}}
+                                  @else
+                                  {{__('defaultTheme.calculated_at_next_step')}}
+                                  @endif
+                                </span>
+                            </div>
                         </div>
-                        <div class="single_total_right">
-                            <span>
-                              @if(isModuleActive('MultiVendor'))
-                                + {{single_price($total_shipping_charge)}}
-                              @else
-                              {{__('defaultTheme.calculated_at_next_step')}}
-                              @endif
-                            </span>
-                        </div>
-                    </div>
+                    @endif
                         @php
                             if(isModuleActive('MultiVendor')){
                                 $total = $actual_price + $total_shipping_charge;

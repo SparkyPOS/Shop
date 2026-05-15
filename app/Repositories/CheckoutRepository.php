@@ -146,11 +146,26 @@ class CheckoutRepository{
     }
 
     public function getActivePickup_loactions(){
-        return EntitiesPickupLocation::where('created_by', 1)->where('status', 1)->get();
+        return EntitiesPickupLocation::where('status', 1)
+            ->orderByDesc('is_set')
+            ->orderByDesc('is_default')
+            ->orderBy('id')
+            ->get();
     }
 
     public function freeShippingForPickup(){
-        $free_shipping = ShippingMethod::where('id','>',1)->where('request_by_user', 1)->orderBy('cost')->first();
+        $free_shipping = ShippingMethod::where('is_active', 1)
+            ->where('is_approved', 1)
+            ->where('id', '>', 1)
+            ->orderBy('cost')
+            ->first();
+
+        if (!$free_shipping) {
+            $free_shipping = ShippingMethod::where('is_active', 1)
+                ->where('is_approved', 1)
+                ->orderBy('cost')
+                ->first();
+        }
         return $free_shipping;
     }
 
@@ -364,6 +379,8 @@ class CheckoutRepository{
         $is_physical_product = 0;
         $gstAmount = 0;
         $e_items = [];
+        $isPickupSelected = session()->has('delivery_info')
+            && data_get(session()->get('delivery_info'), 'delivery_type') === 'pickup_location';
 
         if(isModuleActive('MultiVendor')){
             $cart_sl = 0;
@@ -572,7 +589,9 @@ class CheckoutRepository{
                     }
                 }
                 $packagewise_tax[] = $package_tax;
-                if(isModuleActive('INTShipping') && app('theme')->folder_path == 'amazy'){
+                if ($isPickupSelected) {
+                    $shipping_cost[] = 0;
+                } elseif(isModuleActive('INTShipping') && app('theme')->folder_path == 'amazy'){
                     array_push($shipping_cost,$package_wise_shipping_cost);
                 }else{
                     $package_wise_shipping = session()->get('package_wise_shipping');
