@@ -293,41 +293,39 @@
                                 $delivery_info = null;
                             @endphp
                             <h3 class="check_v3_title mb_25"><span class="address_title">@if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') {{__('shipping.shipping_address')}} @else {{__('common.billing_address')}} @endif</span> @if($shipping_address) <a href="javascript:void(0)" class="link_btn_design">{{__('common.edit')}}</a> @endif</h3>
-                            @if(!isModuleActive('MultiVendor'))
-                                @php
-                                    if(session()->has('delivery_info')){
-                                        $delivery_info = session()->get('delivery_info');
-                                    }
-                                @endphp
-                                <div class="delivery_type_button">
-                                    <label class="primary_bulet_checkbox">
-                                        <input type="radio" name="delivery_type" class="payment_method"  value="home_delivery" @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') checked @endif>
+                            @php
+                                if(session()->has('delivery_info')){
+                                    $delivery_info = session()->get('delivery_info');
+                                }
+                            @endphp
+                            <div class="delivery_type_button">
+                                <label class="primary_bulet_checkbox">
+                                    <input type="radio" name="delivery_type" class="payment_method"  value="home_delivery" @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') checked @endif>
+                                    <span class="checkmark"></span>
+                                </label>
+                                <a>Home delivery</a>
+                                @if(session()->has('buy_it_now') && @$cartData->where('is_buy_now', 1)->first()->product_type == 'gift_card')
+                                @else
+                                    <label class="primary_bulet_checkbox ml-20">
+                                        <input type="radio" name="delivery_type" class="payment_method"  value="pickup_location" @if($delivery_info && $delivery_info['delivery_type'] == 'pickup_location') checked @endif>
                                         <span class="checkmark"></span>
                                     </label>
-                                    <a>Home delivery</a>
-                                    @if(session()->has('buy_it_now') && @$cartData->where('is_buy_now', 1)->first()->product_type == 'gift_card')
-                                    @else
-                                        <label class="primary_bulet_checkbox ml-20">
-                                            <input type="radio" name="delivery_type" class="payment_method"  value="pickup_location" @if($delivery_info && $delivery_info['delivery_type'] == 'pickup_location') checked @endif>
-                                            <span class="checkmark"></span>
-                                        </label>
-                                        <a>Pickup location</a>
+                                    <a>Pickup location</a>
 
-                                        <div class="pick_location_list_div @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') d-none @endif">
-                                            <label>{{__('Pickup location')}} <span class="text-red">*</span></label>
-                                            <select class="primary_select nc_select" name="pickup_location" id="pickup_location" autocomplete="off">
-                                                <option value="">{{__('defaultTheme.select_from_options')}}</option>
-                                                @foreach($pickup_locations as $pickup_location)
-                                                    <option value="{{base64_encode($pickup_location->id)}}" @if($delivery_info && $delivery_info['delivery_type'] == 'pickup_location' && $delivery_info['pickup_location'] == base64_encode($pickup_location->id)) selected @endif>
-                                                        {{$pickup_location->pickup_location}}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        <span class="text-danger pick_location_list_div @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') d-none @endif" id="error_pickup_location">{{ $errors->first('pickup_location') }}</span>
-                                    @endif
-                                </div>
-                            @endif
+                                    <div class="pick_location_list_div @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') d-none @endif">
+                                        <label>{{__('Pickup location')}} <span class="text-red">*</span></label>
+                                        <select class="primary_select nc_select" name="pickup_location" id="pickup_location" autocomplete="off">
+                                            <option value="">{{__('defaultTheme.select_from_options')}}</option>
+                                            @foreach($pickup_locations as $pickup_location)
+                                                <option value="{{base64_encode($pickup_location->id)}}" @if($delivery_info && $delivery_info['delivery_type'] == 'pickup_location' && $delivery_info['pickup_location'] == base64_encode($pickup_location->id)) selected @endif>
+                                                    {{$pickup_location->pickup_location}}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <span class="text-danger pick_location_list_div @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') d-none @endif" id="error_pickup_location">{{ $errors->first('pickup_location') }}</span>
+                                @endif
+                            </div>
                         </div>
 
                         <div class="row shipping_address_div mb_30 {{$shipping_address?'':"d-none"}}">

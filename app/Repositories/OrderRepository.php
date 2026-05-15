@@ -190,10 +190,10 @@ class OrderRepository
         }
         $delivery_type = 'home_delivery';
         $pickup_location = null;
-        if(!isModuleActive('MultiVendor') && session()->has('delivery_info')){
+        if(session()->has('delivery_info')){
             $delivery_info = session()->get('delivery_info');
             $delivery_type = $delivery_info['delivery_type'];
-            if($delivery_type == 'pickup_location'){
+            if($delivery_type == 'pickup_location' && !empty($delivery_info['pickup_location'])){
                 $pickup_location = EntitiesPickupLocation::find(base64_decode($delivery_info['pickup_location']));
             }
         }
