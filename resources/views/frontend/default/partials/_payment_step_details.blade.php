@@ -26,6 +26,9 @@
                                     if(session()->has('delivery_info')){
                                         $delivery_info = session()->get('delivery_info');
                                     }
+                                    $isPickupSelected = is_array($delivery_info) && data_get($delivery_info, 'delivery_type') == 'pickup_location';
+                                    $shippingCostValues = is_array($shipping_cost) ? $shipping_cost : [$shipping_cost];
+                                    $shippingTotalDisplay = $isPickupSelected ? 0 : collect($shippingCostValues)->sum();
                                 @endphp
                                 @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery')
                                     <div class="single_shipingV3_info d-flex align-items-start">
@@ -55,6 +58,13 @@
                                             <a href="{{url()->previous()}}" class="edit_info_text">{{__('common.change')}}</a>
                                         </div>
                                     @endif
+                                @endif
+                                @if($isPickupSelected && isModuleActive('MultiVendor'))
+                                    <div class="single_shipingV3_info d-flex align-items-start">
+                                        <span>{{__('common.method')}}</span>
+                                        <h5 class="m-0 flex-fill">{{__('shipping.collect_from_pickup_location')}} - {{single_price(0)}}</h5>
+                                        <a href="{{url('/checkout')}}" class="edit_info_text">{{__('common.change')}}</a>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -503,7 +513,8 @@
 
                 @php
                     $discount = $subtotal - $actual_total;
-                    $total = $subtotal + $tax + $shipping_cost - $discount;
+                    $effectiveShippingCost = $shippingTotalDisplay;
+                    $total = $subtotal + $tax + $effectiveShippingCost - $discount;
                 @endphp
             @endif
             <h3 class="check_v3_title mb_25">{{__('common.order_summary')}}</h3>
@@ -523,11 +534,13 @@
                 </div>
                 <div class="single_total_list d-flex align-items-center flex-wrap">
                     <div class="single_total_left flex-fill">
-                        <h4>{{__('common.shipping_charge')}}</h4>
-                        <p>{{ __('defaultTheme.package_wise_shipping_charge') }}</p>
+                        <h4>{{__('common.shipping_charge')}} @if($isPickupSelected) ({{__('shipping.pickup_location')}}) @endif</h4>
+                        @if(!$isPickupSelected)
+                            <p>{{ __('defaultTheme.package_wise_shipping_charge') }}</p>
+                        @endif
                     </div>
                     <div class="single_total_right">
-                        <span>+ {{single_price(collect($shipping_cost)->sum())}}</span>
+                        <span>+ {{single_price($shippingTotalDisplay)}}</span>
                     </div>
                 </div>
                 <div class="single_total_list d-flex align-items-center flex-wrap">

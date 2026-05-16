@@ -147,6 +147,7 @@ class CheckoutRepository{
 
     public function getActivePickup_loactions(){
         return EntitiesPickupLocation::where('status', 1)
+            ->where('created_by', 1)
             ->orderByDesc('is_set')
             ->orderByDesc('is_default')
             ->orderBy('id')
@@ -391,6 +392,7 @@ class CheckoutRepository{
                 $package_tax = 0;
                 $package_wise_shipping_cost = 0;
                 $package_wise_shipping_method = 0;
+                $shippingMethod = null;
                 $shipping_qty = 1;
                 $additional_cost = 0;
                 $totalItemPrice = 0;

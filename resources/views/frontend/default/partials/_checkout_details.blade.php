@@ -2,9 +2,13 @@
     @php
         $delivery_info = session()->get('delivery_info');
         $isPickupSelected = is_array($delivery_info) && data_get($delivery_info, 'delivery_type') === 'pickup_location';
+        $defaultPickupLocation = collect($pickup_locations)->firstWhere('is_default', 1)
+            ?? collect($pickup_locations)->firstWhere('is_set', 1)
+            ?? collect($pickup_locations)->first();
+        $selectedPickupLocationEncoded = $delivery_info['pickup_location'] ?? ($defaultPickupLocation ? base64_encode((string) $defaultPickupLocation->id) : '');
         $selectedPickupLocationName = null;
-        if ($isPickupSelected && !empty($pickup_locations) && !empty($delivery_info['pickup_location'])) {
-            $selectedPickupLocationId = (int) base64_decode($delivery_info['pickup_location']);
+        if ($isPickupSelected && !empty($pickup_locations) && !empty($selectedPickupLocationEncoded)) {
+            $selectedPickupLocationId = (int) base64_decode($selectedPickupLocationEncoded);
             $selectedPickupLocation = collect($pickup_locations)->firstWhere('id', $selectedPickupLocationId);
             $selectedPickupLocationName = data_get($selectedPickupLocation, 'pickup_location');
         }
@@ -36,6 +40,38 @@
                     @php
                         $package_wise_shipping = session()->get('package_wise_shipping');
                     @endphp
+                    <div class="checkout_shiped_box mb_10">
+                        <div class="card-body">
+                            <h4 class="mb-2">Delivery Options</h4>
+                            <p class="text-muted mb-3">Choose pickup or home delivery for this checkout.</p>
+                            <div class="delivery_type_button">
+                                <label class="primary_bulet_checkbox">
+                                    <input type="radio" name="delivery_type" class="payment_method" value="home_delivery" @if(!$isPickupSelected) checked @endif>
+                                    <span class="checkmark"></span>
+                                </label>
+                                <a>Home delivery</a>
+                                @if(count($pickup_locations) > 0)
+                                    <label class="primary_bulet_checkbox ml-20">
+                                        <input type="radio" name="delivery_type" class="payment_method" value="pickup_location" @if($isPickupSelected) checked @endif>
+                                        <span class="checkmark"></span>
+                                    </label>
+                                    <a>Pickup location</a>
+                                    <div class="pick_location_list_div mt-3 @if(!$isPickupSelected) d-none @endif">
+                                        <label>{{ __('Pickup location') }} <span class="text-red">*</span></label>
+                                        <select class="primary_select checkout_pickup_native_select" name="pickup_location" id="pickup_location" autocomplete="off">
+                                            <option value="">{{ __('defaultTheme.select_from_options') }}</option>
+                                            @foreach($pickup_locations as $pickup_location)
+                                                <option value="{{ base64_encode((string) $pickup_location->id) }}" @if($selectedPickupLocationEncoded === base64_encode((string) $pickup_location->id)) selected @endif>
+                                                    {{ $pickup_location->pickup_location }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <span class="text-danger pick_location_list_div @if(!$isPickupSelected) d-none @endif" id="error_pickup_location">{{ $errors->first('pickup_location') }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
                     @foreach($cartData as $seller_id => $packages)
                         @php
                             $seller = App\Models\User::where('id',$seller_id)->first();
@@ -303,6 +339,7 @@
 
 
                         <div class="shipping_delivery_div">
+                            @if(!isModuleActive('MultiVendor'))
                             <div class="delivery_type_button">
                                 <label class="primary_bulet_checkbox">
                                     <input type="radio" name="delivery_type" class="payment_method"  value="home_delivery" @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') checked @endif>
@@ -331,6 +368,7 @@
                                     <span class="text-danger pick_location_list_div @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') d-none @endif" id="error_pickup_location">{{ $errors->first('pickup_location') }}</span>
                                 @endif
                             </div>
+                            @endif
                             <h3 class="check_v3_title mb_25"><span class="address_title">@if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') {{__('shipping.shipping_address')}} @else {{__('common.billing_address')}} @endif</span> @if($shipping_address) <a href="javascript:void(0)" class="link_btn_design">{{__('common.edit')}}</a> @endif</h3>
                         </div>
 

@@ -230,6 +230,44 @@
         margin-bottom: 18px;
     }
 
+    .checkout_delivery_selector {
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        background: #fff;
+        padding: 22px 24px;
+        margin-bottom: 22px;
+    }
+
+    .checkout_delivery_selector_title {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        color: #101828;
+    }
+
+    .checkout_delivery_selector_hint {
+        color: #667085;
+        margin-bottom: 18px;
+    }
+
+    .checkout_delivery_selector .delivery_type_button {
+        margin-bottom: 0;
+    }
+
+    .checkout_pickup_native_select {
+        width: 100%;
+        height: 58px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        background: #fff;
+        color: #344054;
+        font-size: 16px;
+        padding: 0 18px;
+        appearance: auto;
+        -webkit-appearance: auto;
+        -moz-appearance: auto;
+    }
+
     @media (max-width: 767px) {
         .checkout_package_table {
             min-width: 700px;
@@ -240,9 +278,13 @@
     @php
         $delivery_info = session()->get('delivery_info');
         $isPickupSelected = is_array($delivery_info) && data_get($delivery_info, 'delivery_type') === 'pickup_location';
+        $defaultPickupLocation = collect($pickup_locations)->firstWhere('is_default', 1)
+            ?? collect($pickup_locations)->firstWhere('is_set', 1)
+            ?? collect($pickup_locations)->first();
+        $selectedPickupLocationEncoded = $delivery_info['pickup_location'] ?? ($defaultPickupLocation ? base64_encode((string) $defaultPickupLocation->id) : '');
         $selectedPickupLocationName = null;
-        if ($isPickupSelected && !empty($pickup_locations) && !empty($delivery_info['pickup_location'])) {
-            $selectedPickupLocationId = (int) base64_decode($delivery_info['pickup_location']);
+        if ($isPickupSelected && !empty($pickup_locations) && !empty($selectedPickupLocationEncoded)) {
+            $selectedPickupLocationId = (int) base64_decode($selectedPickupLocationEncoded);
             $selectedPickupLocation = collect($pickup_locations)->firstWhere('id', $selectedPickupLocationId);
             $selectedPickupLocationName = data_get($selectedPickupLocation, 'pickup_location');
         }
@@ -274,6 +316,37 @@
                         $intShippingProfileClassAvailable = isModuleActive('INTShipping') && class_exists('\\Modules\\INTShipping\\Entities\\SellerProductShippingProfile');
                         $intShippingZoneClassAvailable = isModuleActive('INTShipping') && class_exists('\\Modules\\INTShipping\\Entities\\ShippingZone');
                     @endphp
+
+                    <div class="checkout_delivery_selector">
+                        <div class="checkout_delivery_selector_title">Delivery Options</div>
+                        <div class="checkout_delivery_selector_hint">Choose pickup or home delivery for this checkout.</div>
+                        <div class="delivery_type_button">
+                            <label class="primary_bulet_checkbox">
+                                <input type="radio" name="delivery_type" class="payment_method" value="home_delivery" @if(!$isPickupSelected) checked @endif>
+                                <span class="checkmark"></span>
+                            </label>
+                            <a>{{ __('shipping.home_delivery') }}</a>
+                            @if(count($pickup_locations) > 0)
+                                <label class="primary_bulet_checkbox ml_10">
+                                    <input type="radio" name="delivery_type" class="payment_method" value="pickup_location" @if($isPickupSelected) checked @endif>
+                                    <span class="checkmark"></span>
+                                </label>
+                                <a>{{ __('shipping.pickup_location') }}</a>
+                                <div class="pick_location_list_div mt_30 @if(!$isPickupSelected) d-none @endif">
+                                    <label class="primary_label2 style2">{{ __('shipping.pickup_location') }} <span>*</span></label>
+                                    <select class="checkout_pickup_native_select" name="pickup_location" id="pickup_location" autocomplete="off">
+                                        <option value="">{{ __('defaultTheme.select_from_options') }}</option>
+                                        @foreach($pickup_locations as $pickup_location)
+                                            <option value="{{ base64_encode((string) $pickup_location->id) }}" @if($selectedPickupLocationEncoded === base64_encode((string) $pickup_location->id)) selected @endif>
+                                                {{ $pickup_location->pickup_location }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <span class="text-danger pick_location_list_div @if(!$isPickupSelected) d-none @endif" id="error_pickup_location">{{ $errors->first('pickup_location') }}</span>
+                            @endif
+                        </div>
+                    </div>
                     
                     @foreach($cartData as $seller_id => $packages)
                         @php
@@ -916,6 +989,7 @@
                     </div>
                     <div class="billing_address">
                         <div class="shipping_delivery_div">
+                            @if(!isModuleActive('MultiVendor'))
                             <div class="delivery_type_button">
                                 <label class="primary_bulet_checkbox">
                                     <input type="radio" name="delivery_type" class="payment_method"  value="home_delivery" @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') checked @endif>
@@ -947,6 +1021,7 @@
                                     @endif
                                 @endif
                             </div>
+                            @endif
 
                             <h3 class="check_v3_title mb_25"> <span class="address_title">@if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') {{__('shipping.shipping_address')}} @else {{__('common.billing_address')}} @endif</span>
                                 @if($shipping_address)

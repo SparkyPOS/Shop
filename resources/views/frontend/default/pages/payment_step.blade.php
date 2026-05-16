@@ -49,6 +49,7 @@
 @endsection
 
 @push('scripts')
+    <script src="https://js.stripe.com/v3/"></script>
     @if(isModuleActive('Bkash'))
         @include('bkash::partials._bkash_data')
     @endif
@@ -56,7 +57,111 @@
     <script>
         (function($) {
             "use strict";
+            let stripeInstance = null;
+            let stripeElements = null;
+            let stripePaymentElement = null;
+            let stripeClientSecret = null;
+            let stripeMountedAmount = null;
+
             $(document).ready(function() {
+                async function initializeStripePaymentElement(forceReload = false){
+                    const $form = $('#stripe_form');
+                    const $mount = $('#stripe-payment-element');
+                    const publishableKey = $('#stripe_publishable_key').val();
+                    const intentRoute = $('#stripe_intent_route').val();
+                    const amount = parseFloat($form.find('input[name=\"amount\"]').val() || 0);
+
+                    if (!$form.length || !$mount.length || !publishableKey || !intentRoute || amount <= 0) {
+                        return false;
+                    }
+
+                    if (!forceReload && stripePaymentElement && stripeMountedAmount === amount) {
+                        return true;
+                    }
+
+                    $('#stripe-payment-errors').text('');
+
+                    if (!stripeInstance) {
+                        stripeInstance = Stripe(publishableKey);
+                    }
+
+                    $.ajaxSetup({
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
+                    });
+
+                    try {
+                        const response = await $.post(intentRoute, { amount: amount });
+                        stripeClientSecret = response.client_secret;
+                        stripeMountedAmount = amount;
+
+                        if (stripePaymentElement) {
+                            stripePaymentElement.unmount();
+                            stripePaymentElement = null;
+                        }
+
+                        stripeElements = stripeInstance.elements({
+                            clientSecret: stripeClientSecret,
+                            appearance: {
+                                theme: 'stripe',
+                                variables: {
+                                    colorPrimary: '#111827',
+                                    borderRadius: '10px'
+                                }
+                            }
+                        });
+
+                        stripePaymentElement = stripeElements.create('payment');
+                        $mount.empty();
+                        stripePaymentElement.mount('#stripe-payment-element');
+                        return true;
+                    } catch (error) {
+                        const message = error?.responseJSON?.message || error?.message || 'Unable to initialize Stripe payment.';
+                        $('#stripe-payment-errors').text(message);
+                        return false;
+                    }
+                }
+
+                async function submitStripePayment(){
+                    const initialized = await initializeStripePaymentElement();
+                    if (!initialized || !stripeInstance || !stripeElements || !stripeClientSecret) {
+                        return false;
+                    }
+
+                    $('#pre-loader').show();
+                    $('#stripe-payment-errors').text('');
+
+                    const submitResult = await stripeElements.submit();
+                    if (submitResult.error) {
+                        $('#pre-loader').hide();
+                        $('#stripe-payment-errors').text(submitResult.error.message || 'Stripe validation failed.');
+                        return false;
+                    }
+
+                    const confirmResult = await stripeInstance.confirmPayment({
+                        elements: stripeElements,
+                        clientSecret: stripeClientSecret,
+                        redirect: 'if_required'
+                    });
+
+                    if (confirmResult.error) {
+                        $('#pre-loader').hide();
+                        $('#stripe-payment-errors').text(confirmResult.error.message || 'Stripe payment failed.');
+                        return false;
+                    }
+
+                    if (!confirmResult.paymentIntent || confirmResult.paymentIntent.status !== 'succeeded') {
+                        $('#pre-loader').hide();
+                        $('#stripe-payment-errors').text('Stripe payment was not completed.');
+                        return false;
+                    }
+
+                    $('#stripe_payment_intent_id').val(confirmResult.paymentIntent.id);
+                    document.getElementById('stripe_form').submit();
+                    return true;
+                }
+
                 $(document).on('change', 'input[type=radio][name=payment_method]', function(){
                     let method = $(this).data('name');
                     $('#order_payment_method').val($(this).val());
@@ -74,6 +179,7 @@
 
                     if(method === 'Stripe'){
                         $('#btn_div').html(`<a href="javascript:void(0)" id="payment_btn_trigger" data-type="Stripe" class="btn_1 m-0 text-uppercase">Pay now</a>`);
+                        initializeStripePaymentElement();
                     }
                     else if(method === 'Bkash'){
                         $('#btn_div').html(`<a href="javascript:void(0)" id="payment_btn_trigger" data-type="Bkash" class="btn_1 m-0 text-uppercase">Pay now</a>`);
@@ -230,8 +336,7 @@
                         location.href = dataUrl;
                     }
                     else if(method == 'Stripe'){
-                        $('#stribe_submit_btn').click();
-                        $('#pre-loader').show();
+                        submitStripePayment();
                     }
                     else if(method == 'PayPal'){
                         $('.paypal_btn').click();
@@ -277,6 +382,10 @@
                         mercado_field_validate();
                         $("#form-checkout__submit").click();
                     }
+                }
+
+                if ($('input[type=radio][name=payment_method]:checked').data('name') === 'Stripe') {
+                    initializeStripePaymentElement();
                 }
 
                 function mercado_field_validate() {

@@ -122,6 +122,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('/checkout/address/store',[CheckoutController::class,'addressStore'])->name('frontend.checkout.address.store');
     Route::post('/checkout/address/shipping',[CheckoutController::class,'shippingAddressChange'])->name('frontend.checkout.address.shipping');
     Route::post('/checkout/address/billing',[CheckoutController::class,'billingAddressChange'])->name('frontend.checkout.address.billing');
+    Route::post('/checkout/delivery-type',[CheckoutController::class,'deliveryTypeChange'])->name('frontend.checkout.delivery_type');
     Route::post('/checkout/coupon-apply',[CheckoutController::class,'couponApply'])->name('frontend.checkout.coupon-apply');
     Route::get('/checkout/coupon-delete',[CheckoutController::class,'couponDelete'])->name('frontend.checkout.coupon-delete');
 });

@@ -461,29 +461,49 @@
 
         });
 
-        $(document).on('change', 'input[name=delivery_type]', function(){
-            $('.pick_location_list_div').toggleClass('d-none');
-            var delivery_type = $(this).val();
-            if(delivery_type == 'pickup_location'){
-                $('#next_step_btn_div').html(
-                    `
-                    <input type="hidden" name="step" value="select_payment">
-                    <input type="hidden" name="shipping_method" value="{{encrypt($free_shipping_for_pickup_location->id)}}">
-                    <button type="submit" class="amaz_primary_btn style2  min_200 text-center text-uppercase ">{{__('defaultTheme.continue_to_payment')}}</button>
-                    `
-                );
-                $('.address_title').text("{{__('common.billing_address')}}");
+        function resetPickupLocationSelect(){
+            const $pickup = $('#pickup_location');
+            if (!$pickup.length) {
+                return;
+            }
 
-            }else if(delivery_type == 'home_delivery'){
-                $('#next_step_btn_div').html(
-                    `
-                    <input type="hidden" name="step" value="select_shipping">
-                    <button type="submit" class="amaz_primary_btn style2  min_200 text-center text-uppercase ">{{__('defaultTheme.continue_to_shipping')}}</button>
-                    `
-                );
-                $('.address_title').text("{{__('shipping.shipping_address')}}");
+            const $niceWrapper = $pickup.next('.nice-select');
+            if ($niceWrapper.length) {
+                $niceWrapper.remove();
+            }
+
+            $pickup.css('display', 'block');
+        }
+
+        function refreshDeliveryType(deliveryType, pickupLocation = ''){
+            $('#pre-loader').show();
+            $.post("{{ route('frontend.checkout.delivery_type') }}", {
+                _token: "{{ csrf_token() }}",
+                delivery_type: deliveryType,
+                pickup_location: pickupLocation
+            }, function(response){
+                $('#mainDiv').html(response.MainCheckout);
+                $('select').niceSelect();
+                resetPickupLocationSelect();
+                $('#pre-loader').hide();
+            }).fail(function(){
+                $('#pre-loader').hide();
+            });
+        }
+
+        $(document).on('change', 'input[name=delivery_type]', function(){
+            const deliveryType = $(this).val();
+            const pickupLocation = $('#pickup_location').val() || '';
+            refreshDeliveryType(deliveryType, pickupLocation);
+        });
+
+        $(document).on('change', '#pickup_location', function(){
+            if ($('input[name=delivery_type]:checked').val() === 'pickup_location') {
+                refreshDeliveryType('pickup_location', $(this).val() || '');
             }
         });
+
+        resetPickupLocationSelect();
 
         $(document).on('click', '#shipping_methods', function(event){
             let id = $(this).data('target');
@@ -504,6 +524,7 @@
             $.post(url,data, function(res){
                 $('#mainDiv').html(res);
                 $('select').niceSelect();
+                resetPickupLocationSelect();
                 $('#pre-loader').hide();
             });
         });

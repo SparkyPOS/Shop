@@ -29,6 +29,7 @@ Route::get('paypal-cancel', 'PayPalController@paypalFailed')->name('paypal.paypa
 Route::get('paypal-payment/success', 'PayPalController@paypalSuccess')->name('paypal.paypalSuccess');
 Route::get('stripe-payment', 'StripeController@payment_page')->name('stripe.payment_create');
 Route::post('stripe-payment-store', 'StripeController@stripePost')->name('stripe.payment');
+Route::post('stripe-payment-intent', 'StripeController@createPaymentIntent')->name('stripe.payment_intent');
 Route::get('pay-with-razorpay', 'RazorpayController@payWithRazorpay')->name('paywithrazorpay');
 Route::post('razorpay-payment', 'RazorpayController@payment')->name('razorpay.payment');
 Route::post('/paystack-payment', 'PaystackController@redirectToGateway')->name('paystack.payment');
@@ -44,4 +45,3 @@ Route::post('/googlePay-payment-status', 'GooglePayController@paymentStatus')->n
 
 Route::post('/flutterwave-pay', 'FlutterwaveController@payment')->name('flatterwave.payment');
 Route::get('/flutterwave/callback', 'FlutterwaveController@callback')->name('flatterwave.callback');
-

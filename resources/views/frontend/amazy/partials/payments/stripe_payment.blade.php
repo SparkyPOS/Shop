@@ -2,9 +2,9 @@
     <span></span>
 </div>
 <form action="{{route('frontend.order_payment')}}" method="post" id="stripe_form" class="stripe_form d-none">
-
     <input type="hidden" name="method" value="Stripe">
     <input type="hidden" name="amount" value="{{$total_amount - $coupon_am}}">
+    <input type="hidden" name="stripe_payment_intent_id" id="stripe_payment_intent_id">
     <button type="submit" id="stribe_submit_btn" class="btn_1 order_submit_btn">{{ __('defaultTheme.process_to_payment') }}</button>
     @csrf
     @php
@@ -41,13 +41,10 @@
         $i++;
         @endphp
     @endforeach
-    <script
-        src="https://checkout.stripe.com/checkout.js"
-        class="stripe-button"
-        data-key="{{ @$credential->perameter_1 }}"
-        data-name="Stripe Payment"
-        data-image="{{ showImage(app('general_setting')->logo) }}"
-        data-locale="auto"
-        data-currency="{{$currency_code}}">
-    </script>
 </form>
+<div class="stripe_payment_element_wrapper">
+    <div id="stripe-payment-element" class="stripe_payment_element"></div>
+    <div id="stripe-payment-errors" class="text-danger mt_10"></div>
+    <input type="hidden" id="stripe_publishable_key" value="{{ @$credential->perameter_1 }}">
+    <input type="hidden" id="stripe_intent_route" value="{{ route('stripe.payment_intent') }}">
+</div>

@@ -194,6 +194,36 @@ class CheckoutController extends Controller
             }
             return view(theme('pages.shipping_step'),$data);
         }elseif($step == 'select_payment'){
+            $deliveryType = $request->input('delivery_type');
+            $pickupLocation = $request->input('pickup_location');
+            $existingDeliveryInfo = session()->get('delivery_info');
+
+            if (!$deliveryType && is_array($existingDeliveryInfo)) {
+                $deliveryType = data_get($existingDeliveryInfo, 'delivery_type');
+            }
+            if (!in_array($deliveryType, ['home_delivery', 'pickup_location'], true)) {
+                $deliveryType = 'home_delivery';
+            }
+            if ($deliveryType === 'pickup_location' && !$pickupLocation && is_array($existingDeliveryInfo)) {
+                $pickupLocation = data_get($existingDeliveryInfo, 'pickup_location');
+            }
+
+            session()->forget('delivery_info');
+            if ($deliveryType === 'pickup_location') {
+                $request->merge(['pickup_location' => $pickupLocation]);
+                $request->validate([
+                    'pickup_location' => 'required',
+                ]);
+                session()->put('delivery_info', [
+                    'delivery_type' => 'pickup_location',
+                    'pickup_location' => $pickupLocation,
+                ]);
+            } else {
+                session()->put('delivery_info', [
+                    'delivery_type' => 'home_delivery',
+                ]);
+            }
+
             if(isModuleActive('MultiVendor')){
                 if (env('NOCAPTCHA_FOR_CHECKOUT') == "true" && app('theme')->folder_path == 'amazy') {
                     $g_recaptcha = 'required';
@@ -240,22 +270,7 @@ class CheckoutController extends Controller
                 }
             }else{
                 // Do not hard-require shipping_method; fallback will handle if missing
-                $deliveryType = $request->input('delivery_type', 'home_delivery');
-                if(!in_array($deliveryType, ['home_delivery', 'pickup_location'], true)){
-                    $deliveryType = 'home_delivery';
-                }
-
-                session()->forget('delivery_info');
                 if($deliveryType === 'pickup_location'){
-                    $request->validate([
-                        'pickup_location' => 'required'
-                    ]);
-
-                    $delivery_info = [
-                        'delivery_type' => 'pickup_location',
-                        'pickup_location' => $request->pickup_location
-                    ];
-                    session()->put('delivery_info', $delivery_info);
                     if(auth()->check()){
                         $request->merge([
                             'is_shipping_default' => 1,
@@ -269,10 +284,6 @@ class CheckoutController extends Controller
                     }else{
                         $this->checkoutService->guestAddressStore($request->only('name','address','email','phone','country','state','city','postal_code'));
                     }
-                }else{
-                    session()->put('delivery_info', [
-                        'delivery_type' => 'home_delivery'
-                    ]);
                 }
             }
             if($request->get('note') != null){
@@ -750,9 +761,11 @@ class CheckoutController extends Controller
             // Recalculate summary after package-wise shipping changes.
             $shipping_cost = $this->checkoutService->totalAmountForPayment($cartData,null,null)['shipping_cost'];
         }
+        $pickup_locations = $this->checkoutService->getActivePickup_loactions();
+        $free_shipping_for_pickup_location = $this->checkoutService->freeShippingForPickup();
         $checkoutField = CheckoutFieldVisibility::all();
         return view(theme('partials._checkout_details'),compact('shipping_methods','cartData','shipping_address',
-            'gateway_activations','countries', 'giftCardExist', 'states', 'cities','total_items','total_package','shipping_cost','discount', 'postalCodeRequired','checkoutField'));
+            'gateway_activations','countries', 'giftCardExist', 'states', 'cities','total_items','total_package','shipping_cost','discount', 'postalCodeRequired','checkoutField','pickup_locations','free_shipping_for_pickup_location'));
     }
     public function destroy(Request $request){
         $this->checkoutService->deleteProduct($request->except('_token'));
@@ -764,6 +777,39 @@ class CheckoutController extends Controller
         LogActivity::successLog('Shipping address change successful.');
         return true;
     }
+
+    public function deliveryTypeChange(Request $request)
+    {
+        $deliveryType = $request->input('delivery_type', 'home_delivery');
+        if (!in_array($deliveryType, ['home_delivery', 'pickup_location'], true)) {
+            $deliveryType = 'home_delivery';
+        }
+
+        $pickupLocations = $this->checkoutService->getActivePickup_loactions();
+        $defaultPickupLocation = $pickupLocations->firstWhere('is_default', 1)
+            ?? $pickupLocations->firstWhere('is_set', 1)
+            ?? $pickupLocations->first();
+
+        $pickupLocation = $request->input('pickup_location');
+        if ($deliveryType === 'pickup_location' && empty($pickupLocation) && $defaultPickupLocation) {
+            $pickupLocation = base64_encode((string) $defaultPickupLocation->id);
+        }
+
+        Session::forget('delivery_info');
+        if ($deliveryType === 'pickup_location' && !empty($pickupLocation)) {
+            Session::put('delivery_info', [
+                'delivery_type' => 'pickup_location',
+                'pickup_location' => $pickupLocation,
+            ]);
+        } else {
+            Session::put('delivery_info', [
+                'delivery_type' => 'home_delivery',
+            ]);
+        }
+
+        return $this->renderCheckoutDetailsPartial();
+    }
+
     public function billingAddressChange(Request $request){
         $address = auth()->user()->customerAddresses->where('id',$request->id)->first();
         if($address){
@@ -1125,6 +1171,65 @@ class CheckoutController extends Controller
         session()->put('infoCompleteOrder', $infoCompleteOrder);
         return response()->json([
             'MainCheckout' =>  (string)view(theme('partials._payment_step_details'),$infoCompleteOrder)
+        ]);
+    }
+
+    private function renderCheckoutDetailsPartial()
+    {
+        $cartDataGroup = $this->checkoutService->getCartItem();
+        $cartData = $cartDataGroup['cartData'];
+        $giftCardExist = $cartDataGroup['gift_card_exist'];
+        $shipping_address = null;
+        $postalCodeRequired = false;
+        if(isModuleActive('ShipRocket')){
+            $postalCodeRequired = true;
+        }
+        if(auth()->check() && count(auth()->user()->customerAddresses) > 0){
+            $shipping_address = auth()->user()->customerAddresses->where('is_shipping_default',1)->first();
+            if($shipping_address){
+                $states = (new StateRepository())->getByCountryId($shipping_address->country)->where('status', 1);
+                $cities = (new CityRepository())->getByStateId($shipping_address->state)->where('status', 1);
+            }else{
+                $states = (new StateRepository())->getByCountryId(app('general_setting')->default_country)->where('status', 1);
+                $cities = (new CityRepository())->getByStateId(app('general_setting')->default_state)->where('status', 1);
+            }
+        }else{
+            if(session()->has('shipping_address')){
+                $shipping_address = (object) session()->get('shipping_address');
+            }
+            $states = (new StateRepository())->getByCountryId(app('general_setting')->default_country)->where('status', 1);
+            $cities = (new CityRepository())->getByStateId(app('general_setting')->default_state)->where('status', 1);
+        }
+        $countries = $this->checkoutService->getCountries();
+        $gateway_activations = $this->checkoutService->getActivePaymentGetways();
+        $shipping_methods = $this->checkoutService->get_active_shipping_methods();
+        $total_items = $this->checkoutService->totalAmountForPayment($cartData,null,null)['number_of_item'];
+        $total_package = $this->checkoutService->totalAmountForPayment($cartData,null,null)['number_of_package'];
+        $shipping_cost = $this->checkoutService->totalAmountForPayment($cartData,null,null)['shipping_cost'];
+        $discount = $this->checkoutService->totalAmountForPayment($cartData,null,null)['discount'];
+        $pickup_locations = $this->checkoutService->getActivePickup_loactions();
+        $free_shipping_for_pickup_location = $this->checkoutService->freeShippingForPickup();
+        $checkoutField = CheckoutFieldVisibility::all();
+
+        return response()->json([
+            'MainCheckout' => (string) view(theme('partials._checkout_details'), compact(
+                'shipping_methods',
+                'cartData',
+                'shipping_address',
+                'gateway_activations',
+                'countries',
+                'giftCardExist',
+                'states',
+                'cities',
+                'total_items',
+                'total_package',
+                'shipping_cost',
+                'discount',
+                'postalCodeRequired',
+                'checkoutField',
+                'pickup_locations',
+                'free_shipping_for_pickup_location'
+            )),
         ]);
     }
 

@@ -4,6 +4,7 @@ namespace Modules\PaymentGateway\Http\Controllers;
 
 
 use Illuminate\Contracts\Support\Renderable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Brian2694\Toastr\Facades\Toastr;
@@ -15,6 +16,7 @@ use Modules\FrontendCMS\Entities\SubsciptionPaymentInfo;
 use App\Traits\Accounts;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Support\Facades\Validator;
 use Modules\UserActivityLog\Traits\LogActivity;
 use Stripe;
 use Stripe\Transfer;
@@ -34,6 +36,54 @@ class StripeController extends Controller
          return view('paymentgateway::stripe_payment.create');
     }
 
+    public function createPaymentIntent(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'amount' => 'required|numeric|min:0.5',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        $amount = (float) $request->input('amount');
+        $credential = $this->getCredential();
+
+        if (empty($credential?->perameter_1) || empty($credential?->perameter_3)) {
+            return response()->json([
+                'message' => __('payment_gatways.stripe_configuration'),
+            ], 422);
+        }
+
+        Stripe\Stripe::setApiKey($credential->perameter_3);
+
+        try {
+            $paymentIntent = Stripe\PaymentIntent::create([
+                'amount' => (int) round($amount * 100),
+                'currency' => strtolower(getCurrencyCode()),
+                'payment_method_types' => ['card'],
+                'description' => 'Order payment from ' . url('/'),
+                'metadata' => [
+                    'purpose' => 'order_payment',
+                ],
+            ]);
+
+            return response()->json([
+                'client_secret' => $paymentIntent->client_secret,
+                'payment_intent_id' => $paymentIntent->id,
+                'publishable_key' => $credential->perameter_1,
+            ]);
+        } catch (Exception $e) {
+            LogActivity::errorLog($e->getMessage());
+
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
     public function stripePost($data)
     {
         // Stripe expects lowercase ISO currency codes
@@ -41,12 +91,26 @@ class StripeController extends Controller
         $credential = $this->getCredential();
         Stripe\Stripe::setApiKey(@$credential->perameter_3);
         try{
-            $stripe = Stripe\Charge::create ([
-                "amount" => (int) round($data['amount'] * 100),
-                "currency" => $currency_code,
-                "source" => $data['stripeToken'],
-                "description" => "Payment from ". url('/')
-            ]);
+            $stripe = null;
+            $chargeId = null;
+
+            if (!empty($data['stripe_payment_intent_id'])) {
+                $stripe = Stripe\PaymentIntent::retrieve($data['stripe_payment_intent_id']);
+                if (!$stripe || $stripe->status !== 'succeeded') {
+                    throw new Exception('Stripe payment is not completed.');
+                }
+                $chargeId = is_string($stripe->latest_charge)
+                    ? $stripe->latest_charge
+                    : ($stripe->latest_charge->id ?? null);
+            } else {
+                $stripe = Stripe\Charge::create ([
+                    "amount" => (int) round($data['amount'] * 100),
+                    "currency" => $currency_code,
+                    "source" => $data['stripeToken'],
+                    "description" => "Payment from ". url('/')
+                ]);
+                $chargeId = $stripe->id ?? null;
+            }
 
             // Only attempt seller payouts when enabled and data provided
             $sellers = $data['seller'] ?? [];
@@ -68,7 +132,7 @@ class StripeController extends Controller
                             'amount' => (int) round($seller_amount * 100),
                             'currency' => $currency_code,
                             'destination' => $user->stripe_account_id,
-                            'source_transaction' => $stripe->id, // Charge ID from customer payment
+                            'source_transaction' => $chargeId,
                         ]);
                     }
                 }
@@ -79,7 +143,7 @@ class StripeController extends Controller
             Toastr::error($e->getMessage(), __('common.error'));
             return redirect()->back();
         }
-        if ($stripe['status'] == "succeeded") {
+        if (($stripe['status'] ?? null) == "succeeded") {
             $return_data = $stripe['id'];
             if (session()->has('wallet_recharge')) {
                 $walletService = new WalletRepository;
