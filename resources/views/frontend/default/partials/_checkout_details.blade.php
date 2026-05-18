@@ -43,13 +43,13 @@
                     <div class="checkout_shiped_box mb_10">
                         <div class="card-body">
                             <h4 class="mb-2">Delivery Options</h4>
-                            <p class="text-muted mb-3">Choose pickup or home delivery for this checkout.</p>
+                            <p class="text-muted mb-3">Choose Home Delivery Or Pickup Location For This Order.</p>
                             <div class="delivery_type_button">
                                 <label class="primary_bulet_checkbox">
                                     <input type="radio" name="delivery_type" class="payment_method" value="home_delivery" @if(!$isPickupSelected) checked @endif>
                                     <span class="checkmark"></span>
                                 </label>
-                                <a>Home delivery</a>
+                                <a>Home Delivery</a>
                                 @if(count($pickup_locations) > 0)
                                     <label class="primary_bulet_checkbox ml-20">
                                         <input type="radio" name="delivery_type" class="payment_method" value="pickup_location" @if($isPickupSelected) checked @endif>
@@ -345,7 +345,7 @@
                                     <input type="radio" name="delivery_type" class="payment_method"  value="home_delivery" @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') checked @endif>
                                     <span class="checkmark"></span>
                                 </label>
-                                <a>Home delivery</a>
+                                <a>Home Delivery</a>
                                 @if(session()->has('buy_it_now') && @$cartData->where('is_buy_now', 1)->first()->product_type == 'gift_card')
                                 @else
                                     <label class="primary_bulet_checkbox ml-20">

@@ -246,7 +246,7 @@
                                         <input type="radio" name="delivery_type" class="payment_method"  value="home_delivery" @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') checked @endif>
                                         <span class="checkmark"></span>
                                     </label>
-                                    <a>Home delivery</a>
+                                    <a>Home Delivery</a>
 
                                     <label class="primary_bulet_checkbox ml-20">
                                         <input type="radio" name="delivery_type" class="payment_method"  value="pickup_location" @if($delivery_info && $delivery_info['delivery_type'] == 'pickup_location') checked @endif>

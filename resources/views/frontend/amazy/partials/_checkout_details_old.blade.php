@@ -267,7 +267,7 @@
                                         <input type="radio" name="delivery_type" class="payment_method"  value="home_delivery" @if(!$delivery_info || $delivery_info && $delivery_info['delivery_type'] == 'home_delivery') checked @endif>
                                         <span class="checkmark"></span>
                                     </label>
-                                    <a>Home delivery</a>
+                                    <a>Home Delivery</a>
                                     @if(session()->has('buy_it_now') && @$cartData->where('is_buy_now', 1)->first()->product_type == 'gift_card')
                                     @else
                                         <label class="primary_bulet_checkbox ml-20">

@@ -319,7 +319,7 @@
 
                     <div class="checkout_delivery_selector">
                         <div class="checkout_delivery_selector_title">Delivery Options</div>
-                        <div class="checkout_delivery_selector_hint">Choose pickup or home delivery for this checkout.</div>
+                        <div class="checkout_delivery_selector_hint">Choose Home Delivery Or Pickup Location For This Order.</div>
                         <div class="delivery_type_button">
                             <label class="primary_bulet_checkbox">
                                 <input type="radio" name="delivery_type" class="payment_method" value="home_delivery" @if(!$isPickupSelected) checked @endif>

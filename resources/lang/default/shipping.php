@@ -117,7 +117,7 @@
     'Amount multiply with quantity in flat rate shipping?' => 'Amount multiply with quantity in flat rate shipping?',
     'shipping_charge_free_from' => 'Shipping charge free from',
     'estimated_delivery_time' => 'Estimated Delivery Time',
-    'home_delivery' => 'Home delivery',
+    'home_delivery' => 'Home Delivery',
     'delivery_returns' => 'Delivery & Returns',
     'ready_to_ship' => 'Ready To Ship',
     'pickup' => 'Pickup',
