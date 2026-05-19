@@ -436,7 +436,6 @@
 
                                             <span class="checkout_package_label name_text text-nowrap f_w_600">
                                                 @if($is_physical_count > 0 && !$isPickupSelected)
-                                                    <a class="checkout_package_shipping_link link_style font_16 f_w_700 text-nowrap m-0 theme_hover text_color" href="javascript:void(0)">
                                                         <span id="shipping_methods" data-target="shipping_methods_{{ $packageSellerId }}">
                                                             {{ $shippingSummaryText }}
                                                         </span>

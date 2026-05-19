@@ -289,7 +289,7 @@ return [
     'email_me_with_news_and_offers' => 'Email Me With News And Offers',
     'address_list' => 'Address List',
     'new_address' => 'New Address',
-    'continue_to_shipping' => 'Continue To Shipping',
+    'continue_to_shipping' => 'Continue To Payment',
     'continue_to_payment' => 'Continue To Payment',
     'return_to_cart' => 'Return To Cart',
     'return_to_shipping' => 'Return To Shipping',
