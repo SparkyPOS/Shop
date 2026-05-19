@@ -14,6 +14,7 @@ use App\Traits\GoogleAnalytics4;
 use App\Models\OrderAddressDetail;
 use App\Models\OrderPackageDetail;
 use App\Models\OrderProductDetail;
+use App\Services\OrderSyncService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -707,6 +708,7 @@ class OrderRepository
                 Session::forget('auction_type');
                 Session::forget('auction_price');
         }
+        $this->syncOrderToSparkyPosAfterCommit($order);
         return $order;
     }
 
@@ -1144,7 +1146,20 @@ class OrderRepository
             $this->notificationSend($notification->id, $order->customer_id);
         }
 
+        $this->syncOrderToSparkyPosAfterCommit($order);
         return $order;
+    }
+
+    private function syncOrderToSparkyPosAfterCommit($order)
+    {
+        $callback = function () use ($order) {
+            app(OrderSyncService::class)->syncOrderById((int) $order->id);
+        };
+        if(DB::transactionLevel() > 0){
+            DB::afterCommit($callback);
+            return;
+        }
+        $callback();
     }
 
     public function orderPaymentDone($amount, $method, $response, $user = null)
