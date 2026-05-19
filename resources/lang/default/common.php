@@ -633,6 +633,7 @@ return [
     'delivered' => 'Delivered',
     'incl' => 'Incl',
     'via' => 'Via',
+    'eta' => 'ETA',
     'account_holder' => 'Account Holder',
     'activated' => 'Activated',
     'wholesale' => 'Wholesale',

@@ -381,6 +381,10 @@
                             if (!is_scalar($viaLabel)) {
                                 $viaLabel = 'via';
                             }
+                            $etaLabel = __('ETA');
+                            if (!is_scalar($etaLabel)) {
+                                $etaLabel = 'ETA';
+                            }
                             $shippingCostLabel = single_price((float) data_get($packageShipping, 'shipping_cost', 0));
                             if (!is_scalar($shippingCostLabel)) {
                                 $shippingCostLabel = (string) ((float) data_get($packageShipping, 'shipping_cost', 0));
@@ -394,11 +398,10 @@
                                 $shippingSummaryText = trim((string) __('shipping.pickup_location') . ': ' . (string) ($selectedPickupLocationName ?? __('common.selected')));
                             } else {
                                 $shippingSummaryText = trim(sprintf(
-                                    '%s: %s %s %s %s',
+                                    '%s: %s %s %s',
                                     (string) $shippingLabel,
                                     (string) $shippingCostLabel,
-                                    (string) $viaLabel,
-                                    (string) $shippingMethodLabel,
+                                    (string) $ETA,
                                     (string) $shippingTimeLabel
                                 ));
                             }
