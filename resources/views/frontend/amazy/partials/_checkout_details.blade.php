@@ -401,7 +401,7 @@
                                     '%s: %s %s %s',
                                     (string) $shippingLabel,
                                     (string) $shippingCostLabel,
-                                    (string) $ETA,
+                                    (string) $etaLabel,
                                     (string) $shippingTimeLabel
                                 ));
                             }
