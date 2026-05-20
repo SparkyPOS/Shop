@@ -19,6 +19,7 @@ class OrderSyncService
 
         $order = Order::with([
             'customer',
+            'customer.SellerAccount',
             'method',
             'order_payment.method',
             'address.getBillingCountry',
@@ -127,6 +128,8 @@ class OrderSyncService
 
         return [
             'external_customer_id' => $order->customer_id ? (string) $order->customer_id : null,
+            'buyer_pos_user_id' => optional($customer)->pos_user_id ?: optional($customer)->app_user_id,
+            'buyer_vendor_code' => optional(optional($customer)->SellerAccount)->vendor_id,
             'name' => $name,
             'first_name' => $parts[0],
             'last_name' => $parts[1],
