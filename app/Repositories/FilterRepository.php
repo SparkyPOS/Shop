@@ -23,7 +23,7 @@ class FilterRepository
 
     public function getAllActiveProduct($sort_by, $paginate)
     {
-        $products = SellerProduct::with('skus', 'product')->activeSeller()->select('seller_products.*')->join('products', function ($query) {
+        $products = SellerProduct::with('skus', 'product', 'seller.SellerAccount.user')->activeSeller()->select('seller_products.*')->join('products', function ($query) {
             $query->on('products.id','=','seller_products.product_id')->where('products.status', 1);
         })->distinct('seller_products.id');
         return $this->sortAndPaginate($products, $sort_by, $paginate);
@@ -56,7 +56,7 @@ class FilterRepository
         }elseif($data['requestItemType'] == "tag"){
             $tag = Tag::where('name',$requestItem)->first();
             $mainProducts = ProductTag::where('tag_id', $tag->id)->pluck('product_id')->toArray();
-            $products = SellerProduct::with('product')->activeSeller()->select('seller_products.*')->join('products', function($query) use($mainProducts){
+            $products = SellerProduct::with('product', 'seller.SellerAccount.user')->activeSeller()->select('seller_products.*')->join('products', function($query) use($mainProducts){
                 return $query->on('products.id','=','seller_products.product_id')->whereRaw("products.id in ('". implode("','",$mainProducts)."')");
             });
             $this->joins = ['products'];
@@ -69,12 +69,12 @@ class FilterRepository
             $products = $result['products'];
             $this->joins = ['products'];
         }elseif($data['requestItemType'] == "brand"){
-            $products = SellerProduct::query()->with('product', 'reviews', 'skus')->activeSeller()->select('seller_products.*')->join('products', function ($query) {
+            $products = SellerProduct::query()->with('product', 'reviews', 'skus', 'seller.SellerAccount.user')->activeSeller()->select('seller_products.*')->join('products', function ($query) {
                 $query->on('products.id','=','seller_products.product_id')->where('products.status', 1);
             });
             $this->joins = ['products'];
         }else{
-            $products = SellerProduct::query()->with('product', 'reviews', 'skus')->activeSeller()->select('seller_products.*')->join('products', function ($query) {
+            $products = SellerProduct::query()->with('product', 'reviews', 'skus', 'seller.SellerAccount.user')->activeSeller()->select('seller_products.*')->join('products', function ($query) {
                 $query->on('products.id','=','seller_products.product_id')->where('products.status', 1)->join('category_product', function ($q) {
                     $q->on('products.id', 'category_product.product_id')->join('categories', function ($q1) {
                         $filter_type = gv(request()->filterType??[], 0);
@@ -195,7 +195,7 @@ class FilterRepository
             }
             if ($data['requestItemType'] == "brand" && empty($filter['filterTypeValue'])) {
                 $cat = $data['requestItem'];
-                $products = SellerProduct::with('skus', 'product')->where('status', 1)->whereHas('product', function ($query) use ($cat) {
+                $products = SellerProduct::with('skus', 'product', 'seller.SellerAccount.user')->where('status', 1)->whereHas('product', function ($query) use ($cat) {
                     $query->where('brand_id', $cat);
                 })->activeSeller();
                 $giftCards = collect();
@@ -233,7 +233,7 @@ class FilterRepository
                     return $q;
                 });
             })->pluck('id')->toArray();
-        $products = SellerProduct::with('product')->activeSeller()->select('seller_products.*')->join('products', function($qq){
+        $products = SellerProduct::with('product', 'seller.SellerAccount.user')->activeSeller()->select('seller_products.*')->join('products', function($qq){
             $qq->on('products.id','=','seller_products.product_id')->where('products.status', 1);
         })->whereHas('product', function($query) use($mainProducts,$slug){
             return $query->whereIn('products.id',$mainProducts)->orWhere('products.product_name','LIKE', "%{$slug}%")->orWhere('products.description','LIKE',"%{$slug}%")->orWhere('products.specification','LIKE',"%{$slug}%");
@@ -247,7 +247,7 @@ class FilterRepository
 
         $products = SellerProduct::query()->activeSeller()->join('products','products.id', '=', 'seller_products.product_id')
                                  ->join('category_product','category_product.product_id', '=', 'products.id')
-                                 ->join('categories','categories.id', '=', 'category_product.category_id')->where('products.status',1)->where('products.status',1)->select('seller_products.*')->with('product', 'reviews', 'skus');
+                                 ->join('categories','categories.id', '=', 'category_product.category_id')->where('products.status',1)->where('products.status',1)->select('seller_products.*')->with('product', 'reviews', 'skus', 'seller.SellerAccount.user');
                                  //->join('product_variations','products.id', '=', 'product_variations.product_id')->where('products.status',1)->select('seller_products.*');
         if($requestType == 'tag')
         {
@@ -286,7 +286,7 @@ class FilterRepository
                 $cat = $data['requestItem'];
                 $catRepo = new CategoryRepository(new Category());
                 $subCat = $catRepo->getAllSubSubCategoryID($cat);
-                $products = SellerProduct::with('skus', 'product')->where('status', 1)->whereHas('product', function ($query) use ($cat, $subCat) {
+                $products = SellerProduct::with('skus', 'product', 'seller.SellerAccount.user')->where('status', 1)->whereHas('product', function ($query) use ($cat, $subCat) {
                     $query->whereHas('categories', function($q) use($cat){
                         $q->where('category_id',$cat)->orWhereHas('subCategories',function($q2) use($cat){
                             $q2->where('parent_id', $cat);
@@ -296,7 +296,7 @@ class FilterRepository
             }
             if ($data['requestItemType'] == "brand" && empty($filter['filterTypeId'])) {
                 $cat = $data['requestItem'];
-                $products = SellerProduct::with('skus', 'product')->where('status', 1)->whereHas('product', function ($query) use ($cat) {
+                $products = SellerProduct::with('skus', 'product', 'seller.SellerAccount.user')->where('status', 1)->whereHas('product', function ($query) use ($cat) {
                     $query->where('brand_id', $cat);
                 })->activeSeller();
             }
@@ -324,7 +324,7 @@ class FilterRepository
         }elseif($session_data['requestItemType'] == "tag"){
             $tag = Tag::where('name',$requestItem)->first();
             $mainProducts = ProductTag::where('tag_id', $tag->id)->pluck('product_id')->toArray();
-            $products = SellerProduct::with('product')->activeSeller()->select('seller_products.*')->join('products', function($query) use($mainProducts){
+            $products = SellerProduct::with('product', 'seller.SellerAccount.user')->activeSeller()->select('seller_products.*')->join('products', function($query) use($mainProducts){
                 return $query->on('products.id','=','seller_products.product_id')->whereRaw("products.id in ('". implode("','",$mainProducts)."')");
             });
             $this->joins = ['products'];
@@ -338,7 +338,7 @@ class FilterRepository
             });
             $this->joins = ['products'];
         }else{
-            $products = SellerProduct::query()->with('product', 'reviews', 'skus')->activeSeller()->select('seller_products.*')->join('products', function ($query) {
+            $products = SellerProduct::query()->with('product', 'reviews', 'skus', 'seller.SellerAccount.user')->activeSeller()->select('seller_products.*')->join('products', function ($query) {
                 $query->on('products.id','=','seller_products.product_id')->where('products.status', 1)->join('category_product', function ($q) {
                     $q->on('products.id', 'category_product.product_id')->join('categories', function ($q1) {
                         $q1->on('category_product.category_id', 'categories.id')->orOn('category_product.category_id', 'categories.parent_id');
@@ -395,7 +395,7 @@ class FilterRepository
                 $cat = $data['requestItem'];
                 $catRepo = new CategoryRepository(new Category());
                 $subCat = $catRepo->getAllSubSubCategoryID($cat);
-                $products = SellerProduct::with('skus', 'product')->where('status', 1)->whereHas('product', function ($query) use ($cat, $subCat) {
+                $products = SellerProduct::with('skus', 'product', 'seller.SellerAccount.user')->where('status', 1)->whereHas('product', function ($query) use ($cat, $subCat) {
                     $query->whereHas('categories', function($q) use($cat){
                         $q->where('category_id',$cat)->orWhereHas('subCategories',function($q2) use($cat){
                             $q2->where('parent_id', $cat);
@@ -406,7 +406,7 @@ class FilterRepository
             }
             if ($session_data['requestItemType'] == "brand" && empty($filter['filterTypeValue'])) {
                 $cat = $data['requestItem'];
-                $products = SellerProduct::with('skus', 'product')->where('status', 1)->whereHas('product', function ($query) use ($cat) {
+                $products = SellerProduct::with('skus', 'product', 'seller.SellerAccount.user')->where('status', 1)->whereHas('product', function ($query) use ($cat) {
                     $query->where('brand_id', $cat);
                 })->activeSeller();
                 $giftCards = collect();
@@ -431,7 +431,7 @@ class FilterRepository
     }
     public function filterProductCategoryWise($category_id, $category_ids, $sort_by, $paginate_by)
     {
-        $products = SellerProduct::with('skus', 'product')->where('seller_products.status', 1)->activeSeller()->select("seller_products.*")->join('products', function ($query) use ($category_ids, $category_id) {
+        $products = SellerProduct::with('skus', 'product', 'seller.SellerAccount.user')->where('seller_products.status', 1)->activeSeller()->select("seller_products.*")->join('products', function ($query) use ($category_ids, $category_id) {
             return $query->on('products.id', '=', 'seller_products.product_id')->where('products.status', 1)->join('category_product',function($q) use($category_id,$category_ids){
                 return $q->on('products.id','=', 'category_product.product_id')->where('category_product.category_id', $category_id)->join('categories', function($q2) use($category_id){
                     return $q2->on('category_product.category_id', '=', 'categories.id')->orOn('category_product.category_id', '=', 'categories.parent_id');
@@ -442,7 +442,7 @@ class FilterRepository
     }
     public function filterProductBrandWise($brand_id, $sort_by, $paginate_by)
     {
-        $products = SellerProduct::with('skus', 'product')->where('seller_products.status', 1)->activeSeller()->select('seller_products.*')->join('products', function ($query) use ($brand_id) {
+        $products = SellerProduct::with('skus', 'product', 'seller.SellerAccount.user')->where('seller_products.status', 1)->activeSeller()->select('seller_products.*')->join('products', function ($query) use ($brand_id) {
             return $query->on('seller_products.product_id', '=', 'products.id')->where('products.brand_id', $brand_id)->where('products.status', 1);
         });
         return $this->sortAndPaginate($products, $sort_by, $paginate_by);

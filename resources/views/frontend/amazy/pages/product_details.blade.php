@@ -384,52 +384,13 @@
                                             <span class="count_single_item number_increment qtyChange" data-value="+"> <i class="ti-plus"></i></span>
                                         </div>
                                     </div>
-                                    <input type="hidden" name="base_sku_price" id="base_sku_price" value="
-                                        @if(@$product->hasDeal)
-                                            {{ selling_price(@$product->skus->where('status',1)->first()->sell_price,@$product->hasDeal->discount_type,@$product->hasDeal->discount) }}
-                                        @else
-                                            @if($product->hasDiscount == 'yes')
-                                            {{selling_price(@$product->skus->where('status',1)->first()->sell_price,@$product->discount_type,@$product->discount)}}
-                                            @else
-                                                {{@$product->skus->where('status',1)->first()->sell_price}}
-                                            @endif
-                                        @endif
-                                    ">
-                                    <input type="hidden" name="final_price" id="final_price" value="
-                                        @if(@$product->hasDeal)
-                                            {{ selling_price(@$product->skus->where('status',1)->first()->sell_price,@$product->hasDeal->discount_type,@$product->hasDeal->discount) }}
-                                        @else
-                                            @if($product->hasDiscount == 'yes')
-                                            {{selling_price(@$product->skus->where('status',1)->first()->sell_price,@$product->discount_type,@$product->discount)}}
-                                            @else
-                                                {{@$product->skus->where('status',1)->first()->sell_price}}
-                                            @endif
-                                        @endif
-                                    ">
+                                    <input type="hidden" name="base_sku_price" id="base_sku_price" value="{{ getProductCartPrice($product) }}">
+                                    <input type="hidden" name="final_price" id="final_price" value="{{ getProductCartPrice($product) }}">
 
                                     @if(isGuestAddtoCart() == true && (!isset($auction) || !$auction))
                                     <h5 class="mb-0">{{__('common.total')}}:
-                                        @php
-                                            $activeSkus = $product->skus->where('status', 1);
-                                            $originalSku = $activeSkus
-                                                ->sortBy(fn($sku) => strlen($sku->sku))
-                                                ->first();
-                                            $adjustedSkus = $activeSkus
-                                                ->filter(fn($sku) => $sku->id != optional($originalSku)->id);
-                                            $targetSku = $adjustedSkus->sortBy('sell_price')->first()
-                                                        ?? $originalSku;
-                                            $basePrice = optional($targetSku)->sell_price ?? 0;
-                                        @endphp
                                         <span id="total_price">
-                                            @if(@$product->hasDeal)
-                                                {{single_price(selling_price($basePrice,@$product->hasDeal->discount_type,@$product->hasDeal->discount) * $product->product->minimum_order_qty)}}
-                                            @else
-                                                @if($product->hasDiscount == 'yes')
-                                                    {{single_price(selling_price($basePrice,@$product->discount_type,@$product->discount) * $product->product->minimum_order_qty)}}
-                                                @else
-                                                    {{single_price($basePrice * $product->product->minimum_order_qty)}}
-                                                @endif
-                                            @endif
+                                            {{ single_price(getProductCartPrice($product) * $product->product->minimum_order_qty) }}
                                         </span>
                                     </h5>
                                     @endif
@@ -636,15 +597,7 @@
                                     <div class="product_details_sujjetion_box">
                                         <a href="{{singleProductURL(@$both_buy_product->seller->slug, $both_buy_product->slug)}}" class="product_details_sujjetion_single d-flex align-items-center gap_15">
                                             @php
-                                                if(@$product->hasDeal){
-                                                    $both_buy_price = selling_price(@$both_buy_product->skus->first()->sell_price,@$both_buy_product->hasDeal->discount_type,@$both_buy_product->hasDeal->discount);
-                                                }else{
-                                                    if(@$product->hasDiscount == 'yes'){
-                                                        $both_buy_price = selling_price(@$both_buy_product->skus->first()->sell_price,@$both_buy_product->discount_type,@$both_buy_product->discount);
-                                                    }else{
-                                                        $both_buy_price = @$both_buy_product->skus->first()->sell_price;
-                                                    }
-                                                }
+                                                $both_buy_price = getProductCartPrice($both_buy_product);
                                             @endphp
                                             <input type="hidden" id="both_buy_price" value="{{$both_buy_price}}">
                                             <div class="thumb both_buy">
@@ -830,15 +783,7 @@
                                                         @if(isGuestAddtoCart())
                                                             <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
                                                                 <a class="amaz_primary_btn addToCartFromThumnail" data-producttype="{{ @$recent_viewed_product->product->product_type }}" data-seller={{ $recent_viewed_product->user_id }} data-product-sku={{ @$recent_viewed_product->skus->first()->id }}
-                                                                    @if (@$recent_viewed_product->hasDeal)
-                                                                        data-base-price={{ selling_price(@$recent_viewed_product->skus->first()->sell_price,@$recent_viewed_product->hasDeal->discount_type,@$recent_viewed_product->hasDeal->discount) }}
-                                                                    @else
-                                                                        @if (@$recent_viewed_product->hasDiscount == 'yes')
-                                                                            data-base-price={{ selling_price(@$recent_viewed_product->skus->first()->sell_price,@$recent_viewed_product->discount_type,@$recent_viewed_product->discount) }}
-                                                                        @else
-                                                                            data-base-price={{ @$recent_viewed_product->skus->first()->sell_price }}
-                                                                        @endif
-                                                                    @endif
+                                                                    data-base-price="{{ getProductCartPrice($recent_viewed_product) }}"
                                                                     data-shipping-method=0
                                                                     data-product-id={{ $recent_viewed_product->id }}
                                                                     data-stock_manage="{{$recent_viewed_product->stock_manage}}"
@@ -1209,15 +1154,7 @@
                                         @if(isGuestAddtoCart())
                                         <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
                                             <a class="amaz_primary_btn add_cart add_to_cart addToCartFromThumnail" data-producttype="{{ @$related_seller_product->product->product_type }}" data-seller={{ $related_seller_product->user_id }} data-product-sku={{ @$related_seller_product->skus->first()->id }}
-                                                @if(@$related_seller_product->hasDeal)
-                                                    data-base-price={{ selling_price(@$related_seller_product->skus->first()->sell_price,@$related_seller_product->hasDeal->discount_type,@$related_seller_product->hasDeal->discount) }}
-                                                @else
-                                                    @if(@$related_seller_product->hasDiscount == 'yes')
-                                                        data-base-price={{ selling_price(@$related_seller_product->skus->first()->sell_price,@$related_seller_product->discount_type,@$related_seller_product->discount) }}
-                                                    @else
-                                                        data-base-price={{ @$related_seller_product->skus->first()->sell_price }}
-                                                    @endif
-                                                @endif
+                                                data-base-price="{{ getProductCartPrice($related_seller_product) }}"
                                                 data-shipping-method=0
                                                 data-product-id={{ $related_seller_product->id }}
                                                 data-stock_manage="{{$related_seller_product->stock_manage}}"

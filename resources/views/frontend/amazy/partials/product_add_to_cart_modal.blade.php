@@ -243,29 +243,9 @@
                             <input type="hidden" id="minimum_order_qty_modal" value="{{ @$product->product->minimum_order_qty }}">
                             <input type="hidden" name="product_type" class="product_type" value="{{ $product->product->product_type }}">
 
-                            <input type="hidden" name="base_sku_price" id="base_sku_price_modal" value="
-                                @if(@$product->hasDeal)
-                                    {{ selling_price($product->skus->first()->sell_price, $product->hasDeal->discount_type, $product->hasDeal->discount) }}
-                                @else
-                                    @if($product->hasDiscount == 'yes')
-                                        {{ selling_price($product->skus->first()->sell_price, $product->discount_type, $product->discount) }}
-                                    @else
-                                        {{ $product->skus->first()->sell_price }}
-                                    @endif
-                                @endif
-                            ">
+                            <input type="hidden" name="base_sku_price" id="base_sku_price_modal" value="{{ getProductCartPrice($product) }}">
 
-                            <input type="hidden" name="final_price" id="final_price_modal" value="
-                                @if(@$product->hasDeal)
-                                    {{ selling_price($product->skus->first()->sell_price, $product->hasDeal->discount_type, $product->hasDeal->discount) }}
-                                @else
-                                    @if($product->hasDiscount == 'yes')
-                                        {{ selling_price($product->skus->first()->sell_price, $product->discount_type, $product->discount) }}
-                                    @else
-                                        {{ $product->skus->first()->sell_price }}
-                                    @endif
-                                @endif
-                            ">
+                            <input type="hidden" name="final_price" id="final_price_modal" value="{{ getProductCartPrice($product) }}">
 
                             <input type="hidden" value="{{ textLimit($product->product_name, 28) }}" id="product_name_modal">
                             <input type="hidden" value="{{ singleProductURL(@$product->seller->slug, @$product->slug) }}" id="product_url_modal">
@@ -310,15 +290,7 @@
                                     <h4>
                                         <span>{{ __('common.total') }}:</span>
                                         <span id="total_price_modal">
-                                            @if(@$product->hasDeal)
-                                                {{ single_price(selling_price(@$product->skus->first()->sell_price, @$product->hasDeal->discount_type, @$product->hasDeal->discount) * $product->product->minimum_order_qty) }}
-                                            @else
-                                                @if($product->hasDiscount == 'yes')
-                                                    {{ single_price(selling_price(@$product->skus->first()->sell_price, @$product->discount_type, @$product->discount) * $product->product->minimum_order_qty) }}
-                                                @else
-                                                    {{ single_price(@$product->skus->first()->sell_price * $product->product->minimum_order_qty) }}
-                                                @endif
-                                            @endif
+                                            {{ single_price(getProductCartPrice($product) * $product->product->minimum_order_qty) }}
                                         </span>
                                     </h4>
                                 </div>

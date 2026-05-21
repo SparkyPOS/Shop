@@ -107,16 +107,7 @@
             @if (count($products) > 0)
                 @foreach ($products as $product)
                     @if (get_class($product) == \Modules\Seller\Entities\SellerProduct::class)
-                        <input type="hidden" name="base_sku_price" id="base_sku_price"
-                            value="
-                        @if (@$product->hasDeal) {{ selling_price(@$product->skus->first()->sell_price, @$product->hasDeal->discount_type, @$product->hasDeal->discount) }}
-                        @else
-                            @if (@$product->hasDiscount == 'yes')
-                            {{ selling_price(@$product->skus->first()->sell_price, @$product->discount_type, @$product->discount) }}
-                            @else
-                            {{ @$product->skus->first()->sell_price }} @endif
-                        @endif
-                    ">
+                        <input type="hidden" name="base_sku_price" id="base_sku_price" value="{{ getProductCartPrice($product) }}">
                     <div class="col-xl-4 col-md-6 col-sm-6 col-6 d-flex">
                         <div class="product_widget5 mb_30 style5 w-100">
                             <div class="product_thumb_upper">
@@ -232,15 +223,7 @@
                                 @if(isGuestAddtoCart())
                                 <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
                                     <a class="amaz_primary_btn addToCartFromThumnail" data-producttype="{{ @$product->product->product_type }}" data-seller={{ $product->user_id }} data-product-sku={{ @$product->skus->first()->id }}
-                                        @if (@$product->hasDeal)
-                                            data-base-price={{ selling_price(@$product->skus->first()->sell_price,@$product->hasDeal->discount_type,@$product->hasDeal->discount) }}
-                                        @else
-                                            @if (@$product->hasDiscount == 'yes')
-                                                data-base-price={{ selling_price(@$product->skus->first()->sell_price,@$product->discount_type,@$product->discount) }}
-                                            @else
-                                                data-base-price={{ @$product->skus->first()->sell_price }}
-                                            @endif
-                                        @endif
+                                        data-base-price="{{ getProductCartPrice($product) }}"
                                         data-shipping-method=0
                                         data-product-id={{ $product->id }}
                                         data-stock_manage="{{$product->stock_manage}}"
@@ -529,15 +512,7 @@
                                     @if(isGuestAddtoCart() == true)
                                     <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
                                         <a class="amaz_primary_btn addToCartFromThumnail" data-producttype="{{ @$product->product->product_type }}" data-seller={{ $product->user_id }} data-product-sku={{ @$product->skus->first()->id }}
-                                            @if (@$product->hasDeal)
-                                                data-base-price={{ selling_price(@$product->skus->first()->sell_price,@$product->hasDeal->discount_type,@$product->hasDeal->discount) }}
-                                            @else
-                                                @if (@$product->hasDiscount == 'yes')
-                                                    data-base-price={{ selling_price(@$product->skus->first()->sell_price,@$product->discount_type,@$product->discount) }}
-                                                @else
-                                                    data-base-price={{ @$product->skus->first()->sell_price }}
-                                                @endif
-                                            @endif
+                                            data-base-price="{{ getProductCartPrice($product) }}"
                                             data-shipping-method=0
                                             data-product-id={{ $product->id }}
                                             data-stock_manage="{{$product->stock_manage}}"

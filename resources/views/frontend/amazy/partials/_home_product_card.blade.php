@@ -181,15 +181,7 @@
         @elseif(isGuestAddtoCart())
             <div class="product_price d-flex align-items-center justify-content-between flex-wrap">
                 <a class="amaz_primary_btn addToCartFromThumnail" data-producttype="{{ @$product->product->product_type }}" data-seller={{ $product->user_id }} data-product-sku={{ @$product->skus->first()->id }}
-                    @if (@$product->hasDeal)
-                        data-base-price={{ selling_price(@$product->skus->first()->sell_price,@$product->hasDeal->discount_type,@$product->hasDeal->discount) }}
-                    @else
-                        @if (@$product->hasDiscount == 'yes')
-                            data-base-price={{ selling_price(@$product->skus->first()->sell_price,@$product->discount_type,@$product->discount) }}
-                        @else
-                            data-base-price={{ @$product->skus->first()->sell_price }}
-                        @endif
-                    @endif
+                    data-base-price="{{ getProductCartPrice($product) }}"
                     data-shipping-method=0
                     data-product-id={{ $product->id }}
                     data-stock_manage="{{ $product->stock_manage }}"

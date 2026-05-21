@@ -33,27 +33,27 @@ class ProductRepository
 
     public function getProductByID($id)
     {
-        return $this->product::with('product', 'skus')->where('id', $id)->firstOrFail();
+        return $this->product::with('product', 'skus', 'seller.SellerAccount.user')->where('id', $id)->firstOrFail();
     }
 
     public function recentViewedProducts($product_ids)
     {
-        return $this->product::with('product', 'skus')->whereRaw("id in ('". implode("','",$product_ids)."')")->latest()->get();
+        return $this->product::with('product', 'skus', 'seller.SellerAccount.user')->whereRaw("id in ('". implode("','",$product_ids)."')")->latest()->get();
     }
 
     public function getProductBySlug($slug)
     {
-        return $this->product::with('product', 'skus')->where('slug', $slug)->firstOrFail();
+        return $this->product::with('product', 'skus', 'seller.SellerAccount.user')->where('slug', $slug)->firstOrFail();
     }
 
     public function getActiveSellerProductBySlug($slug, $seller_slug = null)
     {
         if(isModuleActive('MultiVendor')){
-            return $this->product::where('slug', $slug)->with('product.tags','related_sales.related_seller_products.seller','cross_sales.cross_seller_products.seller','up_sales.up_seller_products.seller', 'skus','seller')->whereHas('seller', function($q) use ($seller_slug){
+            return $this->product::where('slug', $slug)->with('product.tags','related_sales.related_seller_products.seller.SellerAccount.user','cross_sales.cross_seller_products.seller.SellerAccount.user','up_sales.up_seller_products.seller.SellerAccount.user', 'skus','seller.SellerAccount.user')->whereHas('seller', function($q) use ($seller_slug){
                 return $q->where('slug', $seller_slug);
             })->activeSeller()->firstOrFail();
         }
-        return $this->product::where('slug', $slug)->with('product.tags','related_sales.related_seller_products.seller','cross_sales.cross_seller_products.seller','up_sales.up_seller_products.seller', 'skus','seller')->activeSeller()->firstOrFail();
+        return $this->product::where('slug', $slug)->with('product.tags','related_sales.related_seller_products.seller.SellerAccount.user','cross_sales.cross_seller_products.seller.SellerAccount.user','up_sales.up_seller_products.seller.SellerAccount.user', 'skus','seller.SellerAccount.user')->activeSeller()->firstOrFail();
     }
 
     public function recentViewIncrease($id)
@@ -182,7 +182,7 @@ class ProductRepository
             $ids = [];
         }
 
-        return $this->product::with('product', 'skus')->whereRaw("id in ('". implode("','",$ids)."')")->get();
+        return $this->product::with('product', 'skus', 'seller.SellerAccount.user')->whereRaw("id in ('". implode("','",$ids)."')")->get();
     }
 
     public function getPickupByCity($data){

@@ -39,7 +39,7 @@ class HomePageSection extends Model
     {
         $filterRepo = new FilterRepository();
         $data = $filterRepo->getSectionProducts($this->section_name);
-        return $data['products']->with('skus', 'product.gallary_images', 'auction')->take(12)->get();
+        return $data['products']->with('skus', 'product.gallary_images', 'auction', 'seller.SellerAccount.user')->take(12)->get();
     }
 
     public function getHomePageProductByQuery()
@@ -50,7 +50,7 @@ class HomePageSection extends Model
         if(app('theme')->folder_path == 'amazy'){
             $paginate = 20;
         }
-        return $data['products']->with('skus', 'wishList', 'product.shippingMethods', 'auction')->paginate($paginate);
+        return $data['products']->with('skus', 'wishList', 'product.shippingMethods', 'auction', 'seller.SellerAccount.user')->paginate($paginate);
     }
 
     public function getCategoryByQuery()
