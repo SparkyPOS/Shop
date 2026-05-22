@@ -136,9 +136,9 @@ class SyncVendorController extends Controller
 
             // Commission handling (flat by default)
             $commissionRate = null;
-            if (!empty($data['commission_rate'])) {
+            if (isset($data['commission_rate']) && is_numeric($data['commission_rate'])) {
                 $commissionRate = (float) $data['commission_rate'];
-            } elseif (!empty($data['commission']['rate'])) {
+            } elseif (isset($data['commission']['rate']) && is_numeric($data['commission']['rate'])) {
                 $commissionRate = (float) $data['commission']['rate'];
             }
             if ($commissionRate !== null) {

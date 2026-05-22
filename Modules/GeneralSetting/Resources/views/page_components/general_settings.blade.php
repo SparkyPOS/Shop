@@ -243,6 +243,29 @@
                         </ul>
                     </div>
                 </div>
+                @if(isModuleActive('MultiVendor'))
+                <div class="col-xl-6">
+                    <div class="primary_input">
+                        <label class="primary_input_label" for="">{{ __('Seller to seller payment gateway') }}</label>
+                        <ul id="theme_nav" class="permission_list sms_list ">
+                            <li>
+                                <label data-id="bg_option" class="primary_checkbox d-flex mr-12 extra_width">
+                                    <input name="seller_wise_payment" id="seller_wise_payment_active_general" value="1" class="active" type="radio" {{(app('general_setting')->seller_wise_payment == 1)?'checked':''}}>
+                                    <span class="checkmark"></span>
+                                </label>
+                                <p>{{ __('common.on') }}</p>
+                            </li>
+                            <li>
+                                <label data-id="color_option" class="primary_checkbox d-flex mr-12 extra_width">
+                                    <input name="seller_wise_payment" id="seller_wise_payment_inactive_general" value="0" class="de_active" type="radio" {{(app('general_setting')->seller_wise_payment == 0)?'checked':''}}>
+                                    <span class="checkmark"></span>
+                                </label>
+                                <p>{{ __('common.off') }}</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                @endif
                 <div class="col-xl-6">
                     <div class="primary_input">
                         <label class="primary_input_label" for="">{{ __('general_settings.product_subtitle_show') }}</label>
