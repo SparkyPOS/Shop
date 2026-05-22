@@ -57,7 +57,7 @@
                             <div class="col-lg-12">
                                 <div class="primary_input">
                                     <label class="primary_input_label" for="">{{
-                                        __('Seller to seller payment gateway') }} <span
+                                        __('Seller-wise payment gateway') }} <span
                                             class="text-danger">*</span></label>
                                     <ul id="theme_nav" class="permission_list sms_list ">
                                         <li>

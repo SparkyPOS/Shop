@@ -696,7 +696,7 @@
                     else{
                         @auth
                             var base_url = $('#url').val();
-                            window.location.href = base_url + "/checkout?owner=" + seller_id;
+                            window.location.href = base_url + "/checkout";
                         @else
                             window.location.href = @json(route('sso.redirect', ['redirect_to' => request()->fullUrl()]));
                         @endauth

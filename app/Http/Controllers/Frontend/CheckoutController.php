@@ -60,23 +60,17 @@ class CheckoutController extends Controller
 
         if(isModuleActive('MultiVendor') && app('general_setting')->seller_wise_payment){
             if(!isset($request->step)){
-                if(!isset($request->owner)){
-                    Toastr::error('Invalid Seller', 'Error');
-                    return redirect(url('/cart'));
-                }
-                $seller = $this->checkoutService->getSellerById(decrypt($request->owner));
-                if($seller){
-                    session()->put('seller_for_checkout',$seller->id);
+                if(isset($request->owner) && !empty($request->owner)){
+                    $seller = $this->checkoutService->getSellerById(decrypt($request->owner));
+                    if($seller){
+                        session()->put('seller_for_checkout',$seller->id);
+                    }else{
+                        session()->forget('seller_for_checkout');
+                        Toastr::error('Invalid Checkout. Try again.', 'Error');
+                        return redirect(url('/cart'));
+                    }
                 }else{
                     session()->forget('seller_for_checkout');
-                    Toastr::error('Invalid Checkout. Try again.', 'Error');
-                    return redirect(url('/cart'));
-                }
-            }else{
-                if(!isset($request->step) && session()->get('seller_for_checkout')){
-                    session()->forget('seller_for_checkout');
-                    Toastr::error('Invalid Checkout. Try again.', 'Error');
-                    return redirect(url('/cart'));
                 }
             }
         }else{

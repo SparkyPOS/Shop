@@ -60,8 +60,7 @@ class StripeController extends Controller
         Stripe\Stripe::setApiKey($credential->perameter_3);
 
         try {
-            $amountInCents = (int) round($amount * 100);
-            $payload = [
+            $paymentIntent = Stripe\PaymentIntent::create([
                 'amount' => (int) round($amount * 100),
                 'currency' => strtolower(getCurrencyCode()),
                 'payment_method_types' => ['card'],
@@ -69,29 +68,7 @@ class StripeController extends Controller
                 'metadata' => [
                     'purpose' => 'order_payment',
                 ],
-            ];
-
-            // For seller-wise checkout, create a Stripe Connect destination charge so
-            // the checkout amount lands on the seller's connected account and the
-            // platform keeps only the configured commission percentage.
-            if (isModuleActive('MultiVendor') && app('general_setting')->seller_wise_payment && session()->has('seller_for_checkout')) {
-                $seller = \App\Models\User::with('SellerAccount')->find(session()->get('seller_for_checkout'));
-
-                if ($seller && !empty($seller->stripe_account_id)) {
-                    $commissionRate = (float) optional($seller->SellerAccount)->commission_rate;
-                    $applicationFeeAmount = (int) round(($amountInCents * max($commissionRate, 0)) / 100);
-                    $applicationFeeAmount = min($applicationFeeAmount, $amountInCents);
-
-                    $payload['transfer_data'] = [
-                        'destination' => $seller->stripe_account_id,
-                    ];
-                    $payload['application_fee_amount'] = $applicationFeeAmount;
-                    $payload['metadata']['seller_id'] = (string) $seller->id;
-                    $payload['metadata']['commission_rate'] = (string) $commissionRate;
-                }
-            }
-
-            $paymentIntent = Stripe\PaymentIntent::create($payload);
+            ]);
 
             return response()->json([
                 'client_secret' => $paymentIntent->client_secret,
@@ -116,7 +93,6 @@ class StripeController extends Controller
         try{
             $stripe = null;
             $chargeId = null;
-            $isDestinationCharge = false;
 
             if (!empty($data['stripe_payment_intent_id'])) {
                 $stripe = Stripe\PaymentIntent::retrieve($data['stripe_payment_intent_id']);
@@ -126,7 +102,6 @@ class StripeController extends Controller
                 $chargeId = is_string($stripe->latest_charge)
                     ? $stripe->latest_charge
                     : ($stripe->latest_charge->id ?? null);
-                $isDestinationCharge = !empty($stripe->transfer_data->destination ?? null);
             } else {
                 $stripe = Stripe\Charge::create ([
                     "amount" => (int) round($data['amount'] * 100),
@@ -139,7 +114,7 @@ class StripeController extends Controller
 
             // Only attempt seller payouts when enabled and data provided
             $sellers = $data['seller'] ?? [];
-            if (!$isDestinationCharge && isModuleActive('MultiVendor') && app('general_setting')->seller_wise_payment && is_array($sellers) && count($sellers) > 0) {
+            if (isModuleActive('MultiVendor') && app('general_setting')->seller_wise_payment && is_array($sellers) && count($sellers) > 0) {
                 foreach ($sellers as $seller) {
                     $total_amount = isset($seller['price']) ? (float) $seller['price'] : 0.0;
                     $user = isset($seller['seller_id']) ? \App\Models\User::find($seller['seller_id']) : null;

@@ -246,7 +246,7 @@
                 @if(isModuleActive('MultiVendor'))
                 <div class="col-xl-6">
                     <div class="primary_input">
-                        <label class="primary_input_label" for="">{{ __('Seller to seller payment gateway') }}</label>
+                        <label class="primary_input_label" for="">{{ __('Seller-wise payment gateway') }}</label>
                         <ul id="theme_nav" class="permission_list sms_list ">
                             <li>
                                 <label data-id="bg_option" class="primary_checkbox d-flex mr-12 extra_width">

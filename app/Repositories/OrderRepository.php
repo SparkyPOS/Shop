@@ -1165,7 +1165,7 @@ class OrderRepository
     public function orderPaymentDone($amount, $method, $response, $user = null)
     {
         $seller_to_seller_payment = 0;
-        if(isModuleActive('MultiVendor') && session()->has('order_payment') && app('general_setting')->seller_wise_payment && session()->has('seller_for_checkout')){
+        if(isModuleActive('MultiVendor') && session()->has('order_payment') && app('general_setting')->seller_wise_payment){
             $seller_to_seller_payment = 1;
         }
         if($method != 1 && $method != 2 && $method != 7){
