@@ -933,7 +933,12 @@
                             var base_url = $('#url').val();
                             window.location.href = base_url + "/checkout";
                         @else
-                            window.location.href = @json(route('sso.redirect', ['redirect_to' => request()->fullUrl()]));
+                            var base_url = $('#url').val();
+                            @if(app('general_setting')->guest_checkout)
+                                window.location.href = base_url + "/checkout";
+                            @else
+                                window.location.href = @json(route('sso.redirect', ['redirect_to' => request()->fullUrl()]));
+                            @endif
                         @endauth
                     }
                 });
