@@ -33,13 +33,17 @@
                                     ?? data_get($firstCartItem, 'product.seller')
                                     ?? data_get($firstCartItem, 'product.product.seller')
                                     ?? $seller;
-                                if($seller && method_exists($seller, 'loadMissing')) {
+
+                                if ($seller && method_exists($seller, 'loadMissing')) {
                                     $seller->loadMissing('sellerAccount');
                                 }
-                                if($cartVendorUser && method_exists($cartVendorUser, 'loadMissing')) {
-                                    $cartVendoruser->loadMissing('sellerAccount');
+
+                                if ($cartVendorUser && method_exists($cartVendorUser, 'loadMissing')) {
+                                    $cartVendorUser->loadMissing('sellerAccount');
                                 }
+
                                 $cartStoreName = parentStoreName($seller ?? $cartVendorUser ?? null);
+
                                 $cartVendorId = data_get($cartVendorUser, 'sellerAccount.vendor_id')
                                     ?? data_get($cartVendorUser, 'seller_account.vendor_id')
                                     ?? data_get($firstCartItem, 'seller.sellerAccount.vendor_id')
@@ -48,9 +52,11 @@
                                     ?? data_get($firstCartItem, 'product.seller.seller_account.vendor_id')
                                     ?? data_get($seller, 'sellerAccount.vendor_id')
                                     ?? data_get($seller, 'seller_account.vendor_id');
-                                if(blank($cartVendorId)) {
+
+                                if (blank($cartVendorId)) {
                                     $cartVendorId = trim((string) (($cartVendorUser->name ?? '') ?: (($cartVendorUser->first_name ?? '') . ' ' . ($cartVendorUser->last_name ?? ''))));
                                 }
+
                                 $cartSellerUrl = ($cartVendorUser && !empty($cartVendorUser->slug))
                                     ? route('frontend.seller', $cartVendorUser->slug)
                                     : (($seller && !empty($seller->slug))
