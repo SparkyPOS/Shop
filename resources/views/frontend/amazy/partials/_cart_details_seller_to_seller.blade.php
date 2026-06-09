@@ -28,9 +28,34 @@
                     <div class="checkout_v3_inner w-100">
                         <div class="cart_package_box mb_20">
                             @php
-                                $cartStoreName = parentStoreName($seller ?? null);
-                                $cartVendorId = data_get($seller, 'sellerAccount,vendor_id', ($seller->name ?? $seller->first_name ?? ''));
-                                $cartSellerUrl = ($seller && $seller->slug) ? route('frontend.seller', $seller->slug) : route('frontend.seller', base64_encode($seller_id));
+                                $firstCartItem = collect($cartItems)->firstWhere('product_type', 'product') ?? collect($cartItems)->first();
+                                $cartVendorUser = data_get($firstCartItem, 'seller')
+                                    ?? data_get($firstCartItem, 'product.seller')
+                                    ?? data_get($firstCartItem, 'product.product.seller')
+                                    ?? $seller;
+                                if($seller && method_exists($seller, 'loadMissing')) {
+                                    $seller->loadMissing('sellerAccount');
+                                }
+                                if($cartVendorUser && method_exists($cartVendorUser, 'loadMissing')) {
+                                    $cartVendoruser->loadMissing('sellerAccount');
+                                }
+                                $cartStoreName = parentStoreName($seller ?? $cartVendorUser ?? null);
+                                $cartVendorId = data_get($cartVendorUser, 'sellerAccount.vendor_id')
+                                    ?? data_get($cartVendorUser, 'seller_account.vendor_id')
+                                    ?? data_get($firstCartItem, 'seller.sellerAccount.vendor_id')
+                                    ?? data_get($firstCartItem, 'seller.seller_account.vendor_id')
+                                    ?? data_get($firstCartItem, 'product.seller.sellerAccount.vendor_id')
+                                    ?? data_get($firstCartItem, 'product.seller.seller_account.vendor_id')
+                                    ?? data_get($seller, 'sellerAccount.vendor_id')
+                                    ?? data_get($seller, 'seller_account.vendor_id');
+                                if(blank($cartVendorId)) {
+                                    $cartVendorId = trim((string) (($cartVendorUser->name ?? '') ?: (($cartVendorUser->first_name ?? '') . ' ' . ($cartVendorUser->last_name ?? ''))));
+                                }
+                                $cartSellerUrl = ($cartVendorUser && !empty($cartVendorUser->slug))
+                                    ? route('frontend.seller', $cartVendorUser->slug)
+                                    : (($seller && !empty($seller->slug))
+                                        ? route('frontend.seller', $seller->slug)
+                                        : route('frontend.seller', base64_encode($seller_id)));
                             @endphp
                             <div class="cart_package_head">
                                 <div class="cart_package_head_inner">
