@@ -27,18 +27,23 @@
                 <div class="checkout_v3_left d-flex justify-content-end mb-0">
                     <div class="checkout_v3_inner w-100">
                         <div class="cart_package_box mb_20">
+                            @php
+                                $cartStoreName = parentStoreName($seller ?? null);
+                                $cartVendorId = data_get($seller, 'sellerAccount,vendor_id', ($seller->name ?? $seller->first_name ?? ''));
+                                $cartSellerUrl = ($seller && $seller->slug) ? route('frontend.seller', $seller->slug) : route('frontend.seller', base64_encode($seller_id));
+                            @endphp
                             <div class="cart_package_head">
-                                <a
-                                    href="@if($seller && $seller->slug) {{ route('frontend.seller', $seller->slug) }} @else {{ route('frontend.seller', base64_encode($seller_id)) }} @endif"
-                                    class="cart_seller_link"
-                                >
-                                    @if($seller && optional($seller->role)->type == 'seller')
-                                        {{ trim(($seller->first_name ?? '') . ' ' . ($seller->last_name ?? '')) }}
-                                    @else
-                                        {{ app('general_setting')->company_name }}
-                                    @endif
-                                    &gt;
-                                </a>
+                                <div class="cart_package_head_inner">
+                                    <a href="{{ $cartSellerUrl }}" class="cart_package_label cart_store_label">
+                                        {{ __('common.store') }}: {{ $cartStoreName }}
+                                    </a>
+
+                                    <span class="cart_package_divider">|</span>
+
+                                    <span class="cart_package_label cart_vendor_label">
+                                        {{ __('Vendor') }}: {{ $cartVendorId }}
+                                    </span>
+                                </div>
                             </div>
 
                             <div class="cart_package_table_wrap">
@@ -458,9 +463,18 @@
         border-bottom: 1px solid #ececec;
     }
 
-    .cart_seller_link,
-    .cart_seller_link:hover,
-    .cart_seller_link:focus {
+    .cart_package_head_inner {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .cart_package_label,
+    .cart_package_label:hover,
+    .cart_package_label:focus {
         display: inline-flex !important;
         align-items: center;
         width: auto !important;
@@ -477,13 +491,44 @@
         font-size: 14px;
         font-weight: 700;
         line-height: 1.35;
-        white-space: normal;
+        white-space: nowrap;
     }
 
-    .cart_seller_link::before,
-    .cart_seller_link::after {
+    .cart_package_label::before,
+    .cart_package_label::after {
         display: none !important;
         content: none !important;
+    }
+
+    .cart_package_divider {
+        color: #9ca3af;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    @media (max-width: 767px) {
+        .cart_package_head {
+            padding: 14px 16px;
+        }
+
+        .cart_package_head_inner {
+            display: block;
+        }
+
+        .cart_package_label {
+            display: block !important;
+            width: 100% !important;
+            white-space: normal !important;
+            margin-bottom: 8px !important;
+        }
+
+        .cart_package_label:last-child {
+            margin-bottom: 0 !important;
+        }
+
+        .cart_package_divider {
+            display: none !important;
+        }
     }
 
     .cart_package_table_wrap {
