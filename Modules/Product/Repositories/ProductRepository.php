@@ -140,7 +140,7 @@ class ProductRepository
             $q->select('id','product_name','thumbnail_image_source','brand_id','subtitle_1','subtitle_2');
         },'product.brand' => function($q2){
             $q2->select('id','name');
-        }]);
+        }])->whereHas('product');
     }
 
     public function create(array $data)
