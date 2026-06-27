@@ -469,6 +469,16 @@ class SyncSparkyController extends Controller
 
             if (!empty($product) && ($product['id'] ?? null)) {
                 Log::info('shop.sync.product.payload', ['product' => $product]);
+
+                $vendorCode = trim((string) ($prorduct['vendor_id'] ?? ''));
+                $sellerId = $vendorCode !== ''
+                    ? SellerAccount::where('vendor_id', $vendorCode)->value('user_id')
+                    : null;
+                if(!$sellerId) {
+                    throw new \RuntimeException(
+                        sprintf('Unable to sync product %s: Shop seller mapping was not fould for POS vendor %s.', $product['id'], $vendorCode)
+                    );
+                }
                 // Pull variations; fallback to top-level 'variants' if product.variations is missing
                 $variations = $product['variations'] ?? [];
                 if (empty($variations)) {
@@ -1067,9 +1077,8 @@ class SyncSparkyController extends Controller
 
                 // Upsert seller product, map SKUs to seller, and auction info when vendor_id provided
                 if (!empty($product['vendor_id'])) {
-                    $sellerId = SellerAccount::where('vendor_id', $product['vendor_id'])->value('user_id');
                     if ($sellerId) {
-                        $sellerProduct = SellerProduct::firstOrCreate([
+                        $sellerProduct = SellerProduct::updateOrCreate([
                             'product_id' => $newProduct->id,
                             'user_id' => $sellerId,
                         ], [
@@ -1083,11 +1092,6 @@ class SyncSparkyController extends Controller
                             'discount_type' => 1,
                             'slug' => \Illuminate\Support\Str::slug($newProduct->product_name),
                         ]);
-                        // Keep stock_manage in sync on updates too
-                        if ($sellerProduct->stock_manage != $manageStock) {
-                            $sellerProduct->stock_manage = $manageStock;
-                            $sellerProduct->save();
-                        }
 
                         // ensure seller thumbnail is set so product shows on listings
                         if ($primaryMediaId) {
@@ -1171,6 +1175,13 @@ class SyncSparkyController extends Controller
             }
 
         } catch (\Throwable $th) {
+            Log::error('shop.sync.failed', [
+                'action' => $action ?? null,
+                'external_product_id' => $product['id'] ?? null,
+                'vendor_id' => $product['vendor_id'] ?? null,
+                'error' => $th->getMessage(),
+            ]);
+            
             return [
                 'success' => false,
                 'message' => $th->getMessage()
