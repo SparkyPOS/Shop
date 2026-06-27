@@ -300,10 +300,10 @@ class ProductController extends Controller
         return DataTables::of($skus)
             ->addIndexColumn()
             ->editColumn('product', function ($skus) {
-                return @$skus->product->product_name;
+                return optional($skus->product)->product_name;
             })
             ->addColumn('brand', function ($skus) {
-                return @$skus->product->brand->name;
+                return optional(optional($skus->product)->brand)->name;
             })
             ->addColumn('purchase_price', function ($skus) {
 
@@ -317,6 +317,10 @@ class ProductController extends Controller
                 return view('product::products.components._sku_logo_td', compact('skus'));
             })
             ->addColumn('action', function ($skus) {
+                if ($skus->product === null) {
+                    return '';
+                }
+
                 return view('product::products.components._sku_action_td', compact('skus'));
             })
             ->rawColumns(['product_type', 'logo', 'status', 'action', 'purchase_price'])
