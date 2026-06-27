@@ -470,13 +470,13 @@ class SyncSparkyController extends Controller
             if (!empty($product) && ($product['id'] ?? null)) {
                 Log::info('shop.sync.product.payload', ['product' => $product]);
 
-                $vendorCode = trim((string) ($prorduct['vendor_id'] ?? ''));
+                $vendorCode = trim((string) ($product['vendor_id'] ?? ''));
                 $sellerId = $vendorCode !== ''
                     ? SellerAccount::where('vendor_id', $vendorCode)->value('user_id')
                     : null;
                 if(!$sellerId) {
                     throw new \RuntimeException(
-                        sprintf('Unable to sync product %s: Shop seller mapping was not fould for POS vendor %s.', $product['id'], $vendorCode)
+                        sprintf('Unable to sync product %s: Shop seller mapping was not found for POS vendor "%s".', $product['id'], $vendorCode)
                     );
                 }
                 // Pull variations; fallback to top-level 'variants' if product.variations is missing
