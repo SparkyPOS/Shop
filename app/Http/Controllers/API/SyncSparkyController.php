@@ -211,6 +211,8 @@ class SyncSparkyController extends Controller
 
     public function sync(Request $request)
     {
+        $syncResult = null;
+
         try {
             Log::debug(json_encode(['headers'=>$request->headers->all(),'has_files'=>$request->hasFile(null),'keys'=>array_keys($request->all())]));
             // Mark this request as inbound to avoid re-propagation loops
@@ -1172,6 +1174,13 @@ class SyncSparkyController extends Controller
                         }
                     }
                 }
+
+                $syncResult = [
+                    'external_product_id' => (int) $product['id'],
+                    'product_id' => (int) $newProduct->id,
+                    'seller_product_id' => (int) $sellerProduct->id,
+                    'seller_id' => (int) $sellerId,
+                ];
             }
 
         } catch (\Throwable $th) {
@@ -1189,7 +1198,9 @@ class SyncSparkyController extends Controller
         }
 
         return [
-            'success' => true
+            'success' => true,
+            'shop_url' => config('app.url'),
+            'data' => $syncResult !== null ? ['product' => $syncResult] : null,
         ];
     }
 }
