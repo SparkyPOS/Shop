@@ -75,7 +75,6 @@ class PushNotificationCommamd extends Command
                 
             $notification->delete();
         }
-        return true;
+        return 0;
     }
-    return Command::SUCCESS;
 }
